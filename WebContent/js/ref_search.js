@@ -99,14 +99,14 @@ RS.internal.loadSpecies = function( req, status ) {
 }
 
 RS.loadSpecies = function() {
-	OpenLayers.Request.GET({ url: RS.spXmlUri, callback: RS.internal.loadSpecies });
-// 	jQuery.ajax( {
-// 		async	: false,
-// 		type	: "GET",
-// 		cache	: true,
-// 		url	: RS.spXmlUri,
-// 		success	: RS.internal.loadSpecies
-// 	} );
+	//!OL2 OpenLayers.Request.GET({ url: RS.spXmlUri, callback: RS.internal.loadSpecies });
+	$.ajax( {
+ 		async	: false,
+ 		type	: "GET",
+ 		cache	: true,
+ 		url	: RS.spXmlUri,
+ 		success	: RS.internal.loadSpecies
+ 	} );
 };
 
 RS.init = function() {

@@ -263,7 +263,8 @@ function setSpeciesPage(elinkDiv, urlLink, htmlLink){
 		}
 		if(extent != null && extent != undefined && extent != ""){
 			var bbox = extent.split(",");
-			mapExtent = new OpenLayers.Bounds(bbox[0], bbox[1], bbox[2], bbox[3]);
+			//OL2 mapExtent = new OpenLayers.Bounds(bbox[0], bbox[1], bbox[2], bbox[3]);
+			mapExtent = [bbox[0], bbox[1], bbox[2], bbox[3]]
 		}  
 		if(zoom != null && zoom != undefined && zoom != ""){
 			mapZoom = zoom;
