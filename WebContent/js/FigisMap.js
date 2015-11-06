@@ -1,0 +1,1647 @@
+/*
+	Generalized map call facility
+	Authors: M. Balestra, A. Fabiani, A. Gentile, T. Di Pisa.
+	Status: Beta.
+	Build: 20110310-001
+	UFT-8 glyph: 
+*/
+
+// if ( console == null ) var console = new Object();
+// if ( ! console.log ) console.log = function(){};
+
+var FigisMap = {
+	parser		: new Object(), // parsing methods collection
+	fs		: new Object(), // specific fact sheets methods collection
+	rfb		: new Object(), // specific RFB methods collection
+	rnd		: new Object(), // FigisMap.renderer specific collection of methods and variabes
+	ol		: new Object(), // OpenLayers related utilities
+	isDeveloper	: ( document.domain.indexOf( '192.168.' ) == 0 ),
+	lastMap		: null,
+	renderedMaps	: new Object(),
+	isTesting	: ( document.domain.indexOf('figisapps')==0 || document.domain.indexOf('figis02')==0 ||document.domain.indexOf('168.202.')==0||document.domain.indexOf('www-data.fao.org')==0 ),
+	currentSiteURI	: location.href.replace(/^([^:]+:\/\/[^\/]+).*$/,"$1"),
+	debugLevel	: 1 // 0|false|null: debug off, 1|true:console, 2: console + error alert
+};
+
+FigisMap.fifao = {
+	cbs : 'fifao:country_bounds',
+	cnt : 'fifao:UN_CONTINENT2',
+	CNT : 'fifao:gebco1_cont', //'fifao:UN_CONTINENT2'
+	SEA : 'fifao:gebco1', // 'fifao:OB_LR',
+	lab : 'fifao:MarineAreas',
+	div : 'fifao:FAO_DIV',
+	gsu : 'fifao:GFCM_SUB_AREA',
+	eez : 'fifao:EEZ',
+	ics : 'fifao:ICCAT_SMU',
+	lme : 'fifao:LME',
+	maj : 'fifao:FAO_MAJOR',
+	ma2 : 'fifao:FAO_MAJOR', //'fifao:FAO_MAJOR2',
+//	nma : 'fifao:eez2',
+	nma : 'fifao:limit_200nm',
+	cmp : 'fifao:ISO3_COUNTRY',
+	obl : 'fifao:OB_LR',
+	ptr : 'fifao:PAC_TUNA_REP',
+//	RFB : 'fifao:RFMOCOMPAREA',
+	RFB : 'fifao:RFB_COMP',
+	rfb : 'fifao:RFB_COMP',
+	sdi : 'fifao:FAO_SUB_DIV',
+	spd : 'fifao:SPECIES_DIST',
+	sub : 'fifao:FAO_SUB_AREA',
+	sun : 'fifao:FAO_SUB_UNIT',
+	vma : 'fifao:VMEAREAS',
+	vme : 'fifao:vme-db',
+	vmc : 'vme:closures',
+	vmb : 'vme:bottom_fishing_areas',
+	vmo : 'vme:other_areas'
+};
+FigisMap.fifaoStyles = {
+	cmp : 'countries_stars'
+};
+
+FigisMap.defaults = {
+	lang		: document.documentElement.getAttribute('lang') ? document.documentElement.getAttribute('lang').toLowerCase() : 'en',
+	baseLayer	: { layer: FigisMap.fifao.cnt, cached: true, label : "Continents" },//FigisMap.fifao.maj,
+	baseLayerC	: { layer: FigisMap.fifao.SEA, cached: true, label: 'Continents', label: 'Continents', filter:'*' },
+	basicsLayers	: true,
+	context		: 'default',
+	drawDataRect	: false,
+	global		: false,
+	landMask	: true,
+	mapSize		: 'S',
+	layerFilter	: '',
+	layerStyle	: '*',
+	layerStyles	: { distribution : 'all_fao_areas_style', intersecting : '*', associated : '*' }
+};
+
+//FigisMap.isDeveloper ? false : ( FigisMap.isTesting ? FigisMap.currentSiteURI.indexOf(':8484') < 1 : ( FigisMap.currentSiteURI.indexOf('http://www.fao.org') != 0 ) );
+FigisMap.useProxy = false;
+if ( ( FigisMap.currentSiteURI.indexOf(':8282') > 1 ) || ( FigisMap.currentSiteURI.indexOf(':8383') > 1 ) ) FigisMap.useProxy = true;
+
+FigisMap.geoServerAbsBase = FigisMap.isDeveloper ? 'http://192.168.1.106:8484' : ( FigisMap.isTesting ? 'http://168.202.3.223:8484' : ('http://' + document.domain ) );
+FigisMap.geoServerBase = '';
+
+FigisMap.httpBaseRoot = FigisMap.geoServerBase + '/figis/geoserver/factsheets/';
+
+FigisMap.localPathForGeoserver = "/figis/geoserver"; // "/figis/geoserverdv"
+
+FigisMap.rnd.vars = {
+	geoserverURL		: FigisMap.geoServerBase + FigisMap.localPathForGeoserver,
+	geowebcacheURL		: FigisMap.geoServerBase + FigisMap.localPathForGeoserver + "/gwc/service",
+	logoURL			: FigisMap.httpBaseRoot + "img/FAO_blue_20_transp.gif",
+	logoURLFirms		: FigisMap.httpBaseRoot + "img/logoFirms60.gif",
+	FAO_fishing_legendURL	: FigisMap.httpBaseRoot + "img/FAO_fishing_legend.png",
+	EEZ_legendURL		: FigisMap.httpBaseRoot + "img/EEZ_legend.png",
+	wms			: FigisMap.geoServerBase + FigisMap.localPathForGeoserver + "/wms",
+	gwc			: FigisMap.geoServerBase + FigisMap.localPathForGeoserver + "/gwc/service" + "/wms",
+	Legend_Base_Request	: FigisMap.geoServerBase + FigisMap.localPathForGeoserver + "/wms" + "?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetLegendGraphic&FORMAT=image%2Fpng&WIDTH=30&HEIGHT=20",
+	wfs			: FigisMap.geoServerBase + FigisMap.localPathForGeoserver + '/wfs?request=GetFeature&version=1.0.0&typename=',
+	absWfs			: FigisMap.geoServerAbsBase + FigisMap.localPathForGeoserver + '/wfs?request=GetFeature&version=1.0.0&typename='
+};
+
+FigisMap.loadStaticMapData = function(md) {
+	FigisMap.rfbLayerSettings = new Object();
+	FigisMap.rfbLayerCountries = new Object();
+	FigisMap.rfbLayerDescriptors = new Object();
+	FigisMap.staticLabels = new Object();
+	for ( var i = 0; i < md.rfbs.rfb.length; i++ ) {
+		try {
+			var r = md.rfbs.rfb[i];
+			var n = r.name;
+			var s = new Object();
+			if ( r.type ) s.type = r.type;
+			if ( r.style ) s.style = r.style;
+			if ( r.srs ) s.srs = r.srs;
+			if ( r.centerCoords ) s.centerCoords = r.centerCoords;
+			if ( r.zoomExtent ) s.zoomExtent = r.zoomExtent;
+			s.skip = r.skip ? eval(r.skip): false;
+			s.isMasked = r.isMasked ? eval(r.isMasked) : false
+			s.globalZoom = r.globalZoom ? eval(r.globalZoom) : false;
+			FigisMap.rfbLayerSettings[n] = s;
+			FigisMap.rfbLayerDescriptors[n] = r.descriptor ? r.descriptor : new Object();
+			FigisMap.rfbLayerCountries[n] = ( r.members && r.members.country) ? r.members.country : [];
+		} catch(e) {
+			FigisMap.console( ['FigisMap.loadStaticMapData ERROR: ', e, r ] );
+		}
+	}
+	for ( var i = 0; i < md.statics['static'].length; i++ ) {
+		var s = md.statics['static'][i];
+		var n = s.name;
+		if ( s.value ) {
+			FigisMap.staticLabels[n] = s.value;
+		} else {
+			var o = new Object();
+			for ( var p in s )  if ( p != 'name' ) o[p] = s[p];
+			FigisMap.staticLabels[n] = o;
+		}
+		FigisMap.staticLabels.defined = true;
+	}
+};
+
+if ( FigisMap.useProxy ) FigisMap.rnd.vars.wfs = FigisMap.currentSiteURI + '/figis/proxy/cgi-bin/proxy.cgi?url=' + escape( FigisMap.rnd.vars.absWfs );
+
+document.write('<scr'+'ipt type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'proj4js/lib/proj4js-combined.js"></scr'+'ipt>');
+document.write('<scr'+'ipt type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'proj4js/lib/defs/EPSG4326.js"></scr'+'ipt>');
+document.write('<scr'+'ipt type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'proj4js/lib/defs/EPSG3031.js"></scr'+'ipt>');
+document.write('<scr'+'ipt type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'proj4js/lib/defs/EPSG900913.js"></scr'+'ipt>');
+
+document.write('<scr'+'ipt type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'js/OpenLayers.js"></scr'+'ipt>');
+//document.write('<scr'+'ipt type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'js/figis-data.js" charset="UTF-8"></scr'+'ipt>');
+document.write('<scr'+'ipt type="text/javascript" language="javascript" src="/figis/moniker.jsonp.FigisMap.loadStaticMapData/figismapdata" charset="UTF-8"></scr'+'ipt>');
+
+FigisMap.console = function( args, doAlert ) {
+	var e;
+	if ( doAlert == null ) doAlert = ( FigisMap.debugLevel && FigisMap.debugLevel > 1 );
+	try {
+		args.length;
+		args.join;
+	} catch( e ) {
+		args = [ args ];
+	}
+	try {
+		for ( var i = 0; i < args.length; i++ ) console.log( args[i] );
+	} catch( e ) {
+		if ( doAlert ) {
+			var txt = '';
+			for ( var i = 0; i < args.length; i++ ) {
+				txt += args[i] + "\r\n";
+				if ( args[i].message ) txt += args[i].message + "\r\n";
+			}
+			alert( txt );
+		}
+	}
+}
+
+FigisMap.debug = function() {
+	if ( FigisMap.debugLevel ) {
+		var args = new Array(' --- debug information --- ');
+		for ( var i = 0; i < arguments.length; i++ ) args.push( arguments[i] );
+		FigisMap.console( args )
+	};
+}
+
+FigisMap.error = function() {
+	var args = new Array(' --- error information --- ');
+	for ( var i = 0; i < arguments.length; i++ ) args.push( arguments[i] );
+	FigisMap.console( args, (FigisMap.isTesting || FigisMap.isDeveloper) );
+}
+
+FigisMap.label = function( label, p ) {
+	var lang = p && p.lang ? p.lang : ( FigisMap.lang ? FigisMap.lang : FigisMap.defaults.lang );
+	var defLang = ( lang == FigisMap.defaults.lang ) ? 'en' : FigisMap.defaults.lang;
+	if ( ! label ) return '';
+	var l = label.toUpperCase();
+	if ( p && p.staticLabels && p.staticLabels[l] ) {
+		switch ( typeof p.staticLabels[l] ) {
+			case 'string'	: return p.staticLabels[l]; break;
+			case 'object'	: return ( typeof p.staticLabels[l][lang] ) == 'string' ? p.staticLabels[l][lang] : p.staticLabels[l][defLang]; break;
+		}
+	}
+	if ( FigisMap.staticLabels && FigisMap.staticLabels[l] ) {
+		switch ( typeof FigisMap.staticLabels[l] ) {
+			case 'string'	: return FigisMap.staticLabels[l]; break;
+			case 'object'	: return ( typeof FigisMap.staticLabels[l][lang] ) == 'string' ? String(FigisMap.staticLabels[l][lang]) : FigisMap.staticLabels[l][defLang]; break;
+		}
+	}
+	return label;
+}
+
+FigisMap.isFaoArea = function( layerName ) {
+	switch ( layerName ) {
+		case FigisMap.fifao.maj : return true; break;
+		case FigisMap.fifao.ma2 : return true; break;
+		case FigisMap.fifao.div : return true; break;
+		case FigisMap.fifao.sdi : return true; break;
+		case FigisMap.fifao.sub : return true; break;
+		default	 : return false;
+	}
+};
+
+FigisMap.getXMLHttpRequest = function() {
+	var e, req = false;
+	try {
+		req = new ActiveXObject("Msxml2.XMLHTTP");
+	} catch(e) {
+		try {
+			req = new ActiveXObject("Microsoft.XMLHTTP");
+		} catch(e) {
+			try {
+				req = new XMLHttpRequest()
+			} catch(e) {
+				FigisMap.error('FigisMap.getXMLHttpRequest failure', e);
+				return false;
+			}
+		}
+	}
+	try { req.overrideMimeType("text/xml") } catch(e) { };
+	return req;
+};
+
+FigisMap.ol.reBound = function( proj0, proj1, bounds ) {
+	proj0 = parseInt( String( proj0.projCode ? proj0.projCode : proj0 ).replace(/^EPSG:/,'') );
+	proj1 = parseInt( String( proj1.projCode ? proj1.projCode : proj1 ).replace(/^EPSG:/,'') );
+	if ( bounds == null ) {
+		proj0 = 4326;
+		bounds = new OpenLayers.Bounds(-180, -90, 180, 90);
+	}
+	var ans = false;
+	if ( proj0 == 3349 ) proj0 = 900913;
+	if ( proj1 == 3349 ) proj1 = 900913;
+	if ( proj0 == proj1 ) ans = bounds;
+	if ( proj1 == 3031 ) return new OpenLayers.Bounds(-12400000,-12400000, 12400000,12400000);
+	if ( ! ans ) {
+		var source = new Proj4js.Proj( 'EPSG:' + proj0 );
+		var dest   = new Proj4js.Proj( 'EPSG:' + proj1 );
+		
+		var min = new OpenLayers.Geometry.Point(bounds.left, bounds.bottom);
+		var max = new OpenLayers.Geometry.Point(bounds.right, bounds.top);
+		var minpt = Proj4js.transform(source, dest, min);
+		var maxpt = Proj4js.transform(source, dest, max);
+		ans = new OpenLayers.Bounds(minpt.x, minpt.y, maxpt.x, maxpt.y);
+	}
+	if ( proj1 == 4326 ) ans = FigisMap.ol.dateline( ans );
+	return ans;
+};
+FigisMap.ol.dateline = function( b ) {
+	if ( b.left < 0 && b.right > 0 && ( b.right - b.left ) < 300  ) {
+		// do nothing
+	} else {
+		if ( b.left > b.right ) {
+			var t = b.left;
+			b.left = b.right;
+			b.right = t;
+		} else {
+			var diff = b.right - b.left;
+			if ( ( diff > 300 ) && ( diff < 359 ) ) {
+				var t = b.left;
+				b.left = b.right -360;
+				b.right = t;
+			}
+		}
+	}
+	return b;
+};
+FigisMap.ol.reCenter = function( proj0, proj1, center ) {
+	proj0 = parseInt( String( proj0.projCode ? proj0.projCode : proj0 ).replace(/^EPSG:/,'') );
+	proj1 = parseInt( String( proj1.projCode ? proj1.projCode : proj1 ).replace(/^EPSG:/,'') );
+	if ( proj0 == 3349 ) proj0 = 900913;
+	if ( proj1 == 3349 ) proj1 = 900913;
+	if ( center == null ) {
+		if ( proj1 == 900913 ) return new OpenLayers.LonLat(20037508.34, 4226661.92);
+		proj0 = 4326;
+		center = new OpenLayers.LonLat( 0, 0 );
+	}
+	if ( proj0 == proj1 ) return center;
+	if ( proj1 == 3031 ) return new OpenLayers.LonLat(156250.0, 703256.0);
+	var newCenter;
+	var source = new Proj4js.Proj( 'EPSG:' + proj0 );
+	var dest   = new Proj4js.Proj( 'EPSG:' + proj1 );
+	
+	var centerPoint = new OpenLayers.Geometry.Point( center.lon, center.lat );
+	var newCenterPoint = Proj4js.transform(source, dest, centerPoint);
+	return new OpenLayers.LonLat( newCenterPoint.x, newCenterPoint.y );
+};
+FigisMap.ol.extend = function( bounds1, bounds2 ) {
+	var b1 = { left: bounds1.left +180, bottom: bounds1.bottom, right: bounds1.right +180, top: bounds1.top };
+	var b2 = { left: bounds2.left +180, bottom: bounds2.bottom, right: bounds2.right +180, top: bounds2.top };
+	var ans = new Object();
+	ans.bottom = b1.bottom > b2.bottom ? b2.bottom : b1.bottom;
+	ans.top = b1.top < b2.top ? b2.top : b1.top;
+	var leftMin = Math.min( b1.left, b2.left );
+	var leftMax = Math.max( b1.left, b2.left );
+	var rightMin = Math.min( b1.right, b2.right );
+	var rightMax = Math.max( b1.right, b2.right );
+	var wAtl = rightMax - leftMin;
+	var wPac = 360 + rightMin - leftMax;
+	if ( wAtl < wPac ) {
+		ans.left = ((leftMin+720)%360) -180;
+		ans.right = ((rightMax+720)%360) -180;
+	} else {
+		ans.left = ((leftMax+720)%360) -180;
+		ans.right = ((rightMin+720)%360) -180;
+	}
+// 	if ( ans.right > 180 ) ans.right -= 360;
+	if ( ans.left > ans.right ) ans.left -= 360;
+// 	FigisMap.debug('Extend:', { b1_in : bounds1, b1_calc: b1}, { b2_in: bounds2, b2_calc: b2 }, ans );
+// 	FigisMap.debug( 'Widths', { leftMin: leftMin, leftMax: leftMax, rightMin: rightMin, rightMax: rightMax, wAtl: wAtl, wPac: wPac } );
+	return new OpenLayers.Bounds( ans.left, ans.bottom, ans.right, ans.top );
+};
+FigisMap.ol.gmlBbox = function( xmlDoc ) {
+	var e;
+	try {
+		var g = new OpenLayers.Format.GML();
+		var feat = g.read( xmlDoc );
+		var b;
+		for ( var i = 0; i < feat.length; i++ ) {
+			if ( i == 0) {
+				b = feat[i].bounds;
+			} else {
+				b = FigisMap.ol.extend( b, feat[i].bounds );
+			}
+		}
+		return b;
+	} catch(e) {
+		FigisMap.debug('FigisMap.ol.gmlBbox exception:', e, e.message, 'XML document:',xmlDoc );
+		return false;
+	}
+};
+/*
+FigisMap.ol.gmlBbox = function( xmlDoc ) {
+	var cnode, e;
+	try {
+		cnode = xmlDoc.documentElement.getElementsByTagName('boundedBy')[0].getElementsByTagName('Box')[0].getElementsByTagName('coordinates')[0];
+	} catch( e ) {
+		try {
+			cnode = xmlDoc.documentElement.getElementsByTagNameNS('*','boundedBy')[0].getElementsByTagNameNS('*','Box')[0].getElementsByTagNameNS('*','coordinates')[0];
+		} catch(e) {
+			cnode = false;
+		}
+	}
+	if ( cnode ) {
+		var ctext = cnode.firstChild.nodeValue.split(' ');
+		var lbrt = ctext[0].split(cnode.getAttribute('cs')).concat( ctext[1].split(cnode.getAttribute('cs')) );
+		for ( var i = 0; i < 4; i++ ) lbrt[i] = parseFloat( lbrt[i].split( cnode.getAttribute('decimal') ).join('.') );
+		return new OpenLayers.Bounds( lbrt[0], lbrt[1], lbrt[2], lbrt[3] );
+	} else {
+		try {
+			var g = new OpenLayers.Format.GML();
+			var feat = g.read( xmlDoc );
+			if ( ! feat && feat[0] && feat[0].bounds ) return false;
+			var bounds = feat[0].bounds;
+			for ( var i = 1; i < feat.length; i++ ) if ( feat[i].bounds) bounds.extend( feat[i].bounds );
+			return bounds;
+		} catch(e) {
+			FigisMap.debug('FigisMap.ol.gmlBbox exception:', e, e.message, 'XML document:',xmlDoc );
+			return false;
+		}
+	}
+};
+*/
+
+FigisMap.parser.layer = function( obj, setProperties ) {
+	if ( typeof ( obj ) == 'string' ) obj = { 'layer' : String( obj ) };
+	if ( typeof setProperties == 'object' ) for ( var i in setProperties ) obj[i] = setProperties[i];
+	switch ( typeof ( obj.filter ) ) {
+		case 'string'		: break;
+		case 'object'		: obj.filter = obj.filter.join(' OR '); break;
+		default			: obj.filter = FigisMap.defaults.layerFilter;
+	}
+	if ( ! obj.style ) switch ( obj.type ) {
+		case 'base'	: break;
+		default		: obj.style = FigisMap.defaults.layerStyle;
+	}
+	return obj;
+};
+
+FigisMap.parser.layers = function( obj, setProperties ) {
+	if ( typeof obj == 'undefined' || typeof obj == 'boolean' ) return false;
+	if (typeof obj == 'string') {
+		if ( ( obj.indexOf('/') > -1 ) || ( obj.indexOf('-') > -1 ) ) {
+			var v = obj.indexOf('/') > -1 ? obj.split('/') : new Array( String(obj) );
+			obj = new Array();
+			for ( var i = 0; i < v.length; i++ ) {
+				var theLayer = String(v[i]);
+				if ( theLayer != '' ) {
+					if ( theLayer.indexOf('-') > -1 ) {
+						var lf = theLayer.split('-');
+						var l = { 'layer' : lf[0] };
+						if ( lf[1] != '' ) l.filter = lf[1];
+						obj[ obj.length ] = l;
+					} else {
+						obj[ obj.length ] = { 'layer' : theLayer };
+					}
+				}
+			}
+		} else {
+			 obj = new Array( { 'layer' : String(obj) } );
+		}
+	} else if ( typeof ( obj.length ) == 'undefined' ) {
+		obj = new Array( obj );
+	}
+	
+	var ls = new Array();
+	for ( var i = 0; i < obj.length; i++ ) {
+		var l = FigisMap.parser.layer( obj[i], setProperties );
+		if ( l.filter && l.filter.length > 150 && l.filter.indexOf(' OR ') > 0 ) {
+			var fs = l.filter.split(' OR ');
+			while ( fs.length > 0 ) {
+				var newfs = fs.splice(0,50);
+				var nl = new Object();
+				for ( var p in l ) nl[p] = l[p];
+				nl.filter = newfs.join(' OR ');
+				if ( ls[0] ) nl.skipLegend = true;
+				ls.push( nl );
+			}
+		} else {
+			ls.push( l );
+		}
+	}
+	
+	return ls;
+};
+
+FigisMap.parser.layersHack = function( p ) {
+	// if a layer in distribution already appears in intersecting, then a style is attributed by default
+	/*
+	if ( p.distribution && p.intersecting && ( ! p.skipStyles ) ) {
+		for ( var i = 0; i < p.distribution.length; i++ ) {
+			var l = p.distribution[i];
+			var isInIntersecting = false;
+			for ( var j = 0; j < p.intersecting.length; j++ ) if ( p.intersecting[j].layer == l.layer ) { isInIntersecting = true; break; }
+			if ( isInIntersecting ) l.style = FigisMap.defaults.layerStyles[ l.type ];
+		}
+	}
+	*/
+	if ( p.distribution && ( ! p.skipStyles ) ) {
+		for ( var i = 0; i < p.distribution.length; i++ ) {
+			var l = p.distribution[i];
+			if ( FigisMap.isFaoArea( l.layer ) ) l.style = FigisMap.defaults.layerStyles.distribution;
+		}
+	}
+};
+
+FigisMap.parser.div = function( d ) {
+	if ( ! d ) return { 'div': false, 'id': false };
+	if ( typeof d == 'string' ) {
+		d = { 'div' : document.getElementById( d ), 'id' : String( d ) };
+	} else if ( typeof d == 'object' ) {
+		if ( typeof d.div == 'string' ) {
+			d.id = String( d.div );
+			d.div = document.getElementById( d.id );
+		} else if ( ! ( d.div ) ) {
+			d = { 'div' : d, 'id' : d.getAttribute('id') };
+		}
+	} else {
+		return { 'div': false, 'id': false };
+	}
+	return ( !! d.div ) ? d : { 'div': false, 'id': false };
+};
+
+FigisMap.parser.projection = function( p ) {
+	var proj = p.projection;
+	if ( proj ) {
+		proj = parseInt( proj );
+	} else {
+		if ( p.rfb && p.rfb == 'ICES' ) proj = 3349;
+	}
+	switch ( proj ) {
+		case   3349	: break;
+		case 900913	: break;
+		case   3031	: break;
+		default		: proj = 4326;
+	}
+	return proj;
+};
+
+FigisMap.parser.watermark = function( p ) {
+	//if ( p && p.context.indexOf('FIRMS') == 0 ) return false;
+	var w = { src: FigisMap.rnd.vars.logoURL, width: 60, height: 60, wclass: 'olPoweredBy', title:FigisMap.label('Powered by FIGIS',p) };
+	if ( p && p.context.indexOf('FIRMS') == 0 ) {
+		w.src = FigisMap.rnd.vars.logoURLFirms;
+		w.width = 60;
+		w.height = 29;
+	};
+	if ( p && p.watermark != null ) {
+		if ( typeof p.watermark == 'object' ) {
+			for ( var i in p.watermark ) w[i] = p.watermark[i];
+		} else {
+			w = p.watermark;
+		}
+	}
+	return w;
+};
+
+FigisMap.parser.countries = function( p ) {
+	var cnt = p.countries;
+	var isRFB = ( p.rfb && p.rfb != '' );
+	if ( ! cnt || ! cnt[0] ) cnt = false;
+	if ( ! cnt && isRFB ) cnt = FigisMap.rfb.getCountries( p.rfb, p );
+	if ( cnt && cnt.length > 0 ) {
+		var newLayer = { layer: FigisMap.fifao.cbs };
+		if ( isRFB ) newLayer.title = FigisMap.label('Members', p);
+		var filters = new Array();
+		for (var i=0; i < cnt.length; i++) filters.push( "ISO_"+ cnt[i].length + "='" + cnt[i] + "'" );
+		newLayer.filter = filters.join(' OR ');
+		var layerType = p.distribution ? 'associated' : 'distribution';
+		newLayer.type = layerType;
+		if ( p.options.colors ) newLayer.style = 'country_boundaries_colors';
+		p[ layerType ] = FigisMap.parser.layers( p[ layerType ] );
+		if ( ! p[ layerType ] ) p[ layerType ] = new Array();
+		p[ layerType ].push( newLayer );
+		p[ layerType ] = FigisMap.parser.layers( p[ layerType ], { type : layerType } );
+	}
+	return cnt;
+};
+
+FigisMap.parser.checkLayerTitles = function( layers, pars ) {
+	if ( layers ) for (var i = 0; i < layers.length; i++) if ( layers[i].title == null ) {
+		var t = '';
+		if ( layers[i].type == 'intersecting' ) t += FigisMap.label( layers[i].type, pars );
+		t += FigisMap.label( layers[i].layer.replace(/^[^:]+:(.+)/,"$1"), pars );
+		layers[i].title = t;
+	}
+}
+
+FigisMap.parser.parse = function( p ) {
+	
+	if ( typeof p != 'object' ) return { 'parserError' : 'Params object is missing - type: ' + ( typeof p ) };
+	
+	if ( ! p.context ) p.context = FigisMap.defaults.context;
+	
+	if ( typeof p.isFIGIS == 'undefined' ) p.isFIGIS = ( p.context.indexOf( 'Viewer' ) < 0 );
+	if ( typeof p.isViewer == 'undefined' ) p.isViewer = ! p.isFIGIS;
+	if ( typeof p.isRFB == 'undefined' ) p.isRFB = ( p.rfb != null );
+	if ( typeof p.isVME == 'undefined' ) p.isVME = ( p.context.indexOf( 'FI-vme' ) == 0 );
+	
+	p.mapSize = ( typeof p.mapSize == 'string' ) ? p.mapSize.toUpperCase() : FigisMap.defaults.mapSize;
+	p.lang = ( typeof p.lang == 'string' ) ? p.lang.toLowerCase() : FigisMap.defaults.lang;
+	
+	if ( typeof p.target == 'undefined' ) {
+		p.parserError = "'target' mandatory param is undefined.";
+		return p;
+	}
+	p.target = FigisMap.parser.div( p.target );
+	if ( ! p.target.div ) {
+		p.parserError = "target element not found in document";
+		return p;
+	}
+	p.projection = FigisMap.parser.projection( p );
+	if ( typeof p.options == 'undefined' ) p.options = new Object();
+	if ( typeof p.options.colors == 'undefined' ) p.options.colors = false;
+	if ( typeof p.options.skipLayerSwitcher == 'undefined' ) p.options.skipLayerSwitcher = !! p.isVME;
+	if ( typeof p.options.skipLoadingPanel == 'undefined' ) p.options.skipLoadingPanel = false;
+	if ( typeof p.options.skipNavigation == 'undefined' ) p.options.skipNavigation = false;
+	if ( p.projection != 4326 ) p.options.colors = false;
+	if ( typeof p.options.labels == 'undefined' ) p.options.labels = p.options.colors;
+	
+	if ( ! p.base ) if ( FigisMap.defaults.baseLayer ) p.base = FigisMap.defaults[ p.options.colors ? 'baseLayerC' : 'baseLayer'];
+	if ( p.base ) {
+		p.base = FigisMap.parser.layer( p.base, { 'type' : 'base'} );
+		if ( ! p.base.title ) p.base.title = FigisMap.label( p.base.label ? p.base.label : p.base.layer, p );
+	}
+	
+	p.distribution = FigisMap.parser.layers( p.distribution, { 'type' : 'distribution'} );
+	FigisMap.parser.checkLayerTitles( p.distribution, p );
+	
+	p.intersecting = FigisMap.parser.layers( p.intersecting, { 'type' : 'intersecting'} );
+	FigisMap.parser.checkLayerTitles( p.intersecting, p );
+	
+	p.associated = FigisMap.parser.layers( p.associated, { 'type' : 'associated'} );
+	FigisMap.parser.checkLayerTitles( p.associated, p );
+	
+	p.countries = FigisMap.parser.countries( p );
+	
+	FigisMap.parser.layersHack( p );
+	
+// 	if ( ! p.distribution ) {
+// 		p.parserError = "'distribution' mandatory parameter is missing or malformed.";
+// 		return p;
+// 	}
+	
+	if ( p.isFIGIS ) FigisMap.fs.parse( p );
+	
+	//p.projection = FigisMap.parser.projection( p );
+	
+	if ( ! p.dataProj ) p.dataProj = p.extent ? p.projection : 4326;
+	
+	p.legend = FigisMap.parser.div( p.legend );
+	
+	p.countriesLegend = FigisMap.parser.div( p.countriesLegend );
+	
+	if ( p.legend.div || p.countriesLegend.div ) {
+		 if ( typeof p.legendType == 'string' ) {
+		 	p.legendType = p.legendType.toUpperCase();
+		 } else {
+		 	p.legendType = ( p.isRFB && ! p.isViewer ) ? 'D' : 'T';
+		 	if ( p.isViewer || p.isRFB ) p.legendType += 'P';
+		 }
+	}
+	
+	p.watermark = FigisMap.parser.watermark( p );
+	
+	if ( p.landMask == null ) p.landMask = FigisMap.defaults.landMask;
+	if ( p.global == null ) p.global = FigisMap.defaults.global;
+	if ( p.basicsLayers == null ) p.basicsLayers = FigisMap.defaults.basicsLayers;
+	if ( p.drawDataRect == null ) p.drawDataRect = FigisMap.defaults.drawDataRect;
+	if ( location.search.indexOf('debugLevel=') > -1 ) {
+		FigisMap.debugLevel = parseInt( location.search.replace(/^.*debugLevel=([0-9]+).*$/,"$1") );
+		if ( isNaN( FigisMap.debugLevel ) || FigisMap.debugLevel == 0 ) FigisMap.debugLevel = false;
+		p.debug = FigisMap.debugLevel;
+	} else if ( p.debug == null ) {
+		p.debug = FigisMap.debugLevel;
+	}
+	
+	return p;
+}
+
+FigisMap.fs.parse = function( p ) {
+	if ( ! p.staticLabels ) p.staticLabels = new Object();
+	if ( ! p.RFBName ) if ( FigisMap.staticLabels['MEMBERS_FS'] && ! p.staticLabels['MEMBERS'] ) p.staticLabels['MEMBERS'] = FigisMap.staticLabels['MEMBERS_FS'];
+	var hasdist = ( p.distribution[0] && typeof p.distribution[0] == 'object' );
+	if ( hasdist ) {
+		var autoZoom = false;
+		var dtype = new Object();
+		for ( var i = 0; i < p.distribution.length; i++ ) {
+			var l = p.distribution[i];
+			if ( l.autoZoom ) autoZoom = true;
+			if ( ! dtype[ l.layer ] ) dtype[ l.layer ] = new Array();
+			dtype[ l.layer ].push( i );
+		}
+		if ( p.associated ) for ( var i = 0; i < p.associated.length; i++ ) if ( p.associated[i].autoZoom ) autoZoom = true;
+		if ( p.intersecting ) for ( var i = 0; i < p.intersecting.length; i++ ) if ( p.intersecting[i].autoZoom ) autoZoom = true;
+		
+		if ( ! autoZoom ) autoZoom = FigisMap.fs.setAutoZoom( p, dtype );
+		
+		if ( dtype[ FigisMap.fifao.eez ] ) FigisMap.fs.eezHack( p, dtype );
+		
+		if ( ! p.rfb ) FigisMap.fs.dsort( p, dtype );
+	}
+};
+
+FigisMap.fs.setAutoZoom = function( p, dtype ) {
+	var prio = false;
+	if ( ! prio ) if ( dtype[ FigisMap.fifao.rfb ] ) prio = dtype[ FigisMap.fifao.rfb ][0];
+	if ( ! prio ) if ( dtype[ FigisMap.fifao.eez ] ) prio = dtype[ FigisMap.fifao.eez ][0];
+	if ( ! prio ) if ( dtype[ FigisMap.fifao.cbs ] ) prio = dtype[ FigisMap.fifao.cbs ][0];
+	if ( ! prio ) if ( dtype[ FigisMap.fifao.maj ] ) prio = dtype[ FigisMap.fifao.maj ][0];
+	if ( ! prio ) prio = 0;
+	p.distribution[ prio ].autoZoom = true;
+	return true;
+};
+
+FigisMap.fs.eezHack = function( p, dtype ) {
+	// associate a countrybound to every eez, if any (and if not countrybounds)
+	/* disable as per Marc's request, 21/02/2013
+	if ( dtype[ FigisMap.fifao.eez ] && ! dtype[ FigisMap.fifao.cbs ] ) {
+		dtype[ FigisMap.fifao.cbs ] = new Array();
+		if ( ! p.associated ) p.associated = new Array();
+		for ( var i = 0; i < dtype[ FigisMap.fifao.eez ].length; i++ ) {
+			var curLayer = p.distribution[ dtype[FigisMap.fifao.eez][i] ];
+			var newLayer = new Object();
+			for ( var k in curLayer ) {
+				switch ( String( k ) ) {
+					case 'autoZoom' : break;
+					case 'title'	: break;
+					case 'type'	: newLayer.type = 'associated'; break;
+					case 'layer'	: newLayer.layer = FigisMap.fifao.cbs; break;
+					case 'filter'	: newLayer.filter = curLayer.filter.replace( /ISO([0-9])_CODE/g, "ISO_$1"); break;
+					default		: newLayer[ k ] = curLayer[ k ];
+				}
+			}
+			p.associated.push( newLayer );
+		}
+	}
+	*/
+	if (false) if ( p.context == 'FIRMS-Fishery' ) {
+		if ( dtype[ FigisMap.fifao.eez ] && ! dtype[ FigisMap.fifao.cbs ] ) {
+			dtype[ FigisMap.fifao.cbs ] = new Array();
+			if ( ! p.associated ) p.associated = new Array();
+			for ( var i = 0; i < dtype[ FigisMap.fifao.eez ].length; i++ ) {
+				var curLayer = p.distribution[ dtype[FigisMap.fifao.eez][i] ];
+				var newLayer = new Object();
+				for ( var k in curLayer ) {
+					switch ( String( k ) ) {
+						case 'autoZoom' : break;
+						case 'title'	: break;
+						case 'type'	: newLayer.type = 'associated'; break;
+						case 'layer'	: newLayer.layer = FigisMap.fifao.cmp; break;
+						case 'filter'	: newLayer.filter = curLayer.filter.replace( /ISO([0-9])_CODE/g, "ISO_$1"); break;
+						default		: newLayer[ k ] = curLayer[ k ];
+					}
+				}
+				newLayer.style = FigisMap.fifaoStyles.cmp;
+				p.associated.push( newLayer );
+			}
+		}
+	}
+};
+
+FigisMap.fs.dsort = function( p, dtype ) {
+	if ( p.distribution && p.distribution[0] ) {
+		var lowers = new Array();
+		var highers = new Array();
+		var inters = new Array();
+		while ( p.distribution[0] ) {
+			var l = p.distribution.shift();
+			if ( l.layer == FigisMap.fifao.spd && p.context == 'FIRMS' ) {
+				lowers.push( l );
+			} else if ( l.layer == FigisMap.fifao.rfb && dtype[ FigisMap.fifao.div ] ) {
+				lowers.push( l );
+			} else if ( l.layer == FigisMap.fifao.cbs ) {
+				highers.push( l );
+			} else if ( l.layer == FigisMap.fifao.cmp ) {
+				highers.push( l );
+			} else {
+				inters.push( l );
+			}
+		}
+		p.distribution = highers.concat( inters, lowers );
+		p.distribution.reverse();
+	}
+};
+
+FigisMap.rnd.maxResolution = function( proj, pars ) {
+	proj = parseInt( proj );
+	var size = String(pars.mapSize).toUpperCase();
+	switch ( size ) {
+		case 'XS': break; // width ≤ 280
+		case 'S' : break; // width ≤ 400
+		case 'M' : break; // width ≤ 640
+		case 'L' : break; // width ≤ 810
+		default  : size = FigisMap.defaults.mapSize;
+	}
+	var base, offset;
+	if ( proj == 3031 ) {
+		base = 48828.125;
+		switch ( size ) {
+			case 'XS'	: return base * 4; break;
+			case 'S'	: return base * 2; break;
+			case 'M'	: return base * 2; break;
+			case 'L'	: return base;  break;
+		}
+	} else if ( proj == 900913 ) {
+		base = 156543.03390625;
+		switch ( size ) {
+			case 'XS'	: return base; break;
+			case 'S'	: return base / 2; break;
+			case 'M'	: return base / 2; break;
+			case 'L'	: return base / 4; break;
+		}
+	} else {
+// 		base = 0.703125;
+// 		offset = 0.1171875;
+// 		switch ( size ) {
+// 			case 'S'	: return ( base /2 + offset) * 2; break;
+// 			case 'M'	: return base /2 + offset; break;
+// 			case 'L'	: return base /2 + offset; break;
+// 		}
+		base = 1.40625;
+		switch ( size ) {
+			case 'XS'	: return base; break;
+			case 'S'	: return base /2; break;
+			case 'M'	: return base /4; break;
+			case 'L'	: return base /4; break;
+		}
+	}
+};
+
+FigisMap.rnd.watermarkControl = function( map, pars ) {
+	if ( ! pars.watermark ) return false;
+	var poweredByControl = new OpenLayers.Control();
+	OpenLayers.Util.extend(
+		poweredByControl,
+		{
+			draw: function () {
+				OpenLayers.Control.prototype.draw.apply(this, arguments);
+				this.div.innerHTML = '<img' +
+					( pars.watermark.src ? ' src="' + pars.watermark.src + '"' : '' ) +
+					( pars.watermark.width ? ' width="' + pars.watermark.width + '"' : '' ) +
+					( pars.watermark.height ? ' height="' + pars.watermark.height + '"' : '' ) +
+					( pars.watermark.wclass ? ' class="' + pars.watermark.wclass + '"' : '' ) +
+					( pars.watermark.id ? ' id="' + pars.watermark.id + '"' : '' ) +
+					( pars.watermark.title ? ' title="' + pars.watermark.title + '"' : '' ) +
+					( ( ! pars.watermark.noPos && pars.watermark.width && pars.watermark.height ) ? ( ' style="position:absolute;left:' + (this.map.size.w - pars.watermark.width - 5) + 'px;top:' + (this.map.size.h - pars.watermark.height - 5) + 'px;"' ) : '' ) +
+					'/>';
+				return this.div;
+			}
+		}
+	);
+	map.addControl(poweredByControl);
+	return true;
+};
+
+FigisMap.rnd.mouseControl = function( map, pars ) {
+	map.addControl(
+		new OpenLayers.Control.MousePosition( {
+			prefix		: "lon: ",
+			separator	: ", lat: ",
+			numDigits	: 2,
+			granularity	: 1000,
+			displayProjection : new OpenLayers.Projection("EPSG:4326")
+		} )
+	);
+};
+
+FigisMap.rnd.initLayers = function( pars ) {
+	var input = new Array();
+	var output = new Array();
+	if ( pars.associated ) input = input.concat( pars.associated );
+	if ( pars.intersecting ) input = input.concat( pars.intersecting );
+	if ( pars.distribution ) input = input.concat( pars.distribution );
+	for ( var i = 0; i < input.length; i++ ) {
+		var l = input[i];
+		if ( l.layer != '' && l.filter != '' ) {
+			var nl = new Object();
+			for ( var j in l ) nl[j] = l[j];
+			if ( nl.rfb && nl.rfb != '' && ! nl.settings ) nl.settings = FigisMap.rfb.getSettings( nl.rfb )
+			if ( nl.dispOrder == null && nl.filter.toLowerCase().indexOf("disporder") != -1 ) {
+				nl.dispOrder = parseInt( l.filter.replace(/^.*DispOrder[^0-9]+([0-9]+).*$/i,"$1") );
+				if ( isNaN( nl.dispOrder ) ) nl.dispOrder = false;
+			}
+			output.push( nl );
+		}
+	}
+	return output;
+};
+
+FigisMap.rnd.addAutoLayers = function( layers, pars ) {
+	var layerTypes = new Object();
+	for ( var i = 0; i < layers.length; i++ ) layerTypes[ layers[i].layer ] = true;
+	if ( pars.basicsLayers ) {
+		//WMS Economic Zones
+		if ( ! layerTypes[ FigisMap.fifao.nma ] && ! pars.options.skipNauticalMiles ) {
+			layers.unshift({
+				layer	: FigisMap.fifao.nma,
+				label	: '200 nautical miles arcs',
+				filter	:'*',
+				icon	: '<img src="' + FigisMap.rnd.vars.EEZ_legendURL + '" width="30" height="20" />',
+				opacity	: 0.3,
+				hidden	: ( pars.isFIGIS && ! pars.rfb && ! (pars.context == 'FI-facp') ),
+				type	: 'auto'
+			});
+		}
+		//WMS FAO Areas
+		if ( pars.projection != 3031 ) if ( ! pars.options.skipFishingAreas ) if ( ! ( layerTypes[ FigisMap.fifao.ma2 ] || layerTypes[ FigisMap.fifao.maj ] ) ) {
+			layers.unshift( {
+				layer	: FigisMap.fifao.ma2,
+				label	: 'FAO fishing areas',
+				filter	:'*',
+				icon	:'<img src="'+FigisMap.rnd.vars.FAO_fishing_legendURL+'" width="30" height="20" />',
+				type	:'auto'
+			} );
+		}
+	}
+	if ( pars.landMask && ! layerTypes[ FigisMap.fifao.cnt ] && ! layerTypes[ FigisMap.fifao.CNT ] ) {
+		layers.push( {
+			layer		: FigisMap.fifao[ pars.options.colors ? 'CNT' : 'cnt' ], //FigisMap.fifao.cnt,
+			cached		: true,
+			filter		: '*',
+			type		: 'auto',
+			style		: '*',
+			skipLegend	: true,
+			hideInSwitcher	: true
+		} );
+	}
+	//Sea labels
+	if ( pars.options.labels && ! layerTypes[ FigisMap.fifao.lab ] ) {
+		layers.push( {
+			layer		: FigisMap.fifao.lab,
+			filter		: '*',
+			type		: 'auto',
+			style		: 'MarineAreasLabelled',
+			skipLegend	: true,
+			hideInSwitcher	: false
+		} );
+	}
+	return layers;
+};
+
+FigisMap.rnd.sort4map = function( layers, p ) {
+	var normalLayers = new Array();
+	var topLayers = new Array();
+	var higherLayers = new Array();
+	var frontLayers = new Array();
+	var countryLayers = new Array();
+	
+	for (var i = 0; i < layers.length; ++i) {
+		var l = layers[i];
+		if ( l.layer == FigisMap.fifao.cbs ) {
+			countryLayers.push( l );
+		} else if ( l.layer ==  FigisMap.fifao.lab ) {
+			topLayers.push( l );
+		} else if ( l.layer ==  FigisMap.fifao.cmp ) {
+			topLayers.push( l );
+		} else if ( l.dispOrder && l.dispOrder > 1 ) {
+			if ( l.settings && ! l.settings.isMasked ) {
+				frontLayers.push( l );
+			} else {
+				higherLayers.push( l );
+			}
+		} else {
+			normalLayers.push( l );
+		}
+	}
+	return normalLayers.concat( higherLayers, frontLayers, countryLayers, topLayers );
+};
+
+FigisMap.rnd.sort4legend = function( layers, p ) {
+	var ans = new Array();
+	var ord = [
+		{ type:'distribution', label:'Main layers' },
+		{ type:'associated', label:'Associated layers' },
+		{ type:'intersecting', label:'Intersecting layers' },
+		{ type:'auto', label:'Base layers' }
+	];
+	for ( var i = 0; i < ord.length; i++ ) {
+		var div = new Array();
+		for ( var j = 0; j < layers.length; j++ )  if ( ! layers[j].skipLegend ) if ( layers[j].type == ord[i].type ) div.push( layers[j] );
+		if ( div.length != 0 ) {
+			ans.push( { division: ord[i].type, start: true, label: ord[i].label } );
+			ans = ans.concat( div );
+			ans.push( { division: ord[i].type, end: true, label: ord[i].label } );
+		}
+	}
+	return ans;
+};
+
+FigisMap.rnd.legend = function( layers, pars ) {
+	if ( pars.legend.div ) pars.legend.div.innerHTML = FigisMap.rnd.mainLegend( layers, pars );
+	if ( pars.countriesLegend.div ) pars.countriesLegend.div.innerHTML = FigisMap.rnd.countriesLegend( pars );
+};
+
+FigisMap.rnd.mainLegend = function( layers, pars ) {
+	var LegendHTML = "";
+	var hasFaoAreas = false;
+	var legendDispLayers = new Object();
+	var useTables = ( pars.legendType.indexOf('T') != -1 );
+	var useSections = ( pars.legendType.indexOf('P') < 0 );
+	var llayers = FigisMap.rnd.sort4legend( layers, pars );
+	if ( useTables && ! useSections ) LegendHTML += '<table cellpadding="0" cellspacing="0" border="0">';
+	for (var i = 0; i < llayers.length; i++) {
+		var l = llayers[ i ];
+		if ( useSections && l.division ) {
+			if ( l.start ) {
+				LegendHTML += '<div class="legendSection legendSection-' + l.type + '">' +
+					'<div class="legendSectionTitle">' + FigisMap.label( l.label, pars ) + '</div>' +
+					'<div class="legendSectionContent">';
+				if ( useTables ) LegendHTML += '<table cellpadding="0" cellspacing="0" border="0">';
+			} else if ( l.end ) {
+				if ( useTables ) LegendHTML += '</table>';
+				LegendHTML += '</div></div>';
+			}
+		}
+		if ( ! l.layer || ! l.inMap || l.skipLegend ) continue;
+		var wms_name = "";
+		if ( l.type != 'intersecting' && l.type != 'auto' && FigisMap.isFaoArea( l.layer ) ) {
+			if ( hasFaoAreas ) continue;
+			wms_name = FigisMap.label( 'All FAO areas', pars );
+			hasFaoAreas = true;
+		}
+		var STYLE = ( l.style && l.style != '*' ) ? l.style : null;
+		
+		if ( wms_name == '' && ! l.skipTitle ) wms_name = l.title != null ? l.title : l.wms.name;
+		if ( l.dispOrder ) {
+			var k = l.layer + '-' + ( STYLE ? STYLE.replace(/^(rfb|rfmo)_.*$/,"*") : '*' );
+			if ( legendDispLayers[ k ] ) continue;
+			wms_name = wms_name.replace(/ \([^\)]+\).*$/,'');
+			legendDispLayers[ k ] = true;
+		}
+		if ( ! l.icon ) {
+			if ( ! l.iconSrc ) l.iconSrc = FigisMap.rnd.vars.Legend_Base_Request + "&LAYER=" + l.wms.params.LAYERS + "&STYLE=" + (STYLE != null ? STYLE : "");
+			l.icon = '<img src="' + l.iconSrc +'"' + ( l.iconWidth ? ' width="' + l.iconWidth + '"' : '' ) + ( l.iconHeight ? ' height="' + l.iconHeight + '"' : '') + '/>';
+		}
+		if ( useTables ) {
+			if( l.layer == FigisMap.fifao.spd ) {
+				LegendHTML += '<tr><td colspan="2"><b>' + wms_name + '</b></td></tr>';
+				LegendHTML += '<tr><td colspan="2">' + l.icon + '</td></tr>';
+			} else if ( l.skipTitle || wms_name == '' ) {
+				LegendHTML += '<tr><td colspan="2">' + l.icon + '</td></tr>';
+			} else {
+				LegendHTML += '<tr><td>' + l.icon + '</td><td><span>' + wms_name + '</span></td></tr>';
+			}
+		} else {
+			if( l.layer == FigisMap.fifao.spd ) {
+				LegendHTML += '<div><b>'+wms_name+'</b></div>';
+				LegendHTML += '<div>' + l.icon + '</div></div> ';
+			} else {
+				LegendHTML += '<div>' + l.icon;
+				if ( wms_name != '' && ! l.skipTitle ) LegendHTML += '<span>' + wms_name + '</span>';
+				LegendHTML += '</div> ';
+			}
+		}
+		l.inLegend = true;
+	}
+	if ( useTables && ! useSections ) LegendHTML += '</table>';
+	return LegendHTML;
+};
+
+FigisMap.rnd.countriesLegend = function( pars ) {
+	var ans = '';
+	var cList = pars.countries;
+	var layerName = pars.rfb && pars.rfb != '' ? pars.rfb : false;
+	if ( ! cList && layerName ) cList = FigisMap.rfb.getCountries( layerName );
+	if ( cList != undefined && cList.length > 0 ) {
+		var cLabels = new Array();
+		var c, prefix;
+		for (var i = 0; i < cList.length; i++) {
+			c = cList[i];
+			switch ( c.length ) {
+				case 3	: prefix = 'COUNTRY_ISO3_'; break;
+				case 2	: prefix = 'COUNTRY_ISO2_'; break;
+				default	: prefix = 'COUNTRY_';
+			}
+			var label = FigisMap.label( prefix + c, pars );
+			if ( label.indexOf( prefix ) != 0 ) cLabels.push( label );
+		}
+		cLabels.sort();
+		for ( var i = 0; i < cLabels.length; i++ ) ans += '<div>' + cLabels[i] + '</div>';
+	}
+	if ( layerName ) {
+		var noteLabel = FigisMap.label('LEGEND_NOTE_' + layerName, pars );
+		if ( noteLabel.indexOf('LEGEND_NOTE_') != 0 ) ans += '<div>' + noteLabel + '</div>';
+	}
+	return ans;
+};
+
+FigisMap.rfb.list = function() {
+	var ans = new Array();
+	if ( FigisMap.rfbLayerSettings ) for ( var i in FigisMap.rfbLayerSettings ) if ( ! FigisMap.rfbLayerSettings[i].skip ) ans.push( i );
+	return ans;
+};
+
+FigisMap.rfb.getSettings = function( rfb, pars ) {
+	if ( pars && ! ( pars.isViewer || pars.rfb )  ) return null;
+	var v = FigisMap.rfbLayerSettings[ rfb ];
+	if ( ! v ) return null;
+	if ( (typeof v.centerCoords)=='string' ) v.centerCoords = eval(v.centerCoords);
+	if ( (typeof v.zoomExtent)=='string' ) v.zoomExtent = eval(v.zoomExtent);
+	v.name = rfb;
+	return v;
+};
+
+FigisMap.rfb.getDescriptor = function( layerName, pars ) {
+	if ( ! FigisMap.rfbLayerDescriptors ) return '';
+	var ldn = layerName.replace(/[' ]/g,'');
+	var ld = FigisMap.rfbLayerDescriptors[ldn];
+	if ( ! ld ) return '';
+	if ( typeof ld == 'string' ) return ld;
+	var title = ld.label ? FigisMap.label( ld.label, pars ) : ld.title;
+	if ( ld.link ) return '<a href="' + ld.link + '" title="' + title + '" target="_blank"><b>' + title + '</b></a>';
+	if ( title ) return '<b>'+ title + '</b>';
+	return '';
+}
+
+FigisMap.rfb.getCountries = function( layerName ) {
+	if ( ! FigisMap.rfbLayerCountries ) return null;
+	layerName = layerName.replace(/[' ]/g,'').toUpperCase();
+	if ( layerName.indexOf("_DEP") > 0) layerName = layerName.replace(/_DEP$/,'');
+	return FigisMap.rfbLayerCountries[ layerName ];
+}
+
+FigisMap.rfb.preparse = function( pars ) {
+	if ( pars.rfbPreparsed || pars.rfb == null ) return false;
+	pars.distribution = FigisMap.parser.layers( pars.distribution );
+	if ( ! pars.distribution ) pars.distribution = new Array();
+	var sett = FigisMap.rfb.getSettings( pars.rfb );
+	if ( sett ) {
+		var type = new Object();
+		if ( ! sett.type ) sett.type = 'MI';
+		type.m = ( sett.type.toLowerCase().indexOf('m') != -1 );
+		type.i = ( sett.type.toLowerCase().indexOf('i') != -1 );
+		type.r = ( sett.type.toLowerCase().indexOf('r') != -1 );
+		type.a = ( sett.type.toLowerCase().indexOf('a') != -1 );
+		var title = FigisMap.getStyleRuleDescription( sett.style, pars );
+		var baseTitle = FigisMap.label('Area of competence', pars );
+		var skipTitle = ( title == '' );
+		if ( type.m ) {
+			var ttitle = skipTitle ? baseTitle : title;
+			if ( type.i ) ttitle += ' ' + FigisMap.label('(marine)', pars);
+			pars.distribution.push( { rfb: pars.rfb, settings: sett, layer: FigisMap.fifao.RFB,
+				filter: "RFB = '" + pars.rfb + "' AND DISPORDER = '1'",
+				dispOrder : 1,
+				style: sett.style,
+				hideInSwitcher: false,
+				title: ttitle,
+				skipTitle: skipTitle
+			} );
+		}
+		if ( type.i ) {
+			var ttitle = skipTitle ? baseTitle : title;
+			if ( type.m ) ttitle += ' ' + FigisMap.label('(inland)', pars);
+			pars.distribution.push( { rfb: pars.rfb, settings: sett, layer: FigisMap.fifao.RFB,
+				filter: "RFB = '" + pars.rfb + "' AND DISPORDER = '2'",
+				dispOrder : 2,
+				style: sett.style,
+				hideInSwitcher: false,
+				title: ttitle,
+				skipTitle: skipTitle
+			} );
+		}
+		if ( type.r ) {
+			var ttitle = FigisMap.label('Regulatory area', pars );;
+			pars.distribution.push( { rfb: pars.rfb, settings: sett, layer: FigisMap.fifao.RFB,
+				filter: "RFB = '" + pars.rfb + "' AND DISPORDER = '2'",
+				dispOrder : 2,
+				style: sett.style,
+				hideInSwitcher: false,
+				title: ttitle,
+				skipLegend: true
+			} );
+		}
+		if ( type.a ) {
+			var ttitle = FigisMap.label('Established limits of the area of competence', pars );;
+			pars.distribution.push( { rfb: pars.rfb, settings: sett, layer: FigisMap.fifao.RFB,
+				filter: "RFB = '" + pars.rfb + "_DEP'",
+				style: '',
+				hideInSwitcher: false,
+				title: ttitle,
+				skipLegend: true
+			} );
+		}
+		if ( pars.attribution == null ) pars.attribution = FigisMap.rfb.getDescriptor( pars.rfb, pars );
+		if ( ! pars.projection ) pars.projection =  sett.srs ? sett.srs : FigisMap.defaults.projection(pars);
+		if ( pars.global == null && sett.globalZoom != null ) pars.global = sett.globalZoom;
+		if ( pars.extent == null ) {
+			if ( sett.zoomExtent ) pars.extent = sett.zoomExtent;
+			if ( sett.zoomLevel ) pars.zoom = sett.zoomLevel;
+			if ( sett.centerCoords ) pars.center = sett.centerCoords;
+			if ( ! pars.dataProj ) pars.dataProj =  sett.srs ? sett.srs : FigisMap.defaults.projection(pars);
+		} else {
+			if ( ! pars.dataProj ) pars.dataProj =  pars.projection;
+			if ( pars.center == null ) pars.center = false;
+		}
+	}
+	if ( ! pars.mapSize ) pars.mapSize = 'L';
+	if ( pars.landMask == null ) pars.landMask = true;
+	return ( pars.rfbPreparsed = true );
+	//if ( pars.projection.toString() == "3349" && ( pars.rfb == 'ICES' )) pars.global = false;
+};
+
+FigisMap.getStyleRuleDescription = function(STYLE, pars) {
+	/**
+	* Available Styles:
+	* 3.  rfb_inland_noborder
+	* 9.  rfb_marine_noborder
+	* 15. rfb_unspecified_noborder 
+	**/
+	var l = FigisMap.label( STYLE, pars );
+// 	if ( pars.isFIGIS ) l = l.replace(/&nbsp;/g,' ');
+	if ( l == STYLE ) return '';
+	return l;
+}
+
+/*
+	Drawing function: FigisMap.draw( pars );
+		pars --> map parameters, an object with properties:
+			
+			target		: (String or reference to HTML node) the DIV where the map will be actually stored.
+			context		: (String) the name of actual map context, sometimes used for defaults (Optional, defaults to 'default')
+			base		: (boolean (false) String | Object | Array) The base layer, has default (optional)
+			distribution	: A "layer list" property, see below.
+			intersecting	: A "layer list" property, see below.
+			associated	: A "layer list" property, see below.
+			projection	: (Integer/string) The projection of the map (optiona, defaults to 4326).
+			dataProj	: (Integer/string) The projection used for source data (optional, defaults to 4326).
+			rfb		: (String) name of RFB to be included (optional)
+			countries	: (Array) An array of ISO3 country codes, automatic country_bounds is built in associated (optional, if pars.rfb defaults to RFB settings)
+			legend		: (String or HTML node) the id of the legend DIV or a reference to the DIV (optional).
+			legendType	: (String) the type of legend on display. Optional, defaults to autodetection
+						if contains 'T' legend items will be in table(s)
+						if contains 'P' (plain) no legend sections will be used
+			countriesLegend	: (String or HTML node) the id of the legend DIV or a reference to the DIV (optional).
+			watermark	: (Object) to set the map watermark (optional, defaults to FAO legend).
+			landMask	: (boolean) true if the layer must be covered by the mask. Optional, defaults true.
+			global		: (boolean) true to apply a global extent. Optional, defaults false.
+			basicsLayers	: (boolean) true to add the FAO basic layers in the map. Optional, defaults false.
+			drawDataRect	: (boolean) to draw a data rectangle around the species layer. Optional, defaults false.
+			extent		: (String) the map max extent. Optional, autoZoom on default.
+			zoom		: (Number) the map initial zoom level. Optional, autoZoom on default.
+			options		: (Object) (optional), all keys default to false:
+				colors			: (boolean) use color map background
+				labels			: (boolean) use labels - defaults to options.colors
+				skipLayerSwitcher	: (boolean) omit layer switcher if true
+				skipLoadingPanel	: (boolean) omit Loading panel (spinning wheel) if true
+				skipNavigation		: (boolean) omit Navigation panel (arrows) if true
+				skipWatermark		: (boolean) omit Watermark if true
+				skipMouse		: (boolean) omit shift-mouse drag for zoom if true
+				skipScale		: (boolean) omit scale if true
+		
+		Returns --> a reference to the OpenLayers map object
+	
+	A "layer list" property can be:
+		- null
+		- a boolean (false) value
+		- a string (name of layer)
+		- a string in the old format "layername-filter/layername-filter/layername-filter"
+		- an object with properties:
+			- layer (string, name of intersecting layer). This is the only mandatory property.
+			- filter (string or array) cql string of conditions, or a vector of "or" conditions.
+			- style (string) layer style name
+			- title (string) the title in legend and layer switcher, valued by layer label/name if missing
+			- label (string) a Label to be used for title, with a FigisMap.label( label, pars ) multilanguage lookup
+			- autoZoom (boolean) if true the map performs automatic zoom on this layer
+			- skipTitle (boolean, default false) don't show title in legend, used when labels come from GeoServer
+			- hidden (boolean, default false) hide in map by default
+			- hideInSwitcher (boolean, default false) hide in Layer Switcher
+			- dispOrder (integer) automatically detected if in filter, also changes layer disposition
+			- rfb (string) A layer representing a RFB layer, the value is the name
+			- wms (OpenLayers.Layer.WMS object) Automatically valued by default
+		- an array of objects as described above.
+		
+		Once checked, it will be an array of { 'layer': '..', 'filter': ... }
+		The filter property, if missing, will be false (boolean).
+		
+		In case no valid layers are found, the property will be valued with false.
+	
+*/
+FigisMap.draw = function( pars ) {
+	
+	FigisMap.rfb.preparse( pars );
+	pars = FigisMap.parser.parse( pars );
+	if ( pars.parserError ) {
+		alert( pars.parserError );
+		return false;
+	}
+	
+	FigisMap.lang = pars.lang;
+	
+	if ( FigisMap.renderedMaps[ pars.target.id ]) try {
+		FigisMap.renderedMaps[ pars.target.id ].destroy();
+		FigisMap.renderedMaps[ pars.target.id ] = null;
+	} catch(e) {
+		FigisMap.renderedMaps[ pars.target.id ] = false;
+	}
+	if ( pars.debug ) pars.options.debug = pars.debug;
+	var rnd = new FigisMap.renderer( pars.options );
+	var theMap = rnd.render( pars );
+	
+	FigisMap.lastMap = ( theMap && theMap.id && theMap.id.indexOf('OpenLayers.')==0 ) ? theMap : false;
+	FigisMap.renderedMaps[ pars.target.id ] = FigisMap.lastMap;
+	
+	return FigisMap.lastMap;
+};
+
+FigisMap.renderer = function(options) {
+	var toBoundArray = new Array();
+	var boundsArray = new Array();
+	var myMap = false;
+	var p = new Object();
+	var debug = options ? options.debug : false;
+	var myBounds, boundsOrigin, boundsBox;
+	var target, projection, extent, center, zoom;
+	var olLayers = new Array();
+	var xmlHttp = false;
+	var xmlHttpTimeout = false;
+	var olImageFormat = OpenLayers.Util.alphaHack() ? "image/gif" : "image/png";
+	
+	// pink tile avoidance
+	OpenLayers.IMAGE_RELOAD_ATTEMPTS = 5;
+	OpenLayers.DOTS_PER_INCH = 25.4 / 0.28;
+	OpenLayers.Util.onImageLoadErrorColor = 'transparent';
+
+	this.render = function( pars ) {
+		
+		FigisMap.debug( 'FigisMap.renderer render pars:', pars );
+		FigisMap.debug('OpenLayer Version:', OpenLayers.VERSION_NUMBER );
+		
+		projection = pars.projection;
+		p = pars;
+		
+		if (projection == 3349) projection = 900913; // use google spherical mercator ...
+		
+		var mapMaxRes = FigisMap.rnd.maxResolution( projection, p );
+		
+		switch ( projection ) {
+			case   3031 : myBounds = new OpenLayers.Bounds(-25000000, -25000000, 25000000, 25000000); break;
+			case 900913 : myBounds = new OpenLayers.Bounds(-20037508.34, -20037508.34, 20037508.34, 20037508.34); break;
+			default     : projection = 4326; myBounds = new OpenLayers.Bounds(-180, -90, 180, 90);
+		}
+		
+		boundsOrigin = new Array( myBounds.left, myBounds.bottom );
+		boundsBox = new Array( myBounds.left, myBounds.bottom, myBounds.right, myBounds.top );
+		
+		// empty map DIV - the map, if any, is destroyed before calling
+		while ( p.target.div.firstChild ) { p.target.div.removeChild(p.target.div.firstChild) }
+		
+		target = p.target.id;
+		
+		var myMapControls = undefined;
+		if (pars.options.skipLayerSwitcher) myMapControls = [];
+		if (pars.options.skipLoadingPanel) myMapControls = [];
+		if (pars.options.skipNavigation) myMapControls = [];
+		
+		myMap = new OpenLayers.Map(
+			p.target.id,
+			{
+				controls: myMapControls,
+				maxExtent: myBounds,
+				restrictedExtent: ( projection == 3031 ? myBounds : null ),
+				maxResolution: mapMaxRes,
+				projection: new OpenLayers.Projection( 'EPSG:' + projection ),
+				units: ( projection == 4326 ? 'degrees' : 'm' )
+			}
+		);
+		
+		// myMap.baseLayer
+		myMap.addLayer( new OpenLayers.Layer.WMS(
+			p.base.title,
+			( p.base.cached ? FigisMap.rnd.vars.gwc : FigisMap.rnd.vars.wms ),
+			{ layers: p.base.layer, format: olImageFormat, TILED: true, TILESORIGIN: boundsOrigin, BBOX: boundsBox },
+			{ wrapDateLine: true, buffer: 0, ratio: 1, singleTile: false }
+		) );
+		
+		// Managing OL controls
+		
+		if (! pars.options.skipLayerSwitcher ) myMap.addControl( new OpenLayers.Control.LayerSwitcher() );
+		if (! pars.options.skipLoadingPanel ) myMap.addControl( new OpenLayers.Control.LoadingPanel() );
+		if (! pars.options.skipNavigation ) myMap.addControl( new OpenLayers.Control.Navigation({ zoomWheelEnabled: true }) );
+		
+		if (! pars.options.skipWatermark ) FigisMap.rnd.watermarkControl( myMap, p );
+		
+		if (! pars.options.skipMouse ) FigisMap.rnd.mouseControl( myMap, p );
+		
+		if ( p.attribution ) {
+			// myMap.addControl( new OpenLayers.Control.Attribution() ); // seems to be unnecessary
+			myMap.baseLayer.attribution = p.attribution;
+		}
+		
+		
+		if ( ! pars.options.skipScale ) if (projection != 3031) {
+			// Modification for changing unit
+			myMap.addControl( new OpenLayers.Control.ScaleLine({ maxWidth: 180, bottomOutUnits: "nmi", geodesic: true }) );
+		}
+		
+		var layers = FigisMap.rnd.addAutoLayers( FigisMap.rnd.initLayers( p ), p );
+		
+		for ( var i = 0; i < layers.length; i++ ) {
+			var l = layers[i];
+			
+			// check title and lsTitle (layer switcher title)
+			if ( ! l.title ) l.title = FigisMap.label( l.label ? l.label : l.layer.replace(/^[^:]+:/,''), p);
+			if ( ! l.lsTitle ) l.lsTitle = l.title;
+			
+			// determine source of the layer
+			if ( (!! l.filter)  && ( l.filter != '*' ) ) {
+				l.cached = false;
+			} else {
+				switch ( l.layer ) {
+					case FigisMap.fifao.cnt : l.cached = true; break;
+					case FigisMap.fifao.CNT : l.cached = true; break;
+					case FigisMap.fifao.ma2 : l.cached = true; break;
+					case FigisMap.fifao.nma : l.cached = true; break;
+					default : l.cached = false;
+				}
+			}
+			
+			// Add wms to layers missing it
+			if ( ! l.wms ) {
+			
+				var wp = new Object(); // OpenLayers.Layer.WMS constructor Paramters
+				
+				wp.name = l.lsTitle;
+				
+				wp.url = ( l.cached ? FigisMap.rnd.vars.gwc : FigisMap.rnd.vars.wms );
+				
+				wp.params = { format: olImageFormat, transparent: true, TILED: true, TILESORIGIN: boundsOrigin, BBOX: boundsBox };
+				wp.params.layers = l.layer;
+				if ( l.filter && l.filter != '*' ) wp.params.cql_filter = l.filter;
+				
+				wp.options = { wrapDateLine: true, ratio: 1, buffer: 0, singleTile: false, opacity: 1.0 };
+				if ( l.hideInSwitcher ) wp.options.displayInLayerSwitcher = false;
+				if ( l.opacity ) wp.options.opacity = l.opacity;
+				if ( l.hidden ) wp.options.visibility = false;
+				
+				l.wms = new OpenLayers.Layer.WMS( wp.name, wp.url, wp.params, wp.options );
+			}
+		}
+		
+		layers = FigisMap.rnd.sort4map( layers, p );
+		
+		// FILLING THE MAP
+		for (var i = 0; i < layers.length; i++) {
+			var l = layers[i];
+			if ( l.inMap ) continue;
+			if ( ! l.wms ) continue;
+			
+			if ( l.style && l.style != '*' && l.style != 'default' ) l.wms.mergeNewParams({ STYLES: l.style });
+			
+			//myMap.addLayer( l.wms );
+			olLayers.push( l.wms );
+			
+			l.inMap = true;
+		}
+		
+		FigisMap.debug( 'FigisMap.renderer layers array, after filling map:', layers );
+		
+		// BUILDING THE LEGEND
+		FigisMap.rnd.legend( layers, p );
+		
+		/** Alessio: create Stocks layer **/
+		OpenLayers.Feature.Vector.style['default']['fill'] = false;
+		OpenLayers.Feature.Vector.style['default']['fillOpacity'] = '0';
+		OpenLayers.Feature.Vector.style['default']['strokeWidth'] = '2';
+		
+		// handlig the zoom/center/extent
+		if ( projection == 4326 ) myMap.addControl( new OpenLayers.Control.Graticule({ visible: !! pars.isVME, layerName: FigisMap.label('Coordinates Grid', p) }) );
+		
+		//myMap.zoomToExtent( myBounds, true );
+		if ( p.global ) {
+			myMap.zoomToMaxExtent();
+			FigisMap.debug('Render for p.global');
+			finalizeMap();
+		} else if ( p.extent || p.center || p.zoom ) {
+			myMap.zoomToMaxExtent();
+			FigisMap.debug('Render for Extent', p.extent, 'zoomLevel', p.zoom, 'Center', p.center );
+			if ( p.extent ) myMap.zoomToExtent( FigisMap.ol.reBound( p.dataProj, projection, p.extent ), false);
+			if ( p.zoom ) myMap.zoomTo( p.zoom, true );
+			if ( p.center ) myMap.setCenter( FigisMap.ol.reCenter( p.dataProj, projection, p.center) );
+			finalizeMap();
+		} else {
+			autoZoom( layers );
+		}
+		
+// 		FigisMap.debug('INIT OVERVIEW' );
+// 		if ( pars.options.useOverviewMap ) {
+// 			var overview = new OpenLayers.Control.OverviewMap( {
+// 				maximized: true,
+// 				mapOptions: {
+// 					maxExtent: new OpenLayers.Bounds( -180, -90, 180, 90 ),
+// 					projection: myMap.getProjection()
+// 				},
+// 				layers : [
+// 					new OpenLayers.Layer.WMS(
+// 						FigisMap.fifao.cnt,
+// 						FigisMap.rnd.vars.wms,
+// 						{ layers: FigisMap.fifao.cnt, format: olImageFormat, TILED: true, TILESORIGIN: boundsOrigin },
+// 						{ buffer: 0, ratio: 1 }
+// 					)
+// 				]
+// 			} );
+// 			myMap.addControl( overview );
+// 			overview.maxRatio = overview.ovmap.getResolution()/myMap.getResolutionForZoom(myMap.numZoomLevels);
+// 			overview.minRatio = overview.ovmap.getResolution()/myMap.getResolutionForZoom(0);
+// 		}
+// 		FigisMap.debug('END OVERVIEW' );
+		
+		FigisMap.debug('myMap:', myMap );
+		
+		return myMap;
+		
+	} //function ends
+	
+	function finalizeMap() {
+		FigisMap.debug('Finalizing map:', myMap, 'olLayers:',olLayers);
+		myMap.updateSize();
+		myMap.addLayers( olLayers );
+		if ( FigisMap.isDeveloper || FigisMap.isTesting ) {
+			myMap.events.register(
+				'moveend',
+				this,
+				function(){
+					FigisMap.console( [
+						'Map moved/zoomed, center:', myMap.getCenter(),
+						'Extent:', myMap.getExtent(),
+						'Projection:', myMap.getProjection(),
+						'zoomLevel:', myMap.zoom
+					], false );
+				}
+			);
+		}
+	}
+	
+	function autoZoom( layers ) {
+		FigisMap.debug('Check autoZoom on:', layers, 'toBoundArray:', toBoundArray);
+		for (var i = 0; i < layers.length; i++) {
+			var l = layers[i];
+			if ( l.autoZoom ) {
+				var url = FigisMap.rnd.vars.wfs + l.layer;
+				if ( l.filter != "*" ) {
+// 					var flt = String( l.filter );
+// 					flt = '&cql_filter=' + escape('(' + flt + ')');
+// 					flt = '&cql_filter=(' + flt.replace(/ /g,'%20') + ')';
+// 					flt += '&propertyName=' + String( l.filter ).replace(/^[^a-z0-9]*([^ =]+).*/i,"$1");
+					var flt_in = String( l.filter );
+					var flt = '&service=wfs';
+					var flt_in = String( l.filter );
+					if ( flt_in.length != 0 ) {
+						flt += '&cql_filter=(' + flt_in.replace(/ /g,'%20') + ')';
+						flt += '&propertyName=' + flt_in.replace(/^[^a-z0-9]*([^ =]+).*/i,"$1");
+					}
+					url += FigisMap.useProxy ? escape( flt ) : flt.replace(/ /g,'%20');
+				}
+				FigisMap.debug('autoZoom on:', l, 'url:', url );
+				toBoundArray.push( url );
+			}
+		}
+		if ( toBoundArray.length != 0 ) {
+			FigisMap.debug('toBoundArray:', (new Array()).concat(toBoundArray) );
+			autoZoomStep();
+		} else {
+			FigisMap.debug('No autozoom layers found');
+			myMap.zoomToMaxExtent();
+			finalizeMap();
+		}
+	}
+	
+	function autoZoomStep( req ) {
+		if ( req  && req.status ) {
+			var bounds = false;
+			if ( xmlHttpTimeout ) {
+				clearTimeout( xmlHttpTimeout );
+				xmlHttpTimeout = false;
+			}
+			if (req.status == 200) {
+				bounds = FigisMap.ol.gmlBbox( req.responseXML );
+				FigisMap.debug( 'autoZoomStep Bounds:', bounds );
+				boundsArray.push(bounds);
+				xmlHttp = false;
+			}
+		}
+		if ( toBoundArray[0] ) {
+			xmlHttp = FigisMap.getXMLHttpRequest();
+			var url = toBoundArray.shift();
+			if ( xmlHttp ) {
+				xmlHttp.onreadystatechange = function() {
+					if ( xmlHttp.readyState != 4 ) return void(0);
+					autoZoomStep( xmlHttp );
+				};
+				xmlHttp.open('GET', url, true);
+				xmlHttp.send('');
+				xmlHttpTimeout = setTimeout( autoZoomStepTimeout, 3000 );
+			} else {
+				autoZoomStep();
+			}
+		} else {
+			autoZoomEnd();
+		}
+	}
+	
+	function autoZoomStepTimeout(){
+		xmlHttp.abort();
+		xmlHttp = false;
+		xmlHttpTimeout = false;
+		autoZoomStep();
+	}
+	
+	function autoZoomEnd() {
+		var bounds, gbounds = new Array();
+		for ( var i = 0; i < boundsArray.length; i++ ) if( boundsArray[i] ) gbounds.push( boundsArray[i] );
+		if ( gbounds.length != 0 ) {
+			bounds = gbounds[0];
+			for (var i = 1; i < gbounds.length; i++) bounds = FigisMap.ol.extend( bounds, gbounds[i] );
+		} else {
+			bounds = myMap.getMaxExtent();
+		}
+		if ( bounds ) {
+			var proj = parseInt( myMap.projection.projCode.replace(/^EPSG:/,'') );
+			
+			var nb = FigisMap.ol.reBound( p.dataProj, proj, bounds );
+			
+			myMap.zoomToExtent( nb, false );
+			
+			var nc = false;
+			if ( proj == 3031 ) {
+				// center to south pole in polar projection
+				nc = FigisMap.ol.reCenter( 4326, proj );
+			} else if ( proj == 900913 || proj == 3349 ) {
+				// center to Pacific centre in Mercator - only if larger than 35k km (whole world)
+				var nbw = Math.abs( nb.right - nb.left );
+				if ( nbw > 35000000 ) {
+					nc = FigisMap.ol.reCenter( 4326, proj );
+					nc.lat = ( nb.top + nb.bottom )/2;
+				}
+			}
+			if ( nc ) myMap.setCenter( nc );
+			FigisMap.debug( 'FigisMap.renderer autoZoom values:', { bounds: bounds, boundsSize: bounds.getSize(), nb: nb, nc : nc, mapSize: myMap.getSize() } );
+		}
+		finalizeMap();
+	}
+	
+	/*
+	// parseDataRectangle
+	function parseDataRectangle(req, theMap) {
+		var options = { returnBbox: true };
+		var g = new OpenLayers.Format.GML();
+		features = g.read(req.responseText, options);
+		
+		var bounds = features.bbox;
+		var minx = bounds.left;
+		var miny = bounds.bottom;
+		var maxx = bounds.right;
+		var maxy = bounds.top;
+		
+		if (maxx - minx < 200) {
+			var vectorLayer = new OpenLayers.Layer.Vector("Species Envelope");
+			var style_polygon = {
+				strokeColor: "black",
+				strokeOpacity: 1,
+				strokeWidth: 1,
+				fillOpacity: 0
+			};
+			var pointList = [];
+			if (maxx - minx < 12) {
+				minx = minx - 2;
+				miny = miny - 2;
+				maxx = maxx + 2;
+				maxy = maxy + 2;
+			}
+			var newPoint1 = new OpenLayers.Geometry.Point(minx, miny);
+			pointList.push(newPoint1);
+			var newPoint2 = new OpenLayers.Geometry.Point(minx, maxy);
+			pointList.push(newPoint2);
+			var newPoint3 = new OpenLayers.Geometry.Point(maxx, maxy);
+			pointList.push(newPoint3);
+			var newPoint4 = new OpenLayers.Geometry.Point(maxx, miny);
+			pointList.push(newPoint4);
+			
+			pointList.push(pointList[0]);
+			
+			var linearRing = new OpenLayers.Geometry.LinearRing(pointList);
+			polygonFeature = new OpenLayers.Feature.Vector(new OpenLayers.Geometry.Polygon([linearRing]), null, style_polygon);
+			theMap.addLayer(vectorLayer);
+			vectorLayer.addFeatures([polygonFeature]);
+		}
+		//theMap.zoomToMaxExtent();
+	} // function ends
+	*/
+	
+} //FigisMap.renderer Class Ends

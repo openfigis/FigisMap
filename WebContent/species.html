@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html lang="en">
+
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="description" content="Geo-referenced dynamic distribution maps with possibility to zoom to selected areas of interest. In some cases both well-known and probable distribution are displayed." />
+	<meta name="author-corporate" content="FAO of the UN" />
+	<meta name="copyright" content="http://www.fao.org/corp/copyright/en/" />
+	<meta name="keywords" content="Species, Distribution, Map, FAO" />
+	<title>Species Distribution Map Viewer</title>
+	
+	<link rel="stylesheet" href="js/theme/default/style.css" type="text/css" />
+	<link rel="stylesheet" href="css/species.css" type="text/css" />
+	<link rel="stylesheet" type="text/css" href="css/jquery.asmselect.css" />
+	
+	<!-- Uncomment for debugging -->
+	<!--<script type="text/javascript" src="Firebug/firebug.js"></script>-->
+	<!--script type="text/javascript" src="js/OpenLayers.js"></script-->
+	<!--script src='http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAd7_nU2oEDDiBfvxKBPcGOxROE7Zpe9KHyiCQEwFyrYekTKECmRRwjo9RhFPEvH0ku52SRRCwy9Gsiw'></script-->
+	<!--script type="text/javascript" src="js/rfb.js"></script--> 
+	<!--
+	<script type="text/javascript" src="js/jquery.js" charset="UTF-8"></script>
+	<script type="text/javascript" src="js/jquery.ui.js"></script>
+	<script type="text/javascript" src="js/jquery.asmselect.js"></script>
+	-->
+
+	<script type="text/javascript" src="js/species.js"></script>
+	<script type="text/javascript" src="js/ref_search.js"></script>
+	<script type="text/javascript" language="javascript">
+		// <![CDATA[
+			function embedLink() {
+				setSpeciesEmbedLink('e-link', 'url-link', 'html-link');
+				document.getElementById('EmbedLink').blur();
+			}
+		// ]]>
+	</script>
+</head>
+
+<body>
+	<div id="wrapper">
+		<div id="top">
+			<table width="100%" cellpadding="0" cellspacing="0" border="0">
+				<tr>
+					<td align="left">
+						<a href="http://www.fao.org" target="_blank"><img border=0 style="vertical-align: middle;" src="img/FIGIS_banner-logo.gif" alt="FOOD AND AGRICULTURE ORGANIZATION OF THE UNITED NATIONS" title="FOOD AND AGRICULTURE ORGANIZATION OF THE UNITED NATIONS"/></a>
+					</td>
+					<td align="right">
+						<a href="http://www.fao.org/fishery" target="_blank"><img border=0 style="vertical-align: middle;" src="img/FIGIS_banner-text.gif" alt="FAO Fisheries and Aquaculture Department" title="FAO Fisheries and Aquaculture Department"/></a>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<h1 id="title">Aquatic Species Distribution Map Viewer</h1>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<br/>
+		<div id="topBar">
+			<a href="#speciesSelectorPanel">Select species</a>
+			    
+			<label id="lblSRS" for="SelectSRS">Select Projection:</label>
+			<select id="SelectSRS" onchange="addSpecies(null,null,'e-link', 'url-link', 'html-link')">
+				<option value='4326' default>WGS84 (4326)</option>
+				<option value='3349'>Mercator (3349)</option>
+				<option value='3031'>South Polar (3031)</option>
+			</select>
+			  
+			<a href="javascript:embedLink();" id="EmbedLink" title="Link or embed this species distribution map"><span>Link</span></a>
+		</div>
+		<div id="mapWrapper">
+			<div id="main">
+				<div id="map" class="map"></div>
+			</div>
+			<div id="sidebar">
+				<div id="e-link">
+					<div>
+						<label for="url-link">Paste the link in email or chat</label>
+						<input id="url-link" type="text" readonly="readonly" value="" onclick="this.focus();this.select();" /> 
+					</div>
+					<div>
+						<label for="html-link">Paste the HTML in a web site</label>
+						<input id="html-link" type="text" readonly="readonly" value="" onclick="this.focus();this.select();" />
+					</div>
+				</div>
+				<div class="legend legendTitle">Legend</div>
+				<div id="legend" class="legend"> </div>
+			</div>
+			<br/>
+		</div>
+		<!--div id="FigisMapN10086-legend" class="FigisMapLegend"></div-->
+		<div id="disclaimer">
+			<a name="speciesSelectorPanel"></a>
+			<form name="SearchForm" action="javascript:addSpecies(null,null,'e-link', 'url-link', 'html-link')" id="refSearchRealForm">
+				<input type="hidden" name="dslist[0]" value="resource" />
+				<input type="hidden" name="refxml" value="false" />
+				<input type="hidden" name="octrl" value="Status_and_trends:reload" />
+				<input type="hidden" name="logop" value="and" />
+				<input type="hidden" name="lixsl" value="webapps/figis/firms/xsl/state-trend-summary.xsl" />
+			</form>
+			<div class="fakeFormSection">
+				<div class="formSectionArea">
+					<div class="fakeFormButtons">
+						<a style="float: right;" class="button1" href="javascript:RS.submit();window.scroll(0,0);">Submit</a>
+						<a style="float: right;" class="button1" href="javascript:RS.init();loadme();">Reset</a>
+					</div>
+					<div class="formSectionTitle">Select species to view on the map</div>
+					<div class="fieldComment">Select one or more species, type to quick filter by species name.</div>
+					<div class="fieldStatus" id="searchBySpeciesStatus"> </div>
+					<div class="formSectionContentArea" id="speciesFilterContainerArea">
+						<div id="speciesFilterFieldArea"><span>Species quick filter: </span><input onchange="RS.spc.filter(true)" onclick="RS.spc.filter(true)" onkeyup="RS.spc.filter(false)" onmouseover="this.focus();this.select();" value="" title="Species quick filter" type="text" id="speciesFilterField"/></div>
+						<div id="filteredSpecies"></div>
+					</div>
+					<p>Available species in distribution maps: <span id="totSpeciesAvailable"></span>.</p>
+					<p>
+						For criteria and procedures used for the compilation of the Aquatic Species Distribution Maps,
+						<a href="http://www.fao.org/fishery/collection/fish_dist_map/en">click here</a>.
+					</p>
+				</div>
+			</div>
+			<input value="" id="fakeFormMapValues" name="fao_major" type="hidden"/>
+			<p><strong>Disclaimer:</strong> The designations employed and the presentation of material in the map(s) are for illustration only and do not imply the expression of any opinion whatsoever on the part of FAO concerning the legal or constitutional status of any country, territory or sea area, or concerning the delimitation of frontiers or boundaries.</p>
+		</div>
+		<div id="bottomBar1">
+			powered by
+			<a alt="FIGIS web site" title="FIGIS web site" href="/fishery/figis/en">FIGIS</a>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<a alt="FAO (C)Copyright" title="FAO Copyright" target="_blank" href="http://www.fao.org/corp/copyright/en/">
+				© FAO, <span id="copyYear">2011</span> 
+			</a>
+		</div>
+		<div id="bottomBar2"></div>
+	</div>
+	<script type="text/javascript" language="javascript">
+	// <![CDATA[
+		function updateCopyYear() {
+			var uy = new Date();
+			uy = parseInt(uy.getFullYear() ? uy.getFullYear() : uy.getYear());
+			var py = parseInt( document.getElementById('copyYear').innerHTML );
+			if ( isNaN(uy) || isNaN(py) ) return void(0);
+			if ( uy > py ) document.getElementById('copyYear').innerHTML = String( uy );
+			return void(0);
+		}
+		updateCopyYear();
+		document.getElementById('mapWrapper').style.display = 'none';
+		document.getElementById("SelectSRS").disabled = true;
+		document.getElementById("EmbedLink").style.opacity = .5;
+		RS.init();
+// 		setSpeciesPage('e-link', 'url-link', 'html-link');
+	// ]]>
+	</script>
+</body>
+</html>
