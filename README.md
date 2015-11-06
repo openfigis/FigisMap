@@ -1,0 +1,2 @@
+# FigisMap
+FigisMap Javascript API
