@@ -1606,6 +1606,7 @@ FigisMap.renderer = function(options) {
 			default     : projection = 4326; myBounds =  [-180, -90, 180, 90];
 		}
 		boundsOrigin = [myBounds[0], myBounds[1]];
+		boundsOriginString = boundsOrigin.join(',');
 		boundsBox =  myBounds;
 		
 		// empty map DIV - the map, if any, is destroyed before calling
@@ -1644,7 +1645,8 @@ FigisMap.renderer = function(options) {
 					'LAYERS' : p.base.layer,
 					'VERSION': '1.1.1',
 					'FORMAT' : olImageFormat,
-					'TILED'	 : true
+					'TILED'	 : true,
+					'TILESORIGIN': boundsOriginString
 				},
 				serverType : p.base.cached ? undefined : 'geoserver',
 				attributions: p.attribution ? [new ol.Attribution({html : p.attribution})] : []
@@ -1753,7 +1755,8 @@ FigisMap.renderer = function(options) {
 						'LAYERS' : l.layer,
 						'VERSION': '1.1.1',
 						'FORMAT' : olImageFormat,
-						'TILED'	 : true
+						'TILED'	 : true,
+						'TILESORIGIN' : boundsOriginString
 				}
 				if ( l.style && l.style != '*' && l.style != 'default' ) wp.params.STYLES = l.style;
 				if ( l.filter && l.filter != '*' ) wp.params.CQL_FILTER = l.filter;
