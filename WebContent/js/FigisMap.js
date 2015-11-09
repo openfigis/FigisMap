@@ -139,10 +139,10 @@ if ( FigisMap.useProxy ) FigisMap.rnd.vars.wfs = FigisMap.currentSiteURI + '/Fig
 
 /* @eblondel disabled for testing OL3 scripts specified in html
 
-document.write('<script type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'js/vendor/proj4js/lib/proj4js-combined.js"></script>');
-document.write('<script type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'js/vendor/proj4js/lib/defs/EPSG4326.js"></script>');
-document.write('<script type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'js/vendor/proj4js/lib/defs/EPSG3031.js"></script>');
-document.write('<script type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'js/vendor/proj4js/lib/defs/EPSG900913.js"></script>');
+document.write('<script type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'js/vendor/proj4js/proj4.js"></script>');
+document.write('<script type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/4326.js"></script>');
+document.write('<script type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/3031.js"></script>');
+document.write('<script type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/900913.js"></script>');
 
 document.write('<script type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3.js"></script>');
 document.write('<script type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-layerswitcher.js"></script>');
@@ -284,8 +284,8 @@ FigisMap.ol.reBound = function( proj0, proj1, bounds ) {
 		bounds = [-180, -90, 180, 90]
 	}
 	var ans = false;
-	if ( proj0 == 3349 ) proj0 = 900913;
-	if ( proj1 == 3349 ) proj1 = 900913;
+	//!OL2 if ( proj0 == 3349 ) proj0 = 900913;
+	//!OL2 if ( proj1 == 3349 ) proj1 = 900913;
 	if ( proj0 == proj1 ) ans = bounds;
 	if ( proj1 == 3031 ){
 		//!OL2 return new OpenLayers.Bounds(-12400000,-12400000, 12400000,12400000);
@@ -348,12 +348,11 @@ FigisMap.ol.dateline = function( b ) {
 FigisMap.ol.reCenter = function( proj0, proj1, center ) {
 	proj0 = parseInt( String( proj0.projCode ? proj0.projCode : proj0 ).replace(/^EPSG:/,'') );
 	proj1 = parseInt( String( proj1.projCode ? proj1.projCode : proj1 ).replace(/^EPSG:/,'') );
-	if ( proj0 == 3349 ) proj0 = 900913;
-	if ( proj1 == 3349 ) proj1 = 900913;
+	//!OL2 if ( proj0 == 3349 ) proj0 = 900913;
+	//!OL2 if ( proj1 == 3349 ) proj1 = 900913;
 	if ( center == null ) {
 		//!OL2 if ( proj1 == 900913 ) return new OpenLayers.LonLat(20037508.34, 4226661.92);
 		if( proj1 == 900913 ) return [20037508.34, 4226661.92];
-		
 		proj0 = 4326;
 		//!OL2 center = new OpenLayers.LonLat( 0, 0 );
 		center = [0,0];
@@ -596,13 +595,14 @@ FigisMap.parser.projection = function( p ) {
 	if ( proj ) {
 		proj = parseInt( proj );
 	} else {
-		if ( p.rfb && p.rfb == 'ICES' ) proj = 3349;
+		if ( p.rfb && p.rfb == 'ICES' ) proj = 900913;
 	}
 	switch ( proj ) {
-		case   3349	: break;
-		case 900913	: break;
-		case   3031	: break;
-		default		: proj = 4326;
+		//!OL2 case   3349	: break;
+		//!OL2 case 900913	: break;
+		case 	900913	: break;
+		case	3031	: break;
+		default			: proj = 4326;
 	}
 	return proj;
 };
@@ -1421,7 +1421,6 @@ FigisMap.rfb.preparse = function( pars ) {
 	if ( ! pars.mapSize ) pars.mapSize = 'L';
 	if ( pars.landMask == null ) pars.landMask = true;
 	return ( pars.rfbPreparsed = true );
-	//if ( pars.projection.toString() == "3349" && ( pars.rfb == 'ICES' )) pars.global = false;
 };
 
 /**
@@ -1566,7 +1565,7 @@ FigisMap.renderer = function(options) {
 		projection = pars.projection;
 		p = pars;
 		
-		if (projection == 3349) projection = 900913; // use google spherical mercator ...
+		//!OL2 if (projection == 3349) projection = 900913; // use google spherical mercator ...
 		
 		var mapMaxRes = FigisMap.rnd.maxResolution( projection, p ); //TODO ? OL3 in principle not use, to check
 		
@@ -1579,8 +1578,8 @@ FigisMap.renderer = function(options) {
 		boundsOrigin = new Array( myBounds.left, myBounds.bottom );
 		boundsBox = new Array( myBounds.left, myBounds.bottom, myBounds.right, myBounds.top );*/
 		switch ( projection ) {
-			case   3031 : myBounds = [-25000000, -25000000, 25000000, 25000000]; break;
-			case 900913 : myBounds = [-20037508.34, -20037508.34, 20037508.34, 20037508.34]; break;
+			case	3031 : myBounds = [-25000000, -25000000, 25000000, 25000000]; break;
+			case	900913 : myBounds = [-20037508.34, -20037508.34, 20037508.34, 20037508.34]; break;
 			default     : projection = 4326; myBounds =  [-180, -90, 180, 90];
 		}
 		boundsOrigin = [myBounds[0], myBounds[1]];
@@ -1643,11 +1642,14 @@ FigisMap.renderer = function(options) {
 		
 		//Map widget
 		//----------
+		var viewProj = new ol.proj.Projection({code:'EPSG:'+projection});
+		viewProj.setExtent(myBounds);
+		
 		myMap = new ol.Map({
 			target : p.target.id,
 			layers: [baselayers, overlays],
 			view : new ol.View({
-				projection : 'EPSG:4326',
+				projection : viewProj,
 				center : ol.extent.getCenter(boundsBox),
 				zoom : 0,
 				maxResolution : mapMaxRes
@@ -1944,7 +1946,7 @@ FigisMap.renderer = function(options) {
 			if ( proj == 3031 ) {
 				// center to south pole in polar projection
 				nc = FigisMap.ol.reCenter( 4326, proj );
-			} else if ( proj == 900913 || proj == 3349 ) {
+			} else if ( proj == 900913 ) {
 				// center to Pacific centre in Mercator - only if larger than 35k km (whole world)
 				var nbw = Math.abs( nb.right - nb.left );
 				if ( nbw > 35000000 ) {

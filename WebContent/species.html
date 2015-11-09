@@ -25,12 +25,23 @@
 	<script type="text/javascript" src="js/jquery.asmselect.js"></script>
 	-->
 
-	<!-- Integration with OpenLayers 3 -->
+	<!-- == Upgrade to OL3 == -->
+	<!--  TODO for later to consider use of CDN where possible? -->
+	
+	<!-- Jquery (to see later alternative) -->
 	<script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+	
+	<!-- OL3 -->
 	<script type="text/javascript" src="js/vendor/ol3/ol3.js"></script>
 	<script type="text/javascript" src="js/vendor/ol3/ol3-layerswitcher.js"></script>
 	<link rel="stylesheet" type="text/css" href="js/vendor/ol3/ol3.css">
 	<link rel="stylesheet" type="text/css" href="js/vendor/ol3/ol3-layerswitcher.css">
+	
+	<!-- Proj4js -->
+	<script type="text/javascript" src="js/vendor/proj4js/proj4.js"></script>
+	<script typ="text/javascript" src="js/vendor/proj4js/defs/4326.js"></script>
+	<script typ="text/javascript" src="js/vendor/proj4js/defs/900913.js"></script>
+	<script typ="text/javascript" src="js/vendor/proj4js/defs/3031.js"></script>
 
 	<!-- FigisMap -->
 	<script type="text/javascript" src="js/FigisMap.js"></script>
@@ -74,7 +85,7 @@
 			<label id="lblSRS" for="SelectSRS">Select Projection:</label>
 			<select id="SelectSRS" onchange="addSpecies(null,null,'e-link', 'url-link', 'html-link')">
 				<option value='4326' default>WGS84 (4326)</option>
-				<option value='3349'>Mercator (3349)</option>
+				<option value='900913'>Mercator (3857)</option>
 				<option value='3031'>South Polar (3031)</option>
 			</select>
 			  
