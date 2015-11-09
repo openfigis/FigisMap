@@ -1,8 +1,8 @@
-/*
-	FigisMap API
-	Description: Generalized map call facility for the FIGIS application and factsheet maps
-	Authors: M. Balestra, E. Blondel, A. Fabiani, A. Gentile, T. Di Pisa.
-	UFT-8 glyph: 
+/**
+*	FigisMap API
+*	Description: Generalized map call facility for the FIGIS application and factsheet maps
+*	Authors: M. Balestra, E. Blondel, A. Fabiani, A. Gentile, T. Di Pisa.
+*	UFT-8 glyph: 
 */
 
 
@@ -1690,7 +1690,8 @@ FigisMap.renderer = function(options) {
 		if ( ! pars.options.skipScale ) if (projection != 3031) {
 			// Modification for changing unit
 			//?OL2 myMap.addControl( new OpenLayers.Control.ScaleLine({ maxWidth: 180, bottomOutUnits: "nmi", geodesic: true }) ); //TODO? OL3
-			myMap.addControl( new ol.control.ScaleLine({minWidth: 180, maxWidth: 180}) );
+			myMap.addControl( new ol.control.ScaleLine({className: 'ol-scale-line-metric', units: 'metric', maxWidth: 180}) );
+			myMap.addControl( new ol.control.ScaleLine({className: 'ol-scale-line-nautical', units: 'nautical', maxWidth: 180}) );
 		}
 		
 		//Managing layers 
