@@ -1734,7 +1734,8 @@ FigisMap.renderer = function(options) {
 				//options
 				//TODO OL3 how to integrate options? are they supported?
 				wp.options = { wrapDateLine: true, ratio: 1, buffer: 0, singleTile: false, opacity: 1.0 };
-				if ( l.hideInSwitcher ) wp.options.displayInLayerSwitcher = false;
+				//!OL2 if ( l.hideInSwitcher ) wp.options.displayInLayerSwitcher = false;
+				if( l.hideInSwitcher) wp.name = undefined;
 				//!OL2 if ( l.opacity ) wp.options.opacity = l.opacity;
 				//!OL2 if ( l.hidden ) wp.options.visibility = false;
 
