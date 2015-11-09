@@ -1,16 +1,18 @@
 /*
-	Generalized map call facility
-	Authors: M. Balestra, A. Fabiani, A. Gentile, T. Di Pisa.
-	Status: Beta.
-	Build: 20110310-001
+	FigisMap API
+	Description: Generalized map call facility for the FIGIS application and factsheet maps
+	Authors: M. Balestra, E. Blondel, A. Fabiani, A. Gentile, T. Di Pisa.
 	UFT-8 glyph: 
 */
 
-// if ( console == null ) var console = new Object();
-// if ( ! console.log ) console.log = function(){};
 
+/**
+ * FigisMap Root object
+ * 
+ */
 var FigisMap = {
-	parser		: new Object(), // parsing methods collection
+	version	: "1.0-OL3-SNAPSHOT",
+	parser	: new Object(), // parsing methods collection
 	fs		: new Object(), // specific fact sheets methods collection
 	rfb		: new Object(), // specific RFB methods collection
 	rnd		: new Object(), // FigisMap.renderer specific collection of methods and variabes
@@ -23,6 +25,10 @@ var FigisMap = {
 	debugLevel	: 1 // 0|false|null: debug off, 1|true:console, 2: console + error alert
 };
 
+/**
+ * FigisMap layer definitions
+ * 
+ */
 FigisMap.fifao = {
 	cbs : 'fifao:country_bounds',
 	cnt : 'fifao:UN_CONTINENT2',
@@ -52,10 +58,19 @@ FigisMap.fifao = {
 	vmb : 'vme:bottom_fishing_areas',
 	vmo : 'vme:other_areas'
 };
+
+/**
+ * FigisMap style definitions (otherwise default sytles are applied)
+ * 
+ */
 FigisMap.fifaoStyles = {
 	cmp : 'countries_stars'
 };
 
+/**
+ * FigisMap default configurations
+ * 
+ */
 FigisMap.defaults = {
 	lang		: document.documentElement.getAttribute('lang') ? document.documentElement.getAttribute('lang').toLowerCase() : 'en',
 	baseLayer	: { layer: FigisMap.fifao.cnt, cached: true, label : "Continents" },//FigisMap.fifao.maj,
@@ -70,6 +85,11 @@ FigisMap.defaults = {
 	layerStyle	: '*',
 	layerStyles	: { distribution : 'all_fao_areas_style', intersecting : '*', associated : '*' }
 };
+
+/**
+ * FigisMap environment configurations
+ * 
+ */
 
 //FigisMap.isDeveloper ? false : ( FigisMap.isTesting ? FigisMap.currentSiteURI.indexOf(':8484') < 1 : ( FigisMap.currentSiteURI.indexOf('http://www.fao.org') != 0 ) );
 FigisMap.useProxy = true; //@eblondel set to true temporarily
@@ -1220,9 +1240,6 @@ FigisMap.rnd.mainLegend = function( layers, pars ) {
 			legendDispLayers[ k ] = true;
 		}
 		if ( ! l.icon ) {
-			console.log("testing legends");
-			console.log(l.wms);
-			console.log(l.wms.getSource().getParams());
 			if ( ! l.iconSrc ) l.iconSrc = FigisMap.rnd.vars.Legend_Base_Request + "&LAYER=" + l.wms.getSource().getParams().LAYERS + "&STYLE=" + (STYLE != null ? STYLE : "");
 			l.icon = '<img src="' + l.iconSrc +'"' + ( l.iconWidth ? ' width="' + l.iconWidth + '"' : '' ) + ( l.iconHeight ? ' height="' + l.iconHeight + '"' : '') + '/>';
 		}
@@ -1828,7 +1845,6 @@ FigisMap.renderer = function(options) {
 		myMap.updateSize(); //remains unchanged method in OL3
 		
 		//!OL2 myMap.addLayers( olLayers );
-		console.log(olLayers);
 		for (var i = 0; i < olLayers.length; i++) {
 			overlays.getLayers().push(olLayers[i]);
 		}
