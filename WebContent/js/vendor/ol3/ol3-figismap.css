@@ -3,6 +3,9 @@
 *
 */
 
+/**
+* MousePosition control
+*/
 .ol-mouse-position {
 	top:auto;
 	left:auto;
@@ -12,6 +15,9 @@
 	position: absolute
 }
 
+/**
+* ScaleLine control
+*/
 .ol-scale-line-metric {
 	background:none;
 	bottom: 30px;
@@ -46,4 +52,35 @@
 	text-align: center;
 	margin: 1px;
 	will-change: contents, width
+}
+
+/**
+* LayerSwitcher control
+*/
+.layer-switcher {
+    position: absolute;
+    top: 8px;
+    right: 0.5em;
+    text-align: left;
+}
+
+/**
+* Atrribution control
+*/
+.ol-powered-by {
+	-khtml-opacity: 0.7;
+	-moz-opacity: 0.7;
+	color: Blue;
+	display: block;
+	font-size: 12px;
+	font-style: normal;
+	opacity: 0.7;
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+}
+
+.ol-attribution img {
+	max-height: inherit;
+	max-width: inherit;	
 }

@@ -633,7 +633,13 @@ FigisMap.parser.projection = function( p ) {
  * 
  */
 FigisMap.parser.watermark = function( p ) {
-	var w = { src: FigisMap.rnd.vars.logoURL, width: 60, height: 60, wclass: 'olPoweredBy', title:FigisMap.label('Powered by FIGIS',p) };
+	var w = {
+		src : FigisMap.rnd.vars.logoURL,
+		title : FigisMap.label('Powered by FIGIS', p),
+		width : 60,
+		height : 60,
+		wclass : 'ol-powered-by'
+	};
 	if ( p && p.context.indexOf('FIRMS') == 0 ) {
 		w.src = FigisMap.rnd.vars.logoURLFirms;
 		w.width = 60;
@@ -976,7 +982,7 @@ FigisMap.rnd.maxResolution = function( proj, pars ) {
  * 
  */
 FigisMap.rnd.watermarkControl = function( map, pars ) {
-	if ( ! pars.watermark ) return false;
+	if ( ! pars.watermark ) return;
 	
 	/*!OL2
 	var poweredByControl = new OpenLayers.Control();
@@ -999,18 +1005,18 @@ FigisMap.rnd.watermarkControl = function( map, pars ) {
 		}
 	);*/
 	var mapsize = map.getSize();
-	var poweredByHtml = '<img' +
+	var poweredByHtml = '<ul><li><img' +
 		( pars.watermark.src ? ' src="' + pars.watermark.src + '"' : '' ) +
 		( pars.watermark.width ? ' width="' + pars.watermark.width + '"' : '' ) +
 		( pars.watermark.height ? ' height="' + pars.watermark.height + '"' : '' ) +
 		( pars.watermark.wclass ? ' class="' + pars.watermark.wclass + '"' : '' ) +
 		( pars.watermark.id ? ' id="' + pars.watermark.id + '"' : '' ) +
 		( pars.watermark.title ? ' title="' + pars.watermark.title + '"' : '' ) +
-		( ( ! pars.watermark.noPos && pars.watermark.width && pars.watermark.height ) ? ( ' style="position:absolute;left:' + (mapsize[0] - pars.watermark.width - 5) + 'px;top:' + (mapsize[1] - pars.watermark.height - 5) + 'px;"' ) : '' ) +
-		'/>';
-	var poweredByControl = new ol.control.Attribution({label: poweredByHtml});
-	map.addControl(poweredByControl);
-	return true;
+		'/></li></ul>';
+	
+	if(document.getElementsByClassName("ol-attribution").length > 0){
+		document.getElementsByClassName("ol-attribution")[0].innerHTML = poweredByHtml;
+	}
 };
 
 /**
@@ -1633,7 +1639,7 @@ FigisMap.renderer = function(options) {
 			title : p.base.title,
 			type: 'base',
 			source : new ol.source.TileWMS({
-				url : p.base.cached ? FigisMap.rnd.vars.gwc : FigisMap.rnd.vars.wms,
+				url : p.base.cached ? FigisMap.rnd.vars.gwc : FigisMap.rnd.vars.wms, 
 				params : { 
 					'LAYERS' : p.base.layer,
 					'VERSION': '1.1.1',
@@ -1641,6 +1647,7 @@ FigisMap.renderer = function(options) {
 					'TILED'	 : true
 				},
 				serverType : p.base.cached ? undefined : 'geoserver',
+				attributions: p.attribution ? [new ol.Attribution({html : p.attribution})] : []
 			})
 		})
 		//baselayer group
@@ -1670,7 +1677,8 @@ FigisMap.renderer = function(options) {
 				center : ol.extent.getCenter(boundsBox),
 				zoom : 0,
 				maxResolution : mapMaxRes
-			})
+			}),
+			logo: pars.watermark
 		});
 			
 		// Managing OL controls
@@ -1682,14 +1690,15 @@ FigisMap.renderer = function(options) {
 		if (! pars.options.skipWatermark ) FigisMap.rnd.watermarkControl( myMap, p );
 		if (! pars.options.skipMouse ) FigisMap.rnd.mouseControl( myMap, p );
 		
+		/*!OL2
 		if ( p.attribution ) {
 			// myMap.addControl( new OpenLayers.Control.Attribution() ); // seems to be unnecessary
 			myMap.baseLayer.attribution = p.attribution;
-		}
+		}*/
 		
 		if ( ! pars.options.skipScale ) if (projection != 3031) {
-			// Modification for changing unit
-			//?OL2 myMap.addControl( new OpenLayers.Control.ScaleLine({ maxWidth: 180, bottomOutUnits: "nmi", geodesic: true }) ); //TODO? OL3
+	
+			// Modification for changing unit		//?OL2 myMap.addControl( new OpenLayers.Control.ScaleLine({ maxWidth: 180, bottomOutUnits: "nmi", geodesic: true }) ); //TODO? OL3
 			myMap.addControl( new ol.control.ScaleLine({className: 'ol-scale-line-metric', units: 'metric', maxWidth: 180}) );
 			myMap.addControl( new ol.control.ScaleLine({className: 'ol-scale-line-nautical', units: 'nautical', maxWidth: 180}) );
 		}
