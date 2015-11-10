@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0055)http://www.fao.org/figis/geoserver/factsheets/rfbs.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	
+	<meta name="description" content="Map application to display areas of competence and Regional Fishery Bodies members.">
+	<meta name="author-corporate" content="FAO of the UN">
+	<meta name="copyright" content="http://www.fao.org/corp/copyright/en/">
+	<meta name="keywords" content="RFB, Regional Fishery Body, Map, FAO">
+	<title>Regional Fishery Bodies Map Viewer</title>
+
+	<link rel="stylesheet" href="js/theme/default/style.css" type="text/css" />
+	<link rel="stylesheet" href="css/rfb.css" type="text/css" />
+
+	<script type="text/javascript" src="js/FigisMap.js"></script>
+	<script type="text/javascript" src="js/rfb.js"></script>
+	<script type="text/javascript" src="js/Watermark.js" defer="defer"></script>
+	<script type="text/javascript" language="javascript">
+	// <![CDATA[
+		function embedLink() {
+			setRFBEmbedLink('e-link', 'rfbs-link', 'rfbs-html');
+			document.getElementById('EmbedLink').blur();
+		}
+	// ]]>
+	</script>
+</head>
+
+<body onload="setRFBPage(&#39;e-link&#39;,&#39;rfbs-link&#39;, &#39;rfbs-html&#39;)">
+	<div id="wrapper">
+		<div id="top">
+			<table width="100%" cellpadding="0" cellspacing="0" border="0">
+				<tbody><tr>
+					<td align="left">
+						<a href="http://www.fao.org/" target="_blank"><img border="0" style="vertical-align: middle;" src="img/FIGIS_banner-logo.gif" alt="FOOD AND AGRICULTURE ORGANIZATION OF THE UNITED NATIONS" title="Food and Agriculture Organization of the United Nations"></a>
+					</td>
+					<td align="right">
+						<a href="http://www.fao.org/fishery" target="_blank"><img border="0" style="vertical-align: middle;" src="img/FIGIS_banner-text.gif" alt="FAO Fisheries and Aquaculture Department" title="FAO Fisheries and Aquaculture Department"></a>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<h1 id="title">Regional Fishery Bodies Map Viewer</h1>
+					</td>
+				</tr>
+			</tbody></table>
+		</div>
+		<br>
+		<div id="topBar">
+			<label id="lblRFB">Select Regional Fishery Body:</label>
+			<select id="SelectRFB" onchange="setRFB(null, null, null, &#39;e-link&#39;,&#39;rfbs-link&#39;, &#39;rfbs-html&#39;)">
+			<option value="">(Select an RFB...)</option><option value="ACAP">ACAP</option><option value="APFIC">APFIC</option><option value="BOBP-IGO">BOBP-IGO</option><option value="CACFISH">CACFISH</option><option value="CCAMLR">CCAMLR</option><option value="CCBSP">CCBSP</option><option value="CCSBT">CCSBT</option><option value="CECAF">CECAF</option><option value="CIFAA">CIFAA</option><option value="COMHAFAT-ATLAFCO">COMHAFAT-ATLAFCO</option><option value="COPESCAALC">COPESCAALC</option><option value="COREP">COREP</option><option value="CPPS">CPPS</option><option value="CRFM">CRFM</option><option value="CTMFM">CTMFM</option><option value="EIFAAC">EIFAAC</option><option value="FCWC">FCWC</option><option value="FFA">FFA</option><option value="GFCM">GFCM</option><option value="IATTC">IATTC</option><option value="ICCAT">ICCAT</option><option value="ICES">ICES</option><option value="IOTC">IOTC</option><option value="IPHC">IPHC</option><option value="IWC">IWC</option><option value="JOINTFISH">JOINTFISH</option><option value="LTA">LTA</option><option value="LVFO">LVFO</option><option value="MRC">MRC</option><option value="NACA">NACA</option><option value="NAFO">NAFO</option><option value="NAMMCO">NAMMCO</option><option value="NASCO">NASCO</option><option value="NEAFC">NEAFC</option><option value="NPAFC">NPAFC</option><option value="NPFC">NPFC</option><option value="OLDEPESCA">OLDEPESCA</option><option value="OSPESCA">OSPESCA</option><option value="PERSGA">PERSGA</option><option value="PICES">PICES</option><option value="PSC">PSC</option><option value="RECOFI">RECOFI</option><option value="SEAFDEC">SEAFDEC</option><option value="SEAFO">SEAFO</option><option value="SIOFA">SIOFA</option><option value="SPC">SPC</option><option value="SPRFMO">SPRFMO</option><option value="SRFC">SRFC</option><option value="SWIOFC">SWIOFC</option><option value="WCPFC">WCPFC</option><option value="WECAFC">WECAFC</option></select>
+			&nbsp;&nbsp;
+			<label id="lblSRS">Select Projection:</label>
+			<select id="SelectSRS" onchange="setRFB(null, null, this.value, &#39;e-link&#39;,&#39;rfbs-link&#39;, &#39;rfbs-html&#39;)">
+				<option value="4326" default="">WGS84 (4326)</option>
+				<option value="3349">Mercator (3349)</option>
+				<option value="3031">South Polar (3031)</option>
+			</select>
+
+			<a href="javascript:embedLink();" id="EmbedLink" title="Link or embed this RFB map"><span>Link</span></a>
+			<input id="txtCql" type="hidden">
+			<input id="command" type="hidden">
+
+			<input id="opt" type="hidden">
+			       	<!-- li>
+			       		<label id="lblCQL">Provide CQL Query</label>
+			       		<input id="txtCql" type="text" />
+			       		<input id="btnUpdate" type="button" value="UPDATE" onClick="addRFBCQL()"/>
+			       	</li>
+			       	<li>
+						<label id="lblCQL">Enter Command</label>
+			       		<input id="command" type="text" />
+			       		<input id="cmdbtn" type="button" value="UPDATE" onClick="Command()"/>
+			       	</li>
+					<li>
+						<label id="lblCQL">Optional Arguments</label>
+			       		<input id="opt" type="text" />
+			       	</li -->
+		</div>
+		<div id="main">
+			<div id="map" class="map"></div>
+		</div>
+
+		<div id="sidebar">
+			<div id="e-link" style="display: none;">
+				<div>
+					<label for="rfbs-link">Paste the link in email or chat</label>
+					<input id="rfbs-link" type="text" readonly="readonly" value="" onclick="this.focus();this.select();">
+				</div>
+				<div>
+					<label for="rfbs-html">Paste the HTML in a web site</label>
+					<input id="rfbs-html" type="text" readonly="readonly" value="" onclick="this.focus();this.select();">
+				</div>
+			</div>
+			<div class="legend legendTitle" id="legendLegendTitle">Legend</div>
+			<div id="legend" class="legend"><table cellpadding="0" cellspacing="0" border="0"><tbody><tr><td><img src="img/FAO_fishing_legend.png" width="30" height="20"></td><td><span>FAO fishing areas</span></td></tr><tr><td><img src="img/EEZ_legend.png" width="30" height="20"></td><td><span>200 nautical miles arcs</span></td></tr></tbody></table></div>
+			<div class="legend legendTitle" id="legendMembersTitle" style="display: none;">List of Members</div>
+			<div id="MemberCountries" class="legend"></div>
+		</div>
+
+		<br>
+		<div id="disclaimer">
+			<p><strong>Disclaimer:</strong> The designations employed and the presentation of material in the map(s) are for illustration only and do not imply the expression of any opinion whatsoever on the part of FAO concerning the legal or constitutional status of any country, territory or sea area, or concerning the delimitation of frontiers or boundaries.</p>
+		</div>
+
+		<div id="bottomBar1">
+			powered by
+			<a alt="FIGIS web site" title="FIGIS web site" href="http://www.fao.org/fishery/figis/en">FIGIS</a>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<a alt="FAO (C)Copyright" title="FAO Copyright" target="_blank" href="http://www.fao.org/corp/copyright/en/">
+				©&nbsp;FAO,
+				<span id="copyYear">2015</span>
+				&nbsp;
+			</a>
+		</div>
+		<div id="bottomBar2"></div>
+	</div>
+	<script type="text/javascript" language="javascript">
+	// <![CDATA[
+		function updateCopyYear() {
+			var uy = new Date();
+			uy = parseInt(uy.getFullYear() ? uy.getFullYear() : uy.getYear());
+			var py = parseInt( document.getElementById('copyYear').innerHTML );
+			if ( isNaN(uy) || isNaN(py) ) return void(0);
+			if ( uy > py ) document.getElementById('copyYear').innerHTML = String( uy );
+			return void(0);
+		}
+		updateCopyYear();
+	// ]]>
+	</script>
+	<!--<input type="button" id="addlayer" value="Show RFB" onclick="addLayer()"/>
+	<input type="button" id="addlayer" value="Show zoom" onclick="SLD()"/>-->
+	
+
+</body></html>

@@ -15,7 +15,7 @@ var FigisMap = {
 	rfb		: new Object(), // specific RFB methods collection
 	rnd		: new Object(), // FigisMap.renderer specific collection of methods and variabes
 	ol		: new Object(), // OpenLayers related utilities
-	isDeveloper	: ( document.domain.indexOf( '192.168.' ) == 0 ),
+	isDeveloper	: ( document.domain.indexOf( '192.168.' ) == 0 || document.domain == 'localhost' ),
 	lastMap		: null,
 	renderedMaps	: new Object(),
 	isTesting	: ( document.domain.indexOf('figisapps')==0 || document.domain.indexOf('figis02')==0 ||document.domain.indexOf('168.202.')==0||document.domain.indexOf('www-data.fao.org')==0 ),
@@ -73,12 +73,11 @@ FigisMap.defaults = {
 	layerStyles	: { distribution : 'all_fao_areas_style', intersecting : '*', associated : '*' }
 };
 
-//FigisMap.isDeveloper ? false : ( FigisMap.isTesting ? FigisMap.currentSiteURI.indexOf(':8484') < 1 : ( FigisMap.currentSiteURI.indexOf('http://www.fao.org') != 0 ) );
 FigisMap.useProxy = false;
 if ( ( FigisMap.currentSiteURI.indexOf(':8282') > 1 ) || ( FigisMap.currentSiteURI.indexOf(':8383') > 1 ) ) FigisMap.useProxy = true;
 
-FigisMap.geoServerAbsBase = FigisMap.isDeveloper ? 'http://192.168.1.106:8484' : ( FigisMap.isTesting ? 'http://168.202.3.223:8484' : ('http://' + document.domain ) );
-FigisMap.geoServerBase = '';
+FigisMap.geoServerAbsBase = FigisMap.isDeveloper ? (document.domain == 'localhost'? 'http://www.fao.org' : 'http://192.168.1.106:8484') : ( FigisMap.isTesting ? 'http://168.202.3.223:8484' : ('http://' + document.domain ) );
+FigisMap.geoServerBase = document.domain == 'localhost'? 'http://www.fao.org' : '';
 
 FigisMap.httpBaseRoot = FigisMap.geoServerBase + '/figis/geoserver/factsheets/';
 
@@ -139,14 +138,12 @@ FigisMap.loadStaticMapData = function(md) {
 
 if ( FigisMap.useProxy ) FigisMap.rnd.vars.wfs = FigisMap.currentSiteURI + '/figis/proxy/cgi-bin/proxy.cgi?url=' + escape( FigisMap.rnd.vars.absWfs );
 
-document.write('<scr'+'ipt type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'proj4js/lib/proj4js-combined.js"></scr'+'ipt>');
-document.write('<scr'+'ipt type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'proj4js/lib/defs/EPSG4326.js"></scr'+'ipt>');
-document.write('<scr'+'ipt type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'proj4js/lib/defs/EPSG3031.js"></scr'+'ipt>');
-document.write('<scr'+'ipt type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'proj4js/lib/defs/EPSG900913.js"></scr'+'ipt>');
-
-document.write('<scr'+'ipt type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'js/OpenLayers.js"></scr'+'ipt>');
-//document.write('<scr'+'ipt type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'js/figis-data.js" charset="UTF-8"></scr'+'ipt>');
-document.write('<scr'+'ipt type="text/javascript" language="javascript" src="/figis/moniker.jsonp.FigisMap.loadStaticMapData/figismapdata" charset="UTF-8"></scr'+'ipt>');
+document.write('<script type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'proj4js/lib/proj4js-combined.js"></script>');
+document.write('<script type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'proj4js/lib/defs/EPSG4326.js"></script>');
+document.write('<script type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'proj4js/lib/defs/EPSG3031.js"></script>');
+document.write('<script type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'proj4js/lib/defs/EPSG900913.js"></script>');
+document.write('<script type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'js/OpenLayers.js"></scr'+'ipt>');
+document.write('<script type="text/javascript" language="javascript" src="'+FigisMap.geoServerBase+'/figis/moniker.jsonp.FigisMap.loadStaticMapData/figismapdata" charset="UTF-8"></script>');
 
 FigisMap.console = function( args, doAlert ) {
 	var e;
