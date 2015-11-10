@@ -45,7 +45,8 @@ function addRFB(extent, zoom, projection, elinkDiv, urlLink, htmlLink, layerName
 	
 	if ( myMap ) {
 		if ( document.getElementById(elinkDiv) ) {
-			myMap.events.register(
+			/*!OL2
+			 myMap.events.register(
 				'moveend',
 				this,
 				function(){
@@ -53,6 +54,13 @@ function addRFB(extent, zoom, projection, elinkDiv, urlLink, htmlLink, layerName
 					document.getElementById(urlLink).value = "";
 					document.getElementById(htmlLink).value = "";
 				}
+			);*/
+			myMap.on('moveend',
+					function(){
+						document.getElementById(elinkDiv).style.display = "none";
+						document.getElementById(urlLink).value = "";
+						document.getElementById(htmlLink).value = "";
+					}
 			);
 		}
 	
@@ -170,8 +178,10 @@ function setRFBEmbedLink(targetId, rfbsLinkId, rfbsHtmlId) {
 		*/
 		
 		baseURL += "?rfb=" + document.getElementById("SelectRFB").value
-			+ "&extent=" + myMap.getExtent().toBBOX()
-			+ "&zoom=" + myMap.getZoom()
+			//!OL2+ "&extent=" + myMap.getExtent().toBBOX()
+			+ "&extent=" + myMap.getView().calculateExtent(myMap.getSize()).join(',')
+			//!OL2+ "&zoom=" + myMap.getZoom()
+			+ "&zoom=" + myMap.getView().getZoom()
 			+ "&prj=" + document.getElementById("SelectSRS").value;
 		/*
 		* Setting the input fields of the embed-link div

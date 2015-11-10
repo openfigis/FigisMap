@@ -33,7 +33,7 @@ function buildMap (pars, elinkDiv, urlLink, htmlLink) {
 	myMap = FigisMap.draw(pars);
 	
 	if ( myMap && doElink ) {
-		myMap.events.register(
+		/*!OL2 myMap.events.register(
 			'moveend',
 			this,
 			function(){
@@ -41,7 +41,14 @@ function buildMap (pars, elinkDiv, urlLink, htmlLink) {
 				document.getElementById(urlLink).value = "";
 				document.getElementById(htmlLink).value = "";
 			}
-		);
+		);*/
+		myMap.on('moveend',
+				function(){
+					document.getElementById(elinkDiv).style.display = "none";
+					document.getElementById(urlLink).value = "";
+					document.getElementById(htmlLink).value = "";
+				});
+				
 	}
 }
 
@@ -84,7 +91,8 @@ function getStyle(count){ return 'species_style_' + getColor(count); }
 /**
  * function addStock
  **/
-function addStock(myVectors, myRequest, myResource) {
+/* TODO ? OL3
+ function addStock(myVectors, myRequest, myResource) {
 	var json_url = FigisMap.jma.vars.geoserverURL + "/rest/unionservice/" + myRequest;
 	
 	OpenLayers.loadURL(
@@ -97,7 +105,7 @@ function addStock(myVectors, myRequest, myResource) {
 			myVectors.addFeatures(f);
 		}
 	);
-}
+}*/
 
 /**
 * function addSpecies
@@ -305,8 +313,10 @@ function setSpeciesEmbedLink(targetId, specLinkId, specHtmlId){
 		var prj = document.getElementById("SelectSRS").value;
 		
 		baseURL += "?species=" + species.join(',');
-		baseURL += "&extent=" + myMap.getExtent().toBBOX();
-		baseURL += "&zoom=" + myMap.getZoom();
+		//!OL2 baseURL += "&extent=" + myMap.getExtent().toBBOX();
+		baseURL += "&extent=" + myMap.getView().calculateExtent(myMap.getSize()).join(',');
+		//!OL2 baseURL += "&zoom=" + myMap.getZoom();
+		baseURL += "&zoom=" + myMap.getView().getZoom();
 		baseURL += "&prj=" + prj;
 		
 		/* Setting the input fields of the embed-link div */
