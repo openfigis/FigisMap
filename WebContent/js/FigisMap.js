@@ -158,7 +158,7 @@ FigisMap.loadStaticMapData = function(md) {
 	}
 };
 
-if ( FigisMap.useProxy ) FigisMap.rnd.vars.wfs = FigisMap.currentSiteURI + '/FigisMapOL3/cgi-bin/proxy.cgi?url=' + escape( FigisMap.rnd.vars.absWfs );
+if ( FigisMap.useProxy ) FigisMap.rnd.vars.wfs = FigisMap.currentSiteURI + '/figis/proxy/cgi-bin/proxy.cgi?url=' + escape( FigisMap.rnd.vars.absWfs );
 
 
 /**
