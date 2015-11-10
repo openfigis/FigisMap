@@ -1717,7 +1717,7 @@ FigisMap.renderer = function(options) {
 		
 		if ( ! pars.options.skipScale ) if (projection != 3031) {
 	
-			// Modification for changing unit		//?OL2 myMap.addControl( new OpenLayers.Control.ScaleLine({ maxWidth: 180, bottomOutUnits: "nmi", geodesic: true }) ); //TODO? OL3
+			// Modification for changing unit		//?OL2 myMap.addControl( new OpenLayers.Control.ScaleLine({ maxWidth: 180, bottomOutUnits: "nmi", geodesic: true }) );
 			myMap.addControl( new ol.control.ScaleLine({className: 'ol-scale-line-metric', units: 'metric', maxWidth: 180}) );
 			myMap.addControl( new ol.control.ScaleLine({className: 'ol-scale-line-nautical', units: 'nautical', maxWidth: 180}) );
 		}
@@ -1779,16 +1779,13 @@ FigisMap.renderer = function(options) {
 				if ( l.filter && l.filter != '*' ) wp.params.CQL_FILTER = l.filter;
 				
 				//options
-				//TODO OL3 how to integrate options? are they supported?
-				wp.options = { wrapDateLine: true, ratio: 1, buffer: 0, singleTile: false, opacity: 1.0 };
+				//!OL2 wp.options = { wrapDateLine: true, ratio: 1, buffer: 0, singleTile: false, opacity: 1.0 };
 				//!OL2 if ( l.hideInSwitcher ) wp.options.displayInLayerSwitcher = false;
-				if( l.hideInSwitcher) wp.name = undefined;
 				//!OL2 if ( l.opacity ) wp.options.opacity = l.opacity;
 				//!OL2 if ( l.hidden ) wp.options.visibility = false;
-
 				//?OL2 l.wms = new OpenLayers.Layer.WMS( wp.name, wp.url, wp.params, wp.options );
 				l.wms = new ol.layer.Tile({
-					title : wp.name,
+					title : l.hideInSwitcher? undefined : wp.name, //implicit way to hide a layer from layerswitcher
 					source : new ol.source.TileWMS({
 						url : wp.url,
 						params : wp.params,
@@ -1880,7 +1877,6 @@ FigisMap.renderer = function(options) {
 			overlays.getLayers().push(olLayers[i]);
 		}
 		
-		//TODO OL3
 		/*if ( FigisMap.isDeveloper || FigisMap.isTesting ) {
 			myMap.events.register(
 				'moveend',
