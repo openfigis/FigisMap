@@ -1572,7 +1572,8 @@ FigisMap.draw = function( pars ) {
 	var rnd = new FigisMap.renderer( pars.options );
 	var theMap = rnd.render( pars );
 	
-	FigisMap.lastMap = ( theMap && theMap.id && theMap.id.indexOf('OpenLayers.')==0 ) ? theMap : false;
+	//!OL2 FigisMap.lastMap = ( theMap && theMap.id && theMap.id.indexOf('OpenLayers.')==0 ) ? theMap : false;
+	FigisMap.lastMap = ( theMap && theMap.getTarget() ) ? theMap : false;
 	FigisMap.renderedMaps[ pars.target.id ] = FigisMap.lastMap;
 	
 	return FigisMap.lastMap;
@@ -1787,7 +1788,7 @@ FigisMap.renderer = function(options) {
 				if ( l.style && l.style != '*' && l.style != 'default' ) wp.params.STYLES = l.style;
 				if ( l.filter && l.filter != '*' ) wp.params.CQL_FILTER = l.filter;
 				
-				//options
+				//layer config
 				//!OL2 wp.options = { wrapDateLine: true, ratio: 1, buffer: 0, singleTile: false, opacity: 1.0 };
 				//!OL2 if ( l.hideInSwitcher ) wp.options.displayInLayerSwitcher = false;
 				//!OL2 if ( l.opacity ) wp.options.opacity = l.opacity;
@@ -1820,11 +1821,19 @@ FigisMap.renderer = function(options) {
 			
 			//!OL2 myMap.addLayer( l.wms );
 			olLayers.push( l.wms );
-			
 			l.inMap = true;
 		}
-		
 		FigisMap.debug( 'FigisMap.renderer layers array, after filling map:', layers );
+		
+		// GRATICULE
+		//!OL2 if ( projection == 4326 ) myMap.addControl( new OpenLayers.Control.Graticule({ visible: !! pars.isVME, layerName: FigisMap.label('Coordinates Grid', p) }) );
+		/* TODO OL3
+		if( projection == 4326 && !!pars.isVME ) {
+			var graticule = new ol.Graticule({
+			  map: myMap,
+			  intervals: [45, 30, 20, 10, 5, 2, 1]
+			});
+		}*/
 		
 		// BUILDING THE LEGEND
 		FigisMap.rnd.legend( layers, p );
@@ -1835,9 +1844,6 @@ FigisMap.renderer = function(options) {
 		//OpenLayers.Feature.Vector.style['default']['strokeWidth'] = '2'; //TODO ? OL3
 		
 		// handlig the zoom/center/extent
-		//TODO ? OL3 06/11/2015
-		//!OL2 if ( projection == 4326 ) myMap.addControl( new OpenLayers.Control.Graticule({ visible: !! pars.isVME, layerName: FigisMap.label('Coordinates Grid', p) }) );
-		
 		if ( p.global ) {
 			//!OL2 myMap.zoomToMaxExtent();
 			//myMap.getView().fit(myMap.getView().get('extent'), myMap.getSize()); TODO OL3
@@ -1871,7 +1877,6 @@ FigisMap.renderer = function(options) {
 		}
 		
 		FigisMap.debug('myMap:', myMap );
-		
 		return myMap;
 		
 	} //function ends
