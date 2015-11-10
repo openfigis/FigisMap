@@ -1,0 +1,2094 @@
+FigisMap.loadStaticMapData({
+	"rfbs" : {
+		"rfb" : [
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/acap/en",
+						"title" : "Agreement on the Conservation of Albatrosses and Petrels (ACAP)"
+					},
+					"name" : "ACAP",
+					"style" : "rfmo_unspecified_noborder",
+					"centerCoords" : "null",
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "ARG", "AUS", "BRA", "CHL",
+								"ECU", "FRA", "NZL", "NOR", "PER",
+								"ZAF", "ESP", "GBR", "URY" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : "null",
+					"fid" : "24562",
+					"type" : "M",
+					"globalZoom" : "true",
+					"code" : "acap",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/apfic/en",
+						"title" : "Asia Pacific Fisheries Commission (APFIC)"
+					},
+					"name" : "APFIC",
+					"style" : "rfmo_marine_unspecified_inland_noborders",
+					"centerCoords" : [90.0, 0.0],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "AUS", "BGD", "KHM", "CHN",
+								"FRA", "IND", "IDN", "JPN", "MYS",
+								"MMR", "NPL", "NZL", "PAK", "PHL",
+								"KOR", "LKA", "TLS", "THA", "GBR",
+								"USA", "VNM" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-13, 70, 170.0, -50],
+					"fid" : "22000",
+					"type" : "MI",
+					"globalZoom" : "false",
+					"code" : "apfic",
+					"isMasked" : "false"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/bobp_igo/en",
+						"title" : "Bay of Bengal Programme (BOBP-IGO)"
+					},
+					"name" : "BOBP-IGO",
+					"style" : "rfmo_marine_noborder",
+					"centerCoords" : "null",
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "BGD", "IND", "MDV", "LKA" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [31.0, -14.5, 125.0, 45.5],
+					"fid" : "8710",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "bobp_igo",
+					"isMasked" : "false"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/cacfish/en",
+						"title" : "Central Asia and Caucasus Fisheries and Aquaculture Commission (CACFish)"
+					},
+					"name" : "CACFISH",
+					"style" : "rfmo_inland_noborder",
+					"centerCoords" : [53.0, 43.0],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "ARM", "TJK", "KGZ", "TUR", "AZE" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [9.0, 2.0, 97.0, 73.0],
+					"fid" : "24546",
+					"type" : "I",
+					"globalZoom" : "false",
+					"code" : "cacfish",
+					"isMasked" : "false"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/ccamlr/en",
+						"title" : "Commission for the Conservation of Antarctic Marine Living Resources (CCAMLR)"
+					},
+					"name" : "CCAMLR",
+					"style" : "rfmo_marine_border",
+					"centerCoords" : [0,0],
+					"srs" : "3031",
+					"members" : {
+						"country" : [ "ARG", "AUS", "BEL", "BRA",
+								"CHL", "CHN", "EUR", "FRA", "DEU",
+								"IND", "ITA", "JPN", "NAM", "NZL",
+								"NOR", "POL", "KOR", "RUS", "ZAF",
+								"ESP", "SWE", "UKR", "GBR", "USA",
+								"URY" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-7666181, -5741041, 7666181, 5741041],
+					"fid" : "20010",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "ccamlr",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/ccbsp/en",
+						"title" : "Convention on the Conservation and Management of Pollock Resources in the Central Bering Sea (CCBSP)"
+					},
+					"name" : "CCBSP",
+					"style" : "rfmo_marine_noborder",
+					"centerCoords" : [20037508.34, 7800000.0],
+					"srs" : "3349",
+					"members" : {
+						"country" : [ "CHN", "JPN", "KOR", "POL",
+								"RUS", "USA" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-5893240, 3922651, 5967525, 12804929.34],
+					"fid" : "24534",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "ccbsp",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/ccsbt/en",
+						"title" : "Commission for the Conservation of Southern Bluefin Tuna (CCSBT)"
+					},
+					"name" : "CCSBT",
+					"style" : "rfmo_unspecified_noborder",
+					"centerCoords" : [7000000, -2500000],
+					"srs" : "3349",
+					"members" : {
+						"country" : [ "AUS", "IDN", "JPN", "KOR",
+								"NZL", "TWN" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-20037508.34, -20037508.34, 20037508.34, 20037508.34],
+					"fid" : "78",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "ccsbt",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/cecaf/en",
+						"title" : "Fishery Committee for the Eastern Central Atlantic (CECAF)"
+					},
+					"name" : "CECAF",
+					"style" : "rfmo_marine_noborder",
+					"centerCoords" : [2.0, 18.0],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "AGO", "BEN", "CMR", "CPV",
+								"COD", "COG", "CIV", "CUB", "GNQ",
+								"EUR", "FRA", "GAB", "GMB", "GHA",
+								"GRC", "GIN", "GNB", "ITA", "JPN",
+								"KOR", "LBR", "MRT", "MAR", "NLD",
+								"NGA", "NOR", "POL", "ROU", "STP",
+								"SEN", "SLE", "ESP", "TGO", "USA" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-100, -40, 83.0, 81],
+					"fid" : "22070",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "cecaf",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/cifaa/en",
+						"title" : "Committee on Inland Fisheries and Aquaculture of Africa (CIFAA)"
+					},
+					"name" : "CIFAA",
+					"style" : "rfmo_inland_noborder",
+					"centerCoords" : [22.0, 0.0],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "BEN", "BWA", "BFA", "BDI",
+								"CMR", "CAF", "TCD", "COD", "COG",
+								"CIV", "EGY", "ERI", "ETH", "GAB",
+								"GMB", "GHA", "GIN", "KEN", "LSO",
+								"MDG", "MWI", "MLI", "MUS", "MOZ",
+								"NER", "NGA", "RWA", "SEN", "SLE",
+								"SOM", "SDN", "SWZ", "TZA", "TGO",
+								"UGA", "ZMB", "ZWE" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-70, -50, 115.0, 60],
+					"fid" : "22020",
+					"type" : "I",
+					"globalZoom" : "false",
+					"code" : "cifaa",
+					"isMasked" : "false"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/comhafat-atlafco/en",
+						"title" : "Ministerial Conference on Fisheries Cooperation Among African States Bordering the Atlantic (COMHAFAT-ATLAFCO)"
+					},
+					"name" : "COMHAFAT-ATLAFCO",
+					"style" : "rfmo_unspecified_noborder",
+					"centerCoords" : [2.0, 18.0],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "AGO", "BEN", "CPV", "CIV",
+								"COD", "GNQ", "GAB", "GHA", "GIN",
+								"GNB", "MAR", "NGA", "SEN", "SLE" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-40, -40, 40.0, 40],
+					"fid" : "20930",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "comhafat-atlafco",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/copescaalc/en",
+						"title" : "Commission for Inland Fisheries and Aquaculture of Latin America and the Caribbean (COPESCAALC)"
+					},
+					"name" : "COPESCAALC",
+					"style" : "rfmo_inland_noborder",
+					"centerCoords" : [-66, -11.0],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "ARG", "BOL", "BRA", "CHL",
+								"COL", "CRI", "CUB", "DOM", "ECU",
+								"SLV", "GTM", "HND", "JAM", "MEX",
+								"NIC", "PAN", "PRY", "PER", "SUR",
+								"URY", "VEN" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-165, -65, 20.0, 50],
+					"fid" : "22090",
+					"type" : "I",
+					"globalZoom" : "false",
+					"code" : "copescaalc",
+					"isMasked" : "false"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/corep/en",
+						"title" : "Comite Regional des Peches du Golfe de Guinee (COREP)"
+					},
+					"name" : "COREP",
+					"style" : "rfmo_marine_inland_noborder",
+					"centerCoords" : [16, 0.0],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "CMR", "COG", "COD", "GAB", "STP" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-30, -30, 60.0, 30],
+					"fid" : "12499",
+					"type" : "MI",
+					"globalZoom" : "false",
+					"code" : "corep",
+					"isMasked" : "false"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/cpps/en",
+						"title" : "Comisión Permanente del Pacifico Sur (CPPS)"
+					},
+					"name" : "CPPS",
+					"style" : "rfmo_unspecified_noborder",
+					"centerCoords" : [-90, -23],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "CHL", "COL", "ECU", "PER" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-120, -60, -61.0, 15],
+					"fid" : "7534",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "cpps",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/crfm/en",
+						"title" : "Caribbean Regional Fisheries Mechanism (CRFM)"
+					},
+					"name" : "CRFM",
+					"style" : "rfmo_marine_unspecified_inland_noborders",
+					"centerCoords" : [-68, 18],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "AIA", "ATG", "BHS", "BRB",
+								"BLZ", "GRD", "GUY", "HTI", "JAM",
+								"MSR", "LCA", "KNA", "VCT", "SUR",
+								"TTO", "TCA" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-93.0, 0, -47, 33],
+					"fid" : "24535",
+					"type" : "MI",
+					"globalZoom" : "false",
+					"code" : "crfm",
+					"isMasked" : "false"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/ctmfm/en",
+						"title" : "Joint Technical Commission of the Maritime Front (CTMFM)"
+					},
+					"name" : "CTMFM",
+					"style" : "rfmo_marine_noborder",
+					"centerCoords" : [-55,-36],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "ARG", "URY" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-90, -55, -20, -15],
+					"fid" : "21780",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "ctmfm",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/eifaac/en",
+						"title" : "European Inland Fisheries and Aquaculture Advisory Commission (EIFAAC)"
+					},
+					"name" : "EIFAAC",
+					"style" : "rfmo_inland_noborder",
+					"centerCoords" : [12, 48],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "ALB", "AUT", "BEL", "BIH",
+								"BGR", "HRV", "CYP", "CZE", "DNK",
+								"EST", "EUR", "FIN", "FRA", "DEU",
+								"GRC", "HUN", "ISL", "IRL", "ISR",
+								"ITA", "LVA", "LTU", "LUX", "NLD",
+								"NOR", "POL", "PRT", "ROU", "SVK",
+								"ESP", "SWE", "CHE", "TUR", "GBR" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-35, 20, 55, 80],
+					"fid" : "22050",
+					"type" : "I",
+					"globalZoom" : "false",
+					"code" : "eifaac",
+					"isMasked" : "false"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/fcwc/en",
+						"title" : "Fishery Committee of the West Central Gulf of Guinea (FCWC)"
+					},
+					"name" : "FCWC",
+					"style" : "rfmo_marine_noborder",
+					"centerCoords" : [0, 7],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "BEN", "CIV", "GHA", "LBR",
+								"NGA", "TGO" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-45, -25, 45, 30],
+					"fid" : "24537",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "fcwc",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/ffa/en",
+						"title" : "Forum Fisheries Agency (FFA)"
+					},
+					"name" : "FFA",
+					"style" : "rfmo_unspecified_noborder",
+					"centerCoords" : [-19600000, -3200000],
+					"srs" : "3349",
+					"members" : {
+						"country" : [ "AUS", "COK", "FJI", "KIR",
+								"MHL", "FSM", "NRU", "NZL", "NIU",
+								"PLW", "PNG", "WSM", "SLB", "TKL",
+								"TON", "TUV", "VUT" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-12000000, -9000000, 5000000, 3000000],
+					"fid" : "20160",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "ffa",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/gfcm/en",
+						"title" : "General Fisheries Commission for the Mediterranean (GFCM)"
+					},
+					"name" : "GFCM",
+					"style" : "rfmo_marine_noborder",
+					"centerCoords" : [12, 48],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "ALB", "DZA", "BGR", "HRV",
+								"CYP", "EUR", "EGY", "FRA", "GRC",
+								"ISR", "ITA", "JPN", "LBN", "LBY",
+								"MLT", "MCO", "MNE", "MAR", "ROU",
+								"SVN", "ESP", "SYR", "TUN", "TUR" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-30, 15, 50, 75],
+					"fid" : "24561",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "gfcm",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/iattc/en",
+						"title" : "Inter-American Tropical Tuna Commission (IATTC)"
+					},
+					"name" : "IATTC",
+					"style" : "rfmo_marine_border",
+					"centerCoords" : [-13400000, 1000000.0],
+					"srs" : "3349",
+					"members" : {
+						"country" : [ "BLZ", "CAN", "CHN", "TWN",
+								"COL", "CRI", "ECU", "SLV", "EUR",
+								"FRA", "GTM", "KIR", "JPN", "MEX",
+								"NIC", "PAN", "PER", "KOR", "USA",
+								"VUT", "VEN" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-20037508.34, -20037508.34, 20037508.34, 20037508.34],
+					"fid" : "9967",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "iattc",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/iccat/en",
+						"title" : "International Commission for the Conservation of Atlantic Tunas (ICCAT)"
+					},
+					"name" : "ICCAT",
+					"style" : "rfmo_marine_noborder",
+					"centerCoords" : [-40, 0],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "ALB", "DZA", "AGO", "BRB",
+								"BLZ", "BRA", "CAN", "CPV", "CHN",
+								"SLE", "CIV", "CUW", "EGY", "SLV",
+								"GNQ", "EUR", "FRA", "GAB", "GHA",
+								"GTM", "GIN", "HND", "ISL", "JPN",
+								"LBR", "LBY", "MAR", "MRT", "MEX",
+								"NAM", "NIC", "NGA", "NOR", "PAN",
+								"PHL", "KOR", "RUS", "VCT", "STP",
+								"SEN", "SLE", "ZAF", "SYR", "TTO",
+								"TUN", "TUR", "GBR", "USA", "URY",
+								"VUT", "VEN" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-100, -85, 50, 90],
+					"fid" : "9294",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "iccat",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/ices/en",
+						"title" : "International Council for the Exploration of the Sea (ICES)"
+					},
+					"name" : "ICES",
+					"style" : "rfmo_marine_noborder",
+					"centerCoords" : [0, 60],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "BEL", "CAN", "DNK", "EST",
+								"FIN", "FRA", "DEU", "ISL", "IRL",
+								"LVA", "LTU", "NLD", "NOR", "POL",
+								"PRT", "RUS", "ESP", "SWE", "GBR",
+								"USA" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-45, 32, 70, 90],
+					"fid" : "2137",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "ices",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/iotc/en",
+						"title" : "Indian Ocean Tuna Commission (IOTC)"
+					},
+					"name" : "IOTC",
+					"style" : "rfmo_marine_border",
+					"centerCoords" : [80, -10],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "AUS", "BLZ", "CHN", "COM",
+								"ERI", "EUR", "FRA", "GIN", "IND",
+								"IDN", "IRN", "JPN", "KEN", "MDG",
+								"MYS", "MDV", "MUS", "MOZ", "OMN",
+								"PAK", "PHL", "KOR", "SYC", "SLE",
+								"SOM", "LKA", "SDN", "THA", "GBR",
+								"TZA", "VUT", "YEM" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-25, -56, 150, 75],
+					"fid" : "85",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "iotc",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/iphc/en",
+						"title" : "International Pacific Halibut Commission (IPHC)"
+					},
+					"name" : "IPHC",
+					"style" : "rfmo_marine_noborder",
+					"centerCoords" : [-17037508.34, 7800000.0],
+					"srs" : "3349",
+					"members" : {
+						"country" : [ "CAN", "USA" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-5893240, 3922651, 5967525, 12804929.34],
+					"fid" : "1738",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "iphc",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/iwc/en",
+						"title" : "International Whaling Commission (IWC)"
+					},
+					"name" : "IWC",
+					"style" : "rfmo_unspecified_noborder",
+					"centerCoords" : "null",
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "ATG", "ARG", "AUS", "AUT",
+								"BEL", "BLZ", "BEN", "BRA", "BGR",
+								"KHM", "CMR", "CHL", "CHN", "COL",
+								"COG", "CRI", "CIV", "HRV", "CYP",
+								"CZE", "DNK", "DMA", "DOM", "ECU",
+								"ERI", "EST", "FIN", "FRA", "GAB",
+								"GMB", "DEU", "GHA", "GRD", "GTM",
+								"GIN", "GNB", "HUN", "ISL", "IND",
+								"IRL", "ISR", "ITA", "JPN", "KEN",
+								"KIR", "LAO", "LTU", "LUX", "MLI",
+								"MHL", "MRT", "MEX", "MCO", "MNG",
+								"MAR", "NRU", "NLD", "NZL", "NIC",
+								"NOR", "OMN", "PLW", "PAN", "PER",
+								"POL", "PRT", "KOR", "ROU", "RUS",
+								"KNA", "LCA", "VCT", "SMR", "SEN",
+								"SVK", "SVN", "SLB", "ZAF", "ESP",
+								"SUR", "SWE", "CHE", "TGO", "TUV",
+								"GBR", "USA", "TZA", "URY" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : "null",
+					"fid" : "477",
+					"type" : "M",
+					"globalZoom" : "true",
+					"code" : "iwc",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/jointfish/en",
+						"title" : "Joint Norwegian-Russian Fisheries Commission (JointFish)"
+					},
+					"name" : "JOINTFISH",
+					"style" : "rfmo_marine_noborder",
+					"centerCoords" : [32, 73],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "NOR", "RUS" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [0, 40, 70, 85],
+					"fid" : "24563",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "jointfish",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/lta/en",
+						"title" : "Lake Tanganyika Authority (LTA)"
+					},
+					"name" : "LTA",
+					"style" : "rfmo_inland_noborder",
+					"centerCoords" : [30, -5],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "BDI", "COD", "TZA", "ZMB" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-5,-30, 60,15],
+					"fid" : "8692",
+					"type" : "I",
+					"globalZoom" : "false",
+					"code" : "lta",
+					"isMasked" : "false"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/lvfo/en",
+						"title" : "Lake Victoria Fisheries Organization (LVFO)"
+					},
+					"name" : "LVFO",
+					"style" : "rfmo_inland_noborder",
+					"centerCoords" : [36.55, -2.6],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "KEN", "UGA", "TZA" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [0.778515625, -29.055078125, 72, 19.2],
+					"fid" : "21480",
+					"type" : "I",
+					"globalZoom" : "false",
+					"code" : "lvfo",
+					"isMasked" : "false"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/mrc/en",
+						"title" : "Mekong River Commission (MRC)"
+					},
+					"name" : "MRC",
+					"style" : "rfmo_inland_noborder",
+					"centerCoords" : "null",
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "KHM", "LAO", "THA", "VNM" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [80.0, 1.0, 115.0, 32],
+					"fid" : "23920",
+					"type" : "I",
+					"globalZoom" : "false",
+					"code" : "mrc",
+					"isMasked" : "false"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/naca/en",
+						"title" : "Network of Aquaculture Centers in Asia-Pacific (NACA)"
+					},
+					"name" : "NACA",
+					"style" : "rfmo_inland_noborder",
+					"centerCoords" : [110, 5],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "AUS", "BGD", "KHM", "CHN",
+								"HKG", "IND", "IDN", "IRN", "PRK",
+								"LAO", "MYS", "MMR", "NPL", "PAK",
+								"PHL", "LKA", "THA", "VNM" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [70, -35, 155, 55],
+					"fid" : "20290",
+					"type" : "I",
+					"globalZoom" : "false",
+					"code" : "naca",
+					"isMasked" : "false"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/nafo/en",
+						"title" : "Northwest Atlantic Fisheries Organization (NAFO)"
+					},
+					"name" : "NAFO",
+					"style" : "rfmo_marine_regulatory_noborder",
+					"centerCoords" : [-60, 55],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "CAN", "CUB", "DNK", "FRO",
+								"GRL", "EUR", "FRA", "ISL", "JPN",
+								"NOR", "KOR", "RUS", "UKR", "USA" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-85, 30, -35, 85],
+					"fid" : "7538",
+					"type" : "MR",
+					"globalZoom" : "false",
+					"code" : "nafo",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/nammco/en",
+						"title" : "North Atlantic Marine Mammal Commission (NAMMCO)"
+					},
+					"name" : "NAMMCO",
+					"style" : "rfmo_marine_noborder",
+					"centerCoords" : [-20, 55],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "FRO", "GRL", "ISL", "NOR" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-85, 30, 70, 90],
+					"fid" : "21090",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "nammco",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/nasco/en",
+						"title" : "North Atlantic Salmon Conservation Organization (NASCO)"
+					},
+					"name" : "NASCO",
+					"style" : "rfmo_marine_noborder",
+					"centerCoords" : [-20, 55],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "CAN", "DNK", "EUR", "NOR",
+								"RUS", "USA" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-85, 30, 70, 90],
+					"fid" : "22980",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "nasco",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/neafc/en",
+						"title" : "North-East Atlantic Fisheries Commission (NEAFC)"
+					},
+					"name" : "NEAFC",
+					"style" : "rfmo_marine_regulatory_border",
+					"centerCoords" : [5, 59],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "DNK", "EUR", "ISL", "NOR",
+								"RUS", "SJM" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-43, 36, 51.5, 90],
+					"fid" : "21580",
+					"type" : "MR",
+					"globalZoom" : "false",
+					"code" : "neafc",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/npfc/en",
+						"title" : "North Pacific Fisheries Commission (NPFC)"
+					},
+					"name" : "NPFC",
+					"style" : "rfmo_marine_noborder",
+					"centerCoords" : [20037508.34, 4800000.0],
+					"srs" : "3349",
+					"members" : {
+						"country" : [ "CAN", "CHN", "JPN", "KOR",
+								"RUS", "TWN", "USA" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-5893240, 3922651, 5967525, 12804929.34],
+					"fid" : "24564",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "npfc",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/npafc/en",
+						"title" : "North Pacific Anadromous Fish Commission (NPAFC)"
+					},
+					"name" : "NPAFC",
+					"style" : "rfmo_marine_noborder",
+					"centerCoords" : [20037508.34, 7800000.0],
+					"srs" : "3349",
+					"members" : {
+						"country" : [ "CAN", "JPN", "KOR", "RUS", "USA" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-5893240, 3922651, 5967525, 12804929.34],
+					"fid" : "9905",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "npafc",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/oldepesca/en",
+						"title" : "Latin-American Fisheries Development Organization (OLDEPESCA)"
+					},
+					"name" : "OLDEPESCA",
+					"style" : "rfmo_marine_unspecified_inland_noborders",
+					"centerCoords" : [-80, 10],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "BLZ", "BOL", "CRI", "CUB",
+								"ECU", "SLV", "GUY", "HND", "MEX",
+								"NIC", "PER", "VEN" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-120, -30, -50, 35],
+					"fid" : "22110",
+					"type" : "MI",
+					"globalZoom" : "false",
+					"code" : "oldepesca",
+					"isMasked" : "false"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/ospesca/en",
+						"title" : "Central America Fisheries and Aquaculture Organization (OSPESCA)"
+					},
+					"name" : "OSPESCA",
+					"style" : "rfmo_marine_unspecified_inland_noborders",
+					"centerCoords" : "null",
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "BLZ", "CRI", "DOM", "SLV",
+								"GTM", "HND", "NIC", "PAN" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-125.0, -16.0, -35.0, 45.0],
+					"fid" : "23700",
+					"type" : "MI",
+					"globalZoom" : "false",
+					"code" : "ospesca",
+					"isMasked" : "false"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/persga/en",
+						"title" : "Red Sea and Gulf of Aden Environment Programme (PERSGA)"
+					},
+					"name" : "PERSGA",
+					"style" : "rfmo_marine_border",
+					"centerCoords" : [40, 15],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "DJI", "EGY", "JOR", "SAU",
+								"SOM", "SDN", "YEM" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [31, 7, 65, 45],
+					"fid" : "270",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "persga",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/pices/en",
+						"title" : "North Pacific Marine Science Organization  (PICES)"
+					},
+					"name" : "PICES",
+					"style" : "rfmo_marine_noborder",
+					"centerCoords" : [-20037508.34, 7800000.0],
+					"srs" : "3349",
+					"members" : {
+						"country" : [ "CAN", "CHN", "JPN", "KOR",
+								"RUS", "USA" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-5693240, 3722651, 5767525, 10804929.34],
+					"fid" : "20210",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "pices",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/psc/en",
+						"title" : "Pacific Salmon Commission (PSC)"
+					},
+					"name" : "PSC",
+					"style" : "rfmo_marine_noborder",
+					"centerCoords" : [-17037508.34, 7800000.0],
+					"srs" : "3349",
+					"members" : {
+						"country" : [ "CAN", "USA" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-5893240, 3922651, 5967525, 12804929.34],
+					"fid" : "9906",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "psc",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/recofi/en",
+						"title" : "Regional Commission for Fisheries (RECOFI)"
+					},
+					"name" : "RECOFI",
+					"style" : "rfmo_marine_border",
+					"centerCoords" : [51, 27],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "BHR", "IRQ", "IRN", "KWT",
+								"OMN", "QAT", "SAU", "ARE" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [31, 7, 65, 45],
+					"fid" : "24538",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "recofi",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/seafdec/en",
+						"title" : "Southeast Asian Fisheries Development Center (SEAFDEC)"
+					},
+					"name" : "SEAFDEC",
+					"style" : "rfmo_marine_inland_unspecified_noborder",
+					"centerCoords" : [110, 10],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "BRN", "KHM", "IDN", "JPN",
+								"LAO", "MYS", "MMR", "PHL", "SGP",
+								"THA", "VNM" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [70, -35, 155, 50],
+					"fid" : "9317",
+					"type" : "MI",
+					"globalZoom" : "false",
+					"code" : "seafdec",
+					"isMasked" : "false"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/seafo/en",
+						"title" : "South East Atlantic Fisheries Organisation (SEAFO)"
+					},
+					"name" : "SEAFO",
+					"style" : "rfmo_marine_border",
+					"centerCoords" : [5, 9],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "AGO", "EUR", "JPN", "NAM",
+								"NOR", "KOR", "ZAF" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-25, -55, 37, 60],
+					"fid" : "22140",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "seafo",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/siofa/en",
+						"title" : "South Indian Ocean Fisheries Agreement (SIOFA)"
+					},
+					"name" : "SIOFA",
+					"style" : "rfmo_marine_noborder",
+					"centerCoords" : [75, -25],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "AUS", "COK", "EUR", "FRA",
+								"JPN", "KOR", "MUS", "SYC" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [30, -55, 120, 15],
+					"fid" : "24539",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "siofa",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/spc/en",
+						"title" : "Secretariat of the Pacific Community (SPC)"
+					},
+					"name" : "SPC",
+					"style" : "rfmo_marine_noborder",
+					"centerCoords" : [-19600000, -3200000],
+					"srs" : "3349",
+					"members" : {
+						"country" : [ "ASM", "AUS", "COK", "FSM",
+								"FJI", "FRA", "PYF", "GUM", "KIR",
+								"MHL", "NRU", "NCL", "NIU", "MNP",
+								"PLW", "PNG", "PCN", "WSM", "SLB",
+								"TKL", "TON", "TUV", "USA", "VUT",
+								"WLF" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-12000000, -9000000, 5000000, 3000000],
+					"fid" : "21000",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "spc",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/sprfmo/en",
+						"title" : "South Pacific Regional Fisheries Management Organisation (SPRFMO)"
+					},
+					"name" : "SPRFMO",
+					"style" : "rfmo_marine_noborder",
+					"centerCoords" : [-19600000, -3200000],
+					"srs" : "3349",
+					"members" : {
+						"country" : [ "AUS", "BLZ", "CHL", "CHN",
+								"COK", "CUB", "ECU", "EUR", "DNK",
+								"KOR", "VUT", "NZL", "RUS", "TWN" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-12000000, -9000000, 5000000, 3000000],
+					"fid" : "24558",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "sprfmo",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/srfc/en",
+						"title" : "Subregional Fisheries Commission (SRFC)"
+					},
+					"name" : "SRFC",
+					"style" : "rfmo_marine_noborder",
+					"centerCoords" : [-15, 15],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "CPV", "GMB", "GIN", "GNB",
+								"MRT", "SEN", "SLE" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-31, 0, -4, 31],
+					"fid" : "24540",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "srfc",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/swiofc/en",
+						"title" : "Southwest Indian Ocean Fisheries Commission (SWIOFC)"
+					},
+					"name" : "SWIOFC",
+					"style" : "rfmo_marine_noborder",
+					"centerCoords" : [55, -10],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "COM", "FRA", "KEN", "MDG",
+								"MDV", "MUS", "MOZ", "SYC", "SOM",
+								"ZAF", "TZA", "YEM" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [5, -50, 82, 30],
+					"fid" : "24541",
+					"type" : "MA",
+					"globalZoom" : "false",
+					"code" : "swiofc",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/wcpfc/en",
+						"title" : "Western and Central Pacific Fisheries Commission (WCPFC)"
+					},
+					"name" : "WCPFC",
+					"style" : "rfmo_marine_noborder",
+					"centerCoords" : [-18400000, 1000000.0],
+					"srs" : "3349",
+					"members" : {
+						"country" : [ "AUS", "CAN", "CHN", "COK",
+								"EUR", "FJI", "FRA", "IDN", "JPN",
+								"KIR", "MHL", "FSM", "NRU", "NZL",
+								"NIU", "PLW", "PNG", "PHL", "KOR",
+								"WSM", "SLB", "TON", "TWN", "TUV",
+								"USA", "VUT" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-20037508.34, -20037508.34, 20037508.34, 20037508.34],
+					"fid" : "24542",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "wcpfc",
+					"isMasked" : "true"
+				},
+				{
+					"descriptor" : {
+						"link" : "http://www.fao.org/fishery/rfb/wecafc/en",
+						"title" : "Western Central Atlantic Fishery Commission (WECAFC)"
+					},
+					"name" : "WECAFC",
+					"style" : "rfmo_marine_noborder",
+					"centerCoords" : [-65, 20],
+					"srs" : "4326",
+					"members" : {
+						"country" : [ "ATG", "BHS", "BRB", "BLZ",
+								"BRA", "COL", "CUB", "DMA", "DOM",
+								"EUR", "FRA", "GRD", "GTM", "GIN",
+								"GUY", "HTI", "HND", "JAM", "JPN",
+								"MEX", "NLD", "NIC", "PAN", "KOR",
+								"KNA", "LCA", "VCT", "ESP", "SUR",
+								"TTO", "GBR", "USA", "VEN" ],
+						"src" : "FIGIS"
+					},
+					"zoomExtent" : [-110, -40, -20, 55],
+					"fid" : "22150",
+					"type" : "M",
+					"globalZoom" : "false",
+					"code" : "wecafc",
+					"isMasked" : "true"
+				} ]
+	},
+	"statics" : {
+		"static" : [
+				{
+					"value" : "Angola",
+					"name" : "COUNTRY_ISO3_AGO"
+				},
+				{
+					"value" : "Anguilla",
+					"name" : "COUNTRY_ISO3_AIA"
+				},
+				{
+					"value" : "Albania",
+					"name" : "COUNTRY_ISO3_ALB"
+				},
+				{
+					"value" : "United Arab Emirates",
+					"name" : "COUNTRY_ISO3_ARE"
+				},
+				{
+					"value" : "Argentina",
+					"name" : "COUNTRY_ISO3_ARG"
+				},
+				{
+					"value" : "Armenia",
+					"name" : "COUNTRY_ISO3_ARM"
+				},
+				{
+					"value" : "American Samoa",
+					"name" : "COUNTRY_ISO3_ASM"
+				},
+				{
+					"value" : "Antigua and Barbuda",
+					"name" : "COUNTRY_ISO3_ATG"
+				},
+				{
+					"value" : "Australia",
+					"name" : "COUNTRY_ISO3_AUS"
+				},
+				{
+					"value" : "Austria",
+					"name" : "COUNTRY_ISO3_AUT"
+				},
+				{
+					"value" : "Azerbaijan",
+					"name" : "COUNTRY_ISO3_AZE"
+				},
+				{
+					"value" : "Burundi",
+					"name" : "COUNTRY_ISO3_BDI"
+				},
+				{
+					"value" : "Belgium",
+					"name" : "COUNTRY_ISO3_BEL"
+				},
+				{
+					"value" : "Benin",
+					"name" : "COUNTRY_ISO3_BEN"
+				},
+				{
+					"value" : "Burkina Faso",
+					"name" : "COUNTRY_ISO3_BFA"
+				},
+				{
+					"value" : "Bangladesh",
+					"name" : "COUNTRY_ISO3_BGD"
+				},
+				{
+					"value" : "Bulgaria",
+					"name" : "COUNTRY_ISO3_BGR"
+				},
+				{
+					"value" : "Bahrain",
+					"name" : "COUNTRY_ISO3_BHR"
+				},
+				{
+					"value" : "Bahamas",
+					"name" : "COUNTRY_ISO3_BHS"
+				},
+				{
+					"value" : "Bosnia and Herzegovina",
+					"name" : "COUNTRY_ISO3_BIH"
+				},
+				{
+					"value" : "Belize",
+					"name" : "COUNTRY_ISO3_BLZ"
+				},
+				{
+					"value" : "Bolivia (Plurinat.State)",
+					"name" : "COUNTRY_ISO3_BOL"
+				},
+				{
+					"value" : "Brazil",
+					"name" : "COUNTRY_ISO3_BRA"
+				},
+				{
+					"value" : "Barbados",
+					"name" : "COUNTRY_ISO3_BRB"
+				},
+				{
+					"value" : "Brunei Darussalam",
+					"name" : "COUNTRY_ISO3_BRN"
+				},
+				{
+					"value" : "Botswana",
+					"name" : "COUNTRY_ISO3_BWA"
+				},
+				{
+					"value" : "Central African Republic",
+					"name" : "COUNTRY_ISO3_CAF"
+				},
+				{
+					"value" : "Canada",
+					"name" : "COUNTRY_ISO3_CAN"
+				},
+				{
+					"value" : "Switzerland",
+					"name" : "COUNTRY_ISO3_CHE"
+				},
+				{
+					"value" : "Chile",
+					"name" : "COUNTRY_ISO3_CHL"
+				},
+				{
+					"value" : "China",
+					"name" : "COUNTRY_ISO3_CHN"
+				},
+				{
+					"value" : "Côte d'Ivoire",
+					"name" : "COUNTRY_ISO3_CIV"
+				},
+				{
+					"value" : "Cameroon",
+					"name" : "COUNTRY_ISO3_CMR"
+				},
+				{
+					"value" : "Dem. Rep. of the Congo",
+					"name" : "COUNTRY_ISO3_COD"
+				},
+				{
+					"value" : "Congo",
+					"name" : "COUNTRY_ISO3_COG"
+				},
+				{
+					"value" : "Cook Islands",
+					"name" : "COUNTRY_ISO3_COK"
+				},
+				{
+					"value" : "Colombia",
+					"name" : "COUNTRY_ISO3_COL"
+				},
+				{
+					"value" : "Comoros",
+					"name" : "COUNTRY_ISO3_COM"
+				},
+				{
+					"value" : "Cabo Verde",
+					"name" : "COUNTRY_ISO3_CPV"
+				},
+				{
+					"value" : "Costa Rica",
+					"name" : "COUNTRY_ISO3_CRI"
+				},
+				{
+					"value" : "Cuba",
+					"name" : "COUNTRY_ISO3_CUB"
+				},
+				{
+					"value" : "Curaçao",
+					"name" : "COUNTRY_ISO3_CUW"
+				},
+				{
+					"value" : "Cyprus",
+					"name" : "COUNTRY_ISO3_CYP"
+				},
+				{
+					"value" : "Czech Republic",
+					"name" : "COUNTRY_ISO3_CZE"
+				},
+				{
+					"value" : "Germany",
+					"name" : "COUNTRY_ISO3_DEU"
+				},
+				{
+					"value" : "Djibouti",
+					"name" : "COUNTRY_ISO3_DJI"
+				},
+				{
+					"value" : "Dominica",
+					"name" : "COUNTRY_ISO3_DMA"
+				},
+				{
+					"value" : "Denmark",
+					"name" : "COUNTRY_ISO3_DNK"
+				},
+				{
+					"value" : "Dominican Republic",
+					"name" : "COUNTRY_ISO3_DOM"
+				},
+				{
+					"value" : "Algeria",
+					"name" : "COUNTRY_ISO3_DZA"
+				},
+				{
+					"value" : "Ecuador",
+					"name" : "COUNTRY_ISO3_ECU"
+				},
+				{
+					"value" : "Egypt",
+					"name" : "COUNTRY_ISO3_EGY"
+				},
+				{
+					"value" : "Eritrea",
+					"name" : "COUNTRY_ISO3_ERI"
+				},
+				{
+					"value" : "Spain",
+					"name" : "COUNTRY_ISO3_ESP"
+				},
+				{
+					"value" : "Estonia",
+					"name" : "COUNTRY_ISO3_EST"
+				},
+				{
+					"value" : "Ethiopia",
+					"name" : "COUNTRY_ISO3_ETH"
+				},
+				{
+					"value" : "European Union",
+					"name" : "COUNTRY_ISO3_EUR"
+				},
+				{
+					"value" : "Finland",
+					"name" : "COUNTRY_ISO3_FIN"
+				},
+				{
+					"value" : "Republic of Fiji",
+					"name" : "COUNTRY_ISO3_FJI"
+				},
+				{
+					"value" : "France",
+					"name" : "COUNTRY_ISO3_FRA"
+				},
+				{
+					"value" : "Faroe Islands",
+					"name" : "COUNTRY_ISO3_FRO"
+				},
+				{
+					"value" : "Fed.States of Micronesia",
+					"name" : "COUNTRY_ISO3_FSM"
+				},
+				{
+					"value" : "Gabon",
+					"name" : "COUNTRY_ISO3_GAB"
+				},
+				{
+					"value" : "United Kingdom",
+					"name" : "COUNTRY_ISO3_GBR"
+				},
+				{
+					"value" : "Ghana",
+					"name" : "COUNTRY_ISO3_GHA"
+				},
+				{
+					"value" : "Guinea",
+					"name" : "COUNTRY_ISO3_GIN"
+				},
+				{
+					"value" : "Gambia",
+					"name" : "COUNTRY_ISO3_GMB"
+				},
+				{
+					"value" : "Guinea-Bissau",
+					"name" : "COUNTRY_ISO3_GNB"
+				},
+				{
+					"value" : "Equatorial Guinea",
+					"name" : "COUNTRY_ISO3_GNQ"
+				},
+				{
+					"value" : "Greece",
+					"name" : "COUNTRY_ISO3_GRC"
+				},
+				{
+					"value" : "Grenada",
+					"name" : "COUNTRY_ISO3_GRD"
+				},
+				{
+					"value" : "Greenland",
+					"name" : "COUNTRY_ISO3_GRL"
+				},
+				{
+					"value" : "Guatemala",
+					"name" : "COUNTRY_ISO3_GTM"
+				},
+				{
+					"value" : "Guam",
+					"name" : "COUNTRY_ISO3_GUM"
+				},
+				{
+					"value" : "Guyana",
+					"name" : "COUNTRY_ISO3_GUY"
+				},
+				{
+					"value" : "Hong Kong SAR China",
+					"name" : "COUNTRY_ISO3_HKG"
+				},
+				{
+					"value" : "Honduras",
+					"name" : "COUNTRY_ISO3_HND"
+				},
+				{
+					"value" : "Croatia",
+					"name" : "COUNTRY_ISO3_HRV"
+				},
+				{
+					"value" : "Haiti",
+					"name" : "COUNTRY_ISO3_HTI"
+				},
+				{
+					"value" : "Hungary",
+					"name" : "COUNTRY_ISO3_HUN"
+				},
+				{
+					"value" : "Indonesia",
+					"name" : "COUNTRY_ISO3_IDN"
+				},
+				{
+					"value" : "India",
+					"name" : "COUNTRY_ISO3_IND"
+				},
+				{
+					"value" : "Ireland",
+					"name" : "COUNTRY_ISO3_IRL"
+				},
+				{
+					"value" : "Iran (Islamic Rep. of)",
+					"name" : "COUNTRY_ISO3_IRN"
+				},
+				{
+					"value" : "Iraq",
+					"name" : "COUNTRY_ISO3_IRQ"
+				},
+				{
+					"value" : "Iceland",
+					"name" : "COUNTRY_ISO3_ISL"
+				},
+				{
+					"value" : "Israel",
+					"name" : "COUNTRY_ISO3_ISR"
+				},
+				{
+					"value" : "Italy",
+					"name" : "COUNTRY_ISO3_ITA"
+				},
+				{
+					"value" : "Jamaica",
+					"name" : "COUNTRY_ISO3_JAM"
+				},
+				{
+					"value" : "Jordan",
+					"name" : "COUNTRY_ISO3_JOR"
+				},
+				{
+					"value" : "Japan",
+					"name" : "COUNTRY_ISO3_JPN"
+				},
+				{
+					"value" : "Kenya",
+					"name" : "COUNTRY_ISO3_KEN"
+				},
+				{
+					"value" : "Kyrgyzstan",
+					"name" : "COUNTRY_ISO3_KGZ"
+				},
+				{
+					"value" : "Cambodia",
+					"name" : "COUNTRY_ISO3_KHM"
+				},
+				{
+					"value" : "Kiribati",
+					"name" : "COUNTRY_ISO3_KIR"
+				},
+				{
+					"value" : "Saint Kitts and Nevis",
+					"name" : "COUNTRY_ISO3_KNA"
+				},
+				{
+					"value" : "Republic of Korea",
+					"name" : "COUNTRY_ISO3_KOR"
+				},
+				{
+					"value" : "Kuwait",
+					"name" : "COUNTRY_ISO3_KWT"
+				},
+				{
+					"value" : "Lao People's Dem. Rep.",
+					"name" : "COUNTRY_ISO3_LAO"
+				},
+				{
+					"value" : "Lebanon",
+					"name" : "COUNTRY_ISO3_LBN"
+				},
+				{
+					"value" : "Liberia",
+					"name" : "COUNTRY_ISO3_LBR"
+				},
+				{
+					"value" : "Libya",
+					"name" : "COUNTRY_ISO3_LBY"
+				},
+				{
+					"value" : "Saint Lucia",
+					"name" : "COUNTRY_ISO3_LCA"
+				},
+				{
+					"value" : "Sri Lanka",
+					"name" : "COUNTRY_ISO3_LKA"
+				},
+				{
+					"value" : "Lesotho",
+					"name" : "COUNTRY_ISO3_LSO"
+				},
+				{
+					"value" : "Lithuania",
+					"name" : "COUNTRY_ISO3_LTU"
+				},
+				{
+					"value" : "Luxembourg",
+					"name" : "COUNTRY_ISO3_LUX"
+				},
+				{
+					"value" : "Latvia",
+					"name" : "COUNTRY_ISO3_LVA"
+				},
+				{
+					"value" : "Morocco",
+					"name" : "COUNTRY_ISO3_MAR"
+				},
+				{
+					"value" : "Monaco",
+					"name" : "COUNTRY_ISO3_MCO"
+				},
+				{
+					"value" : "Madagascar",
+					"name" : "COUNTRY_ISO3_MDG"
+				},
+				{
+					"value" : "Maldives",
+					"name" : "COUNTRY_ISO3_MDV"
+				},
+				{
+					"value" : "Mexico",
+					"name" : "COUNTRY_ISO3_MEX"
+				},
+				{
+					"value" : "Marshall Islands",
+					"name" : "COUNTRY_ISO3_MHL"
+				},
+				{
+					"value" : "Mali",
+					"name" : "COUNTRY_ISO3_MLI"
+				},
+				{
+					"value" : "Malta",
+					"name" : "COUNTRY_ISO3_MLT"
+				},
+				{
+					"value" : "Myanmar",
+					"name" : "COUNTRY_ISO3_MMR"
+				},
+				{
+					"value" : "Montenegro",
+					"name" : "COUNTRY_ISO3_MNE"
+				},
+				{
+					"value" : "Mongolia",
+					"name" : "COUNTRY_ISO3_MNG"
+				},
+				{
+					"value" : "Northern Mariana Is.",
+					"name" : "COUNTRY_ISO3_MNP"
+				},
+				{
+					"value" : "Mozambique",
+					"name" : "COUNTRY_ISO3_MOZ"
+				},
+				{
+					"value" : "Mauritania",
+					"name" : "COUNTRY_ISO3_MRT"
+				},
+				{
+					"value" : "Montserrat",
+					"name" : "COUNTRY_ISO3_MSR"
+				},
+				{
+					"value" : "Mauritius",
+					"name" : "COUNTRY_ISO3_MUS"
+				},
+				{
+					"value" : "Malawi",
+					"name" : "COUNTRY_ISO3_MWI"
+				},
+				{
+					"value" : "Malaysia",
+					"name" : "COUNTRY_ISO3_MYS"
+				},
+				{
+					"value" : "Namibia",
+					"name" : "COUNTRY_ISO3_NAM"
+				},
+				{
+					"value" : "New Caledonia",
+					"name" : "COUNTRY_ISO3_NCL"
+				},
+				{
+					"value" : "Niger",
+					"name" : "COUNTRY_ISO3_NER"
+				},
+				{
+					"value" : "Nigeria",
+					"name" : "COUNTRY_ISO3_NGA"
+				},
+				{
+					"value" : "Nicaragua",
+					"name" : "COUNTRY_ISO3_NIC"
+				},
+				{
+					"value" : "Niue",
+					"name" : "COUNTRY_ISO3_NIU"
+				},
+				{
+					"value" : "Netherlands",
+					"name" : "COUNTRY_ISO3_NLD"
+				},
+				{
+					"value" : "Norway",
+					"name" : "COUNTRY_ISO3_NOR"
+				},
+				{
+					"value" : "Nepal",
+					"name" : "COUNTRY_ISO3_NPL"
+				},
+				{
+					"value" : "Nauru",
+					"name" : "COUNTRY_ISO3_NRU"
+				},
+				{
+					"value" : "New Zealand",
+					"name" : "COUNTRY_ISO3_NZL"
+				},
+				{
+					"value" : "Oman",
+					"name" : "COUNTRY_ISO3_OMN"
+				},
+				{
+					"value" : "Pakistan",
+					"name" : "COUNTRY_ISO3_PAK"
+				},
+				{
+					"value" : "Panama",
+					"name" : "COUNTRY_ISO3_PAN"
+				},
+				{
+					"value" : "Pitcairn Islands",
+					"name" : "COUNTRY_ISO3_PCN"
+				},
+				{
+					"value" : "Peru",
+					"name" : "COUNTRY_ISO3_PER"
+				},
+				{
+					"value" : "Philippines",
+					"name" : "COUNTRY_ISO3_PHL"
+				},
+				{
+					"value" : "Palau",
+					"name" : "COUNTRY_ISO3_PLW"
+				},
+				{
+					"value" : "Papua New Guinea",
+					"name" : "COUNTRY_ISO3_PNG"
+				},
+				{
+					"value" : "Poland",
+					"name" : "COUNTRY_ISO3_POL"
+				},
+				{
+					"value" : "Dem. People's Rep Korea",
+					"name" : "COUNTRY_ISO3_PRK"
+				},
+				{
+					"value" : "Portugal",
+					"name" : "COUNTRY_ISO3_PRT"
+				},
+				{
+					"value" : "Paraguay",
+					"name" : "COUNTRY_ISO3_PRY"
+				},
+				{
+					"value" : "French Polynesia",
+					"name" : "COUNTRY_ISO3_PYF"
+				},
+				{
+					"value" : "Qatar",
+					"name" : "COUNTRY_ISO3_QAT"
+				},
+				{
+					"value" : "Romania",
+					"name" : "COUNTRY_ISO3_ROU"
+				},
+				{
+					"value" : "Russian Federation",
+					"name" : "COUNTRY_ISO3_RUS"
+				},
+				{
+					"value" : "Rwanda",
+					"name" : "COUNTRY_ISO3_RWA"
+				},
+				{
+					"value" : "Saudi Arabia",
+					"name" : "COUNTRY_ISO3_SAU"
+				},
+				{
+					"value" : "Sudan",
+					"name" : "COUNTRY_ISO3_SDN"
+				},
+				{
+					"value" : "Senegal",
+					"name" : "COUNTRY_ISO3_SEN"
+				},
+				{
+					"value" : "Singapore",
+					"name" : "COUNTRY_ISO3_SGP"
+				},
+				{
+					"value" : "Solomon Islands",
+					"name" : "COUNTRY_ISO3_SLB"
+				},
+				{
+					"value" : "Sierra Leone",
+					"name" : "COUNTRY_ISO3_SLE"
+				},
+				{
+					"value" : "El Salvador",
+					"name" : "COUNTRY_ISO3_SLV"
+				},
+				{
+					"value" : "San Marino",
+					"name" : "COUNTRY_ISO3_SMR"
+				},
+				{
+					"value" : "Somalia",
+					"name" : "COUNTRY_ISO3_SOM"
+				},
+				{
+					"value" : "Sao Tome and Principe",
+					"name" : "COUNTRY_ISO3_STP"
+				},
+				{
+					"value" : "Suriname",
+					"name" : "COUNTRY_ISO3_SUR"
+				},
+				{
+					"value" : "Slovakia",
+					"name" : "COUNTRY_ISO3_SVK"
+				},
+				{
+					"value" : "Slovenia",
+					"name" : "COUNTRY_ISO3_SVN"
+				},
+				{
+					"value" : "Sweden",
+					"name" : "COUNTRY_ISO3_SWE"
+				},
+				{
+					"value" : "Swaziland",
+					"name" : "COUNTRY_ISO3_SWZ"
+				},
+				{
+					"value" : "Seychelles",
+					"name" : "COUNTRY_ISO3_SYC"
+				},
+				{
+					"value" : "Syrian Arab Republic",
+					"name" : "COUNTRY_ISO3_SYR"
+				},
+				{
+					"value" : "Turks and Caicos Is.",
+					"name" : "COUNTRY_ISO3_TCA"
+				},
+				{
+					"value" : "Chad",
+					"name" : "COUNTRY_ISO3_TCD"
+				},
+				{
+					"value" : "Togo",
+					"name" : "COUNTRY_ISO3_TGO"
+				},
+				{
+					"value" : "Thailand",
+					"name" : "COUNTRY_ISO3_THA"
+				},
+				{
+					"value" : "Tajikistan",
+					"name" : "COUNTRY_ISO3_TJK"
+				},
+				{
+					"value" : "Tokelau",
+					"name" : "COUNTRY_ISO3_TKL"
+				},
+				{
+					"value" : "Timor-Leste",
+					"name" : "COUNTRY_ISO3_TLS"
+				},
+				{
+					"value" : "Tonga",
+					"name" : "COUNTRY_ISO3_TON"
+				},
+				{
+					"value" : "Trinidad and Tobago",
+					"name" : "COUNTRY_ISO3_TTO"
+				},
+				{
+					"value" : "Tunisia",
+					"name" : "COUNTRY_ISO3_TUN"
+				},
+				{
+					"value" : "Turkey",
+					"name" : "COUNTRY_ISO3_TUR"
+				},
+				{
+					"value" : "Tuvalu",
+					"name" : "COUNTRY_ISO3_TUV"
+				},
+				{
+					"value" : "Taiwan Province of China",
+					"name" : "COUNTRY_ISO3_TWN"
+				},
+				{
+					"value" : "United Rep. of Tanzania",
+					"name" : "COUNTRY_ISO3_TZA"
+				},
+				{
+					"value" : "Uganda",
+					"name" : "COUNTRY_ISO3_UGA"
+				},
+				{
+					"value" : "Ukraine",
+					"name" : "COUNTRY_ISO3_UKR"
+				},
+				{
+					"value" : "Uruguay",
+					"name" : "COUNTRY_ISO3_URY"
+				},
+				{
+					"value" : "United States of America",
+					"name" : "COUNTRY_ISO3_USA"
+				},
+				{
+					"value" : "Saint Vincent/Grenadines",
+					"name" : "COUNTRY_ISO3_VCT"
+				},
+				{
+					"value" : "Boliv Rep of Venezuela",
+					"name" : "COUNTRY_ISO3_VEN"
+				},
+				{
+					"value" : "Viet Nam",
+					"name" : "COUNTRY_ISO3_VNM"
+				},
+				{
+					"value" : "Vanuatu",
+					"name" : "COUNTRY_ISO3_VUT"
+				},
+				{
+					"value" : "Wallis and Futuna Is.",
+					"name" : "COUNTRY_ISO3_WLF"
+				},
+				{
+					"value" : "Samoa",
+					"name" : "COUNTRY_ISO3_WSM"
+				},
+				{
+					"value" : "Yemen",
+					"name" : "COUNTRY_ISO3_YEM"
+				},
+				{
+					"value" : "South Africa",
+					"name" : "COUNTRY_ISO3_ZAF"
+				},
+				{
+					"value" : "Zambia",
+					"name" : "COUNTRY_ISO3_ZMB"
+				},
+				{
+					"value" : "Zimbabwe",
+					"name" : "COUNTRY_ISO3_ZWE"
+				},
+				{
+					"value" : "(No species selected)",
+					"name" : "(NO SPECIES SELECTED)"
+				},
+				{
+					"value" : "200 nmi arcs",
+					"name" : "200 NMI ARCS"
+				},
+				{
+					"en" : "200 nautical miles arcs",
+					"fr" : "Zones des 200 milles marins",
+					"name" : "200 NAUTICAL MILES ARCS",
+					"es" : "Arcos de 200 millas náuticas"
+				},
+				{
+					"en" : "FAO fishing areas",
+					"fr" : "Zones de pêche de la FAO",
+					"name" : "FAO FISHING AREAS",
+					"es" : "Zonas de pesca de la FAO"
+				},
+				{
+					"value" : "FAO areas and their sub-divisions",
+					"name" : "ALL FAO AREAS"
+				},
+				{
+					"value" : "Coordinates grid",
+					"name" : "COORDINATES GRID"
+				},
+				{
+					"value" : "FAO divisions",
+					"name" : "FAO_DIV"
+				},
+				{
+					"en" : "FAO major fishing areas",
+					"fr" : "Principales zones de pêche de la FAO",
+					"name" : "FAO_MAJOR"
+				},
+				{
+					"value" : "FAO sub areas",
+					"name" : "FAO_SUB_AREA"
+				},
+				{
+					"value" : "FAO sub divisions",
+					"name" : "FAO_SUB_DIV"
+				},
+				{
+					"value" : "GFCM geographical sub-areas",
+					"name" : "GFCM_SUB_AREA"
+				},
+				{
+					"value" : "ICCAT management unit",
+					"name" : "ICCAT_SMU"
+				},
+				{
+					"en" : "Intersecting: ",
+					"fr" : "Intersection : ",
+					"name" : "INTERSECTING"
+				},
+				{
+					"en" : "Geographic reference",
+					"fr" : "Référence géographique",
+					"name" : "ISO3_COUNTRY"
+				},
+				{
+					"value" : "Labels",
+					"name" : "MARINEAREAS"
+				},
+				{
+					"en" : "Members",
+					"fr" : "Membres",
+					"name" : "MEMBERS",
+					"es" : "Miembros"
+				},
+				{
+					"value" : "Countries - Union of countries",
+					"name" : "COUNTRY_BOUNDS"
+				},
+				{
+					"value" : "Pacific tuna reporting area",
+					"name" : "PAC_TUNA_REP"
+				},
+				{
+					"en" : "RFB Area of competence",
+					"fr" : "Zone de compétence du ORP",
+					"name" : "RFB_COMP"
+				},
+				{
+					"en" : "Area of competence",
+					"fr" : "Zone de compétence",
+					"name" : "RFMO_MARINE_NOBORDER",
+					"es" : "Área de competencia"
+				},
+				{
+					"en" : "Area of competence",
+					"fr" : "Zone de compétence",
+					"name" : "RFMO_INLAND_NOBORDER",
+					"es" : "Área de competencia"
+				},
+				{
+					"value" : "Area of competence without specified limits",
+					"name" : "RFMO_UNSPECIFIED_NOBORDER"
+				},
+				{
+					"value" : "Species distribution",
+					"name" : "SPECIES_DIST"
+				},
+				{
+					"value" : "VME Areas",
+					"name" : "VMEAREAS"
+				},
+				{
+					"en" : "<br /><i>In December 2009 the following countries were officially invited by the Director General to become member of the Commission: Armenia, Azerbaijan, People's Republic China, Georgia, Islamic Republic of Iran, Kazakhstan, Kyrgyzstan, Russian Federation, Tajikistan, Turkey, Turkmenistan, Uzbekistan, Afghanistan, Mongolia and Ukraine.</i>",
+					"name" : "LEGEND_NOTE_CACFISH"
+				},
+				{
+					"en" : "<br /><i>Dominican Republic has Associated State status.</i>",
+					"name" : "LEGEND_NOTE_OSPESCA"
+				},
+				{
+					"en" : "<br /><i>*The Convention for the Conservation of Southern Bluefin Tuna sets no geographic limits of competence; it extends over all national waters and the high seas, where southern bluefin tuna are found.</i>",
+					"name" : "LEGEND_NOTE_CCSBT"
+				},
+				{
+					"en" : "<br /><i>* Denmark (in respect of the Faroe Islands and Greenland)</i>",
+					"name" : "LEGEND_NOTE_SPRFMO"
+				},
+				{
+					"en" : "<br /><i>* Denmark (in respect of the Faroe Islands and Greenland)</i><br /><i>** France (in respect of St. Pierre and Miquelon)</i>",
+					"name" : "LEGEND_NOTE_NAFO"
+				},
+				{
+					"en" : "<br /><i>* Denmark (in respect of the Faroe Islands and Greenland)</i>",
+					"name" : "LEGEND_NOTE_NEAFC"
+				},
+				{
+					"en" : "<br /><i>* Denmark (in respect of the Faroe Islands and Greenland)</i>",
+					"name" : "LEGEND_NOTE_NASCO"
+				}, {
+					"value" : "(Select an RFB...)",
+					"name" : "SELECT_AN_RFB"
+				} ]
+	}
+});

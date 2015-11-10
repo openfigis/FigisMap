@@ -6,7 +6,7 @@ var RS = {
 	'speciesLoaded'		: false,
 	'speciesLoading'	: false,
 	'spLinkable'		: new Object(),
-	'spXmlUri'		: '/figis/geoserver/factsheets/js/specieslist.xml',
+	'spXmlUri'		: ( FigisMap.isRemoteDeveloper ? 'data/specieslist.xml' : '/figis/geoserver/factsheets/js/specieslist.xml'),
 	'maxSpecies'		: 10,
 	'prop' : {
 		'tgtForm' : 'refSearchRealForm',

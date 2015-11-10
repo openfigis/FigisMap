@@ -17,7 +17,8 @@ var FigisMap = {
 	rfb		: new Object(), // specific RFB methods collection
 	rnd		: new Object(), // FigisMap.renderer specific collection of methods and variabes
 	ol		: new Object(), // OpenLayers related utilities
-	isDeveloper	: ( document.domain.indexOf( '192.168.' ) == 0 || document.domain == 'localhost'),
+	isDeveloper	: ( document.domain.indexOf( '192.168.' ) == 0),
+	isRemoteDeveloper : ( document.domain == 'localhost' ),
 	lastMap		: null,
 	renderedMaps	: new Object(),
 	isTesting	: ( document.domain.indexOf('figisapps')==0 || document.domain.indexOf('figis02')==0 ||document.domain.indexOf('168.202.')==0||document.domain.indexOf('www-data.fao.org')==0 ),
@@ -95,8 +96,8 @@ FigisMap.defaults = {
 FigisMap.useProxy = true; //@eblondel set to true temporarily
 if ( ( FigisMap.currentSiteURI.indexOf(':8282') > 1 ) || ( FigisMap.currentSiteURI.indexOf(':8383') > 1 ) ) FigisMap.useProxy = true;
 
-FigisMap.geoServerAbsBase = FigisMap.isDeveloper ? (document.domain == 'localhost' ? 'http://www.fao.org' : 'http://192.168.1.106:8484') : ( FigisMap.isTesting ? 'http://168.202.3.223:8484' : ('http://' + document.domain ) );
-FigisMap.geoServerBase = document.domain == 'localhost'? 'http://www.fao.org' : '';
+FigisMap.geoServerAbsBase = FigisMap.isDeveloper ? (FigisMap.isRemoteDeveloper ? 'http://www.fao.org' : 'http://192.168.1.106:8484') : ( FigisMap.isTesting ? 'http://168.202.3.223:8484' : ('http://' + document.domain ) );
+FigisMap.geoServerBase = FigisMap.isRemoteDeveloper ? 'http://www.fao.org' : '';
 
 FigisMap.httpBaseRoot = FigisMap.geoServerBase + '/figis/geoserver/factsheets/';
 
@@ -168,7 +169,12 @@ document.write('<script type="text/javascript" language="javascript" src="' + Fi
 document.write('<script type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-layerswitcher.js"></script>');
 */
 
-document.write('<script type="text/javascript" language="javascript" src="'+FigisMap.geoServerBase+'/figis/moniker.jsonp.FigisMap.loadStaticMapData/figismapdata" charset="UTF-8"></script>');
+if( FigisMap.isRemoteDeveloper) {
+	//only for local tests
+	document.write('<script type="text/javascript" language="javascript" src="data/figismapdata" charset="UTF-8"></script>');
+} else {
+	document.write('<script type="text/javascript" language="javascript" src="/figis/moniker.jsonp.FigisMap.loadStaticMapData/figismapdata" charset="UTF-8"></script>');
+}
 
 
 /**
