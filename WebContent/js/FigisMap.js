@@ -1661,6 +1661,7 @@ FigisMap.renderer = function(options) {
 					'TILED'	 : true,
 					'TILESORIGIN': boundsOriginString
 				},
+				wrapX: true,
 				serverType : p.base.cached ? undefined : 'geoserver',
 				attributions: p.attribution ? [new ol.Attribution({html : p.attribution})] : []
 			})
@@ -1681,8 +1682,11 @@ FigisMap.renderer = function(options) {
 		
 		//Map widget
 		//----------
-		var viewProj = new ol.proj.Projection({code:'EPSG:'+projection});
-		viewProj.setExtent(myBounds);
+		var viewProj = new ol.proj.Projection({
+			code : 'EPSG:' + projection,
+			global: projection != 3031 ? true : false, //required to properly wrap the date line (when wrapX is true)
+			extent: myBounds
+		});
 		
 		myMap = new ol.Map({
 			target : p.target.id,
@@ -1788,6 +1792,7 @@ FigisMap.renderer = function(options) {
 					source : new ol.source.TileWMS({
 						url : wp.url,
 						params : wp.params,
+						wrapX: true,
 						serverType : 'geoserver'
 					}),
 					opacity : ( l.opacity )? l.opacity : 1.0,
