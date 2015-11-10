@@ -1,7 +1,7 @@
 /**
 *	FigisMap API
 *	Description: Generalized map call facility for the FIGIS application and factsheet maps
-*	Authors: M. Balestra, E. Blondel, A. Fabiani, A. Gentile, T. Di Pisa.
+*	Authors: M. Balestra, E. Blondel, A. Gentile, A. Fabiani, T. Di Pisa.
 *	UFT-8 glyph: 
 */
 
@@ -93,15 +93,17 @@ FigisMap.defaults = {
  */
 
 //FigisMap.isDeveloper ? false : ( FigisMap.isTesting ? FigisMap.currentSiteURI.indexOf(':8484') < 1 : ( FigisMap.currentSiteURI.indexOf('http://www.fao.org') != 0 ) );
-FigisMap.useProxy = true; //@eblondel set to true temporarily
-if ( ( FigisMap.currentSiteURI.indexOf(':8282') > 1 ) || ( FigisMap.currentSiteURI.indexOf(':8383') > 1 ) ) FigisMap.useProxy = true;
+FigisMap.useProxy = false;
+if ( ( FigisMap.currentSiteURI.indexOf(':8282') > 1 ) || ( FigisMap.currentSiteURI.indexOf(':8383') > 1 ) || FigisMap.isRemoteDeveloper) FigisMap.useProxy = true;
 
 FigisMap.geoServerAbsBase = FigisMap.isDeveloper ? (FigisMap.isRemoteDeveloper ? 'http://www.fao.org' : 'http://192.168.1.106:8484') : ( FigisMap.isTesting ? 'http://168.202.3.223:8484' : ('http://' + document.domain ) );
 FigisMap.geoServerBase = FigisMap.isRemoteDeveloper ? 'http://www.fao.org' : '';
 
-FigisMap.httpBaseRoot = FigisMap.geoServerBase + '/figis/geoserver/factsheets/';
+FigisMap.httpBaseRoot = FigisMap.isRemoteDeveloper ? '' : FigisMap.geoServerBase + '/figis/geoserver/factsheets/';
 
 FigisMap.localPathForGeoserver = "/figis/geoserver"; // "/figis/geoserverdv"
+
+FigisMap.data = (FigisMap.isRemoteDeveloper ? 'http://figisapps.fao.org' : '') + "/figis/moniker.jsonp.FigisMap.loadStaticMapData/figismapdata3";
 
 FigisMap.rnd.vars = {
 	geoserverURL		: FigisMap.geoServerBase + FigisMap.localPathForGeoserver,
@@ -158,23 +160,29 @@ FigisMap.loadStaticMapData = function(md) {
 
 if ( FigisMap.useProxy ) FigisMap.rnd.vars.wfs = FigisMap.currentSiteURI + '/FigisMapOL3/cgi-bin/proxy.cgi?url=' + escape( FigisMap.rnd.vars.absWfs );
 
-/* @eblondel disabled for testing OL3 scripts specified in html
 
-document.write('<script type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'js/vendor/proj4js/proj4.js"></script>');
-document.write('<script type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/4326.js"></script>');
-document.write('<script type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/3031.js"></script>');
-document.write('<script type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/900913.js"></script>');
-
-document.write('<script type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3.js"></script>');
-document.write('<script type="text/javascript" language="javascript" src="' + FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-layerswitcher.js"></script>');
-*/
-
-if( FigisMap.isRemoteDeveloper) {
-	//only for local tests
-	document.write('<script type="text/javascript" language="javascript" src="data/figismapdata" charset="UTF-8"></script>');
-} else {
-	document.write('<script type="text/javascript" language="javascript" src="/figis/moniker.jsonp.FigisMap.loadStaticMapData/figismapdata" charset="UTF-8"></script>');
+/**
+ * Simple function to load a javascript resource
+ * @param path - the javascript resource path (mandatory)
+ * @param charset (optional)
+ */
+FigisMap.loadScript = function(path, charset) {
+	document.write('<script type="text/javascript" language="javascript" ' + 
+					'src="' + path + '" ' +
+					(typeof charset != 'string'? 'charset="'+charset+'"' : '') +
+					'></script>');
 }
+
+//FigisMap dependencies
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/proj4.js');
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/4326.js');
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/3031.js');
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/900913.js');
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3.js');
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-layerswitcher.js');
+
+//FigisMap data
+FigisMap.loadScript(FigisMap.data, "UTF-8");
 
 
 /**
@@ -310,8 +318,8 @@ FigisMap.ol.reBound = function( proj0, proj1, bounds ) {
 		bounds = [-180, -90, 180, 90]
 	}
 	var ans = false;
-	//!OL2 if ( proj0 == 3349 ) proj0 = 900913;
-	//!OL2 if ( proj1 == 3349 ) proj1 = 900913;
+	if ( proj0 == 3349 ) proj0 = 900913;
+	if ( proj1 == 3349 ) proj1 = 900913;
 	if ( proj0 == proj1 ) ans = bounds;
 	if ( proj1 == 3031 ){
 		//!OL2 return new OpenLayers.Bounds(-12400000,-12400000, 12400000,12400000);
@@ -374,8 +382,8 @@ FigisMap.ol.dateline = function( b ) {
 FigisMap.ol.reCenter = function( proj0, proj1, center ) {
 	proj0 = parseInt( String( proj0.projCode ? proj0.projCode : proj0 ).replace(/^EPSG:/,'') );
 	proj1 = parseInt( String( proj1.projCode ? proj1.projCode : proj1 ).replace(/^EPSG:/,'') );
-	//!OL2 if ( proj0 == 3349 ) proj0 = 900913;
-	//!OL2 if ( proj1 == 3349 ) proj1 = 900913;
+	if ( proj0 == 3349 ) proj0 = 900913;
+	if ( proj1 == 3349 ) proj1 = 900913;
 	if ( center == null ) {
 		//!OL2 if ( proj1 == 900913 ) return new OpenLayers.LonLat(20037508.34, 4226661.92);
 		if( proj1 == 900913 ) return [20037508.34, 4226661.92];
@@ -392,7 +400,7 @@ FigisMap.ol.reCenter = function( proj0, proj1, center ) {
 	//!OL2 var source = new Proj4js.Proj( 'EPSG:' + proj0 );
 	//!OL2 var dest   = new Proj4js.Proj( 'EPSG:' + proj1 );
 	var source = new ol.proj.Projection({ code: 'EPSG:'+proj0 });
-	var target = new ol.proj.Projection({ code: 'EPSG:'+proj1 });
+	var dest = new ol.proj.Projection({ code: 'EPSG:'+proj1 });
 	
 	//!OL2 var centerPoint = new OpenLayers.Geometry.Point( center.lon, center.lat );
 	//!OL2 var newCenterPoint = Proj4js.transform(source, dest, centerPoint);
@@ -624,10 +632,9 @@ FigisMap.parser.projection = function( p ) {
 		if ( p.rfb && p.rfb == 'ICES' ) proj = 900913;
 	}
 	switch ( proj ) {
-		//!OL2 case   3349	: break;
-		//!OL2 case 900913	: break;
-		case 	900913	: break;
-		case	3031	: break;
+		case 3349	: break;
+		case 900913	: break;
+		case 3031	: break;
 		default			: proj = 4326;
 	}
 	return proj;
@@ -1594,7 +1601,7 @@ FigisMap.renderer = function(options) {
 		projection = pars.projection;
 		p = pars;
 		
-		//!OL2 if (projection == 3349) projection = 900913; // use google spherical mercator ...
+		if (projection == 3349) projection = 900913; // use google spherical mercator ...
 		
 		var mapMaxRes = FigisMap.rnd.maxResolution( projection, p ); //TODO ? OL3 in principle not use, to check
 		
@@ -1822,12 +1829,12 @@ FigisMap.renderer = function(options) {
 		
 		if ( p.global ) {
 			//!OL2 myMap.zoomToMaxExtent();
-			myMap.getView().fit(myMap.getView().get('extent'), myMap.getSize());
+			//myMap.getView().fit(myMap.getView().get('extent'), myMap.getSize()); TODO OL3
 			FigisMap.debug('Render for p.global');
 			//finalizeMap(); @eblondel moved to single call
 		} else if ( p.extent || p.center || p.zoom ) {
 			//!OL2 myMap.zoomToMaxExtent();
-			myMap.getView().fit(myMap.getView().get('extent'), myMap.getSize());
+			//myMap.getView().fit(myMap.getView().get('extent'), myMap.getSize()); TODO OL3
 			FigisMap.debug('Render for Extent', p.extent, 'zoomLevel', p.zoom, 'Center', p.center );
 			
 			//!OL2 if ( p.extent ) myMap.zoomToExtent( FigisMap.ol.reBound( p.dataProj, projection, p.extent ), false);
@@ -1915,7 +1922,7 @@ FigisMap.renderer = function(options) {
 		} else {
 			FigisMap.debug('No autozoom layers found');
 			//!OL2 myMap.zoomToMaxExtent();
-			myMap.getView().fit(myMap.getView().get('extent'), myMap.getSize());
+			//myMap.getView().fit(myMap.getView().get('extent'), myMap.getSize()); TODO OL3
 			//finalizeMap(); @eblondel moved to single call in render()
 		}
 	}
