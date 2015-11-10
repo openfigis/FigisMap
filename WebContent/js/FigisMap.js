@@ -119,6 +119,18 @@ FigisMap.rnd.vars = {
 	absWfs			: FigisMap.geoServerAbsBase + FigisMap.localPathForGeoserver + '/wfs?request=GetFeature&version=1.0.0&typename='
 };
 
+if ( FigisMap.useProxy ) FigisMap.rnd.vars.wfs = FigisMap.currentSiteURI + '/figis/proxy/cgi-bin/proxy.cgi?url=' + escape( FigisMap.rnd.vars.absWfs );
+
+
+/**
+ * FigisMap loader functions
+ * 
+ */
+
+/**
+ * FigisMap.loadStaticMapData
+ * @param md
+ */
 FigisMap.loadStaticMapData = function(md) {
 	FigisMap.rfbLayerSettings = new Object();
 	FigisMap.rfbLayerCountries = new Object();
@@ -157,9 +169,6 @@ FigisMap.loadStaticMapData = function(md) {
 		FigisMap.staticLabels.defined = true;
 	}
 };
-
-if ( FigisMap.useProxy ) FigisMap.rnd.vars.wfs = FigisMap.currentSiteURI + '/figis/proxy/cgi-bin/proxy.cgi?url=' + escape( FigisMap.rnd.vars.absWfs );
-
 
 /**
  * Simple function to load a javascript resource
