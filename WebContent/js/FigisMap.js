@@ -17,7 +17,7 @@ var FigisMap = {
 	rfb		: new Object(), // specific RFB methods collection
 	rnd		: new Object(), // FigisMap.renderer specific collection of methods and variabes
 	ol		: new Object(), // OpenLayers related utilities
-	isDeveloper	: ( document.domain.indexOf( '192.168.' ) == 0),
+	isDeveloper	: ( document.domain.indexOf( '192.168.' ) == 0 || document.domain == 'localhost'),
 	isRemoteDeveloper : ( document.domain == 'localhost' ),
 	lastMap		: null,
 	renderedMaps	: new Object(),
@@ -119,7 +119,7 @@ FigisMap.rnd.vars = {
 	absWfs			: FigisMap.geoServerAbsBase + FigisMap.localPathForGeoserver + '/wfs?request=GetFeature&version=1.0.0&typename='
 };
 
-if ( FigisMap.useProxy ) FigisMap.rnd.vars.wfs = FigisMap.currentSiteURI + '/figis/proxy/cgi-bin/proxy.cgi?url=' + escape( FigisMap.rnd.vars.absWfs );
+if ( FigisMap.useProxy ) FigisMap.rnd.vars.wfs = ( FigisMap.isRemoteDeveloper ? '' : FigisMap.currentSiteURI + '/figis/proxy/' ) +'/cgi-bin/proxy.cgi?url=' + escape( FigisMap.rnd.vars.absWfs );
 
 
 /**
@@ -457,23 +457,32 @@ FigisMap.ol.extend = function( bounds1, bounds2 ) {
 };
 
 /**
- * See later how we consider migrating this to OL3
- * 
+ * FigisMap.ol.gmlBbox
+ * Extracts the bounding box from a GML document
+ * @param xmlDoc
  */
 FigisMap.ol.gmlBbox = function( xmlDoc ) {
 	var e;
 	try {
-		var g = new OpenLayers.Format.GML(); //TODO ? OL3
-		var feat = g.read( xmlDoc );
-		var b;
-		for ( var i = 0; i < feat.length; i++ ) {
+		//!OL2 var gml = new OpenLayers.Format.GML();
+		//!OL2 var feat = gml.read( xmlDoc );
+		FigisMap.debug('FigisMap.ol.gmlBbox - XML:', xmlDoc);
+		var gml = new ol.format.WFS({gmlFormat : new ol.format.GML2()});
+		var features = gml.readFeatures( xmlDoc );
+		FigisMap.debug('FigisMap.ol.gmlbbox - Features', features);
+		var b = ol.extent.createEmpty();
+		for ( var i = 0; i < features.length; i++ ) {
+			var feature = features[i];
+			var fb = feature.getProperties().boundedBy;
+			fb = [fb[1], fb[0], fb[3], fb[2]]; //hack required to have right ordered bbox (investigate if it's not a bug in OL3)
 			if ( i == 0) {
-				b = feat[i].bounds;
+				extent = fb;
 			} else {
-				b = FigisMap.ol.extend( b, feat[i].bounds );
+				extent = FigisMap.ol.extend(extent, fb);
 			}
 		}
-		return b;
+		FigisMap.debug('FigisMap.ol.gmlbbox - Extent', extent);
+		return extent;
 	} catch(e) {
 		FigisMap.debug('FigisMap.ol.gmlBbox exception:', e, e.message, 'XML document:',xmlDoc );
 		return false;
@@ -1613,7 +1622,7 @@ FigisMap.renderer = function(options) {
 		
 		if (projection == 3349) projection = 900913; // use google spherical mercator ...
 		
-		var mapMaxRes = FigisMap.rnd.maxResolution( projection, p ); //TODO ? OL3 in principle not use, to check
+		var mapMaxRes = FigisMap.rnd.maxResolution( projection, p );
 		
 		/*!OL2
 		 switch ( projection ) {
@@ -1704,6 +1713,7 @@ FigisMap.renderer = function(options) {
 			view : new ol.View({
 				projection : viewProj,
 				center : ol.extent.getCenter(boundsBox),
+				extent: boundsBox,
 				zoom : 0,
 				maxResolution : mapMaxRes
 			}),
@@ -1838,20 +1848,15 @@ FigisMap.renderer = function(options) {
 		// BUILDING THE LEGEND
 		FigisMap.rnd.legend( layers, p );
 		
-		/** Alessio: create Stocks layer **/
-		//OpenLayers.Feature.Vector.style['default']['fill'] = false; //TODO ? OL3
-		//OpenLayers.Feature.Vector.style['default']['fillOpacity'] = '0'; //TODO ? OL3
-		//OpenLayers.Feature.Vector.style['default']['strokeWidth'] = '2'; //TODO ? OL3
-		
 		// handlig the zoom/center/extent
 		if ( p.global ) {
 			//!OL2 myMap.zoomToMaxExtent();
-			//myMap.getView().fit(myMap.getView().get('extent'), myMap.getSize()); TODO OL3
+			myMap.getView().fit(boundsBox, myMap.getSize());
 			FigisMap.debug('Render for p.global');
 			//finalizeMap(); @eblondel moved to single call
 		} else if ( p.extent || p.center || p.zoom ) {
 			//!OL2 myMap.zoomToMaxExtent();
-			//myMap.getView().fit(myMap.getView().get('extent'), myMap.getSize()); TODO OL3
+			myMap.getView().fit(boundsBox, myMap.getSize());
 			FigisMap.debug('Render for Extent', p.extent, 'zoomLevel', p.zoom, 'Center', p.center );
 			
 			//!OL2 if ( p.extent ) myMap.zoomToExtent( FigisMap.ol.reBound( p.dataProj, projection, p.extent ), false);
@@ -1933,7 +1938,7 @@ FigisMap.renderer = function(options) {
 		}
 		if ( toBoundArray.length != 0 ) {
 			FigisMap.debug('toBoundArray:', (new Array()).concat(toBoundArray) );
-			//autoZoomStep(); TODO OL3
+			autoZoomStep();
 		} else {
 			FigisMap.debug('No autozoom layers found');
 			//!OL2 myMap.zoomToMaxExtent();
@@ -1942,7 +1947,6 @@ FigisMap.renderer = function(options) {
 		}
 	}
 	
-	//TODO OL3
 	function autoZoomStep( req ) {
 		if ( req  && req.status ) {
 			var bounds = false;
@@ -1983,7 +1987,6 @@ FigisMap.renderer = function(options) {
 		autoZoomStep();
 	}
 	
-	//TODO OL3
 	function autoZoomEnd() {
 		var bounds, gbounds = new Array();
 		for ( var i = 0; i < boundsArray.length; i++ ) if( boundsArray[i] ) gbounds.push( boundsArray[i] );
@@ -1991,14 +1994,16 @@ FigisMap.renderer = function(options) {
 			bounds = gbounds[0];
 			for (var i = 1; i < gbounds.length; i++) bounds = FigisMap.ol.extend( bounds, gbounds[i] );
 		} else {
-			bounds = myMap.getMaxExtent();
+			//bounds = myMap.getMaxExtent(); TODO OL3
 		}
 		if ( bounds ) {
-			var proj = parseInt( myMap.projection.projCode.replace(/^EPSG:/,'') );
+			//!OL2 var proj = parseInt( myMap.projection.projCode.replace(/^EPSG:/,'') );
+			var proj = parseInt( myMap.getView().getProjection().getCode().replace(/^EPSG:/,'') );
 			
 			var nb = FigisMap.ol.reBound( p.dataProj, proj, bounds );
 			
-			myMap.zoomToExtent( nb, false );
+			//!OL2 myMap.zoomToExtent( nb, false );
+			myMap.getView().fit(nb, myMap.getSize());
 			
 			var nc = false;
 			if ( proj == 3031 ) {
@@ -2013,7 +2018,7 @@ FigisMap.renderer = function(options) {
 				}
 			}
 			if ( nc ) myMap.setCenter( nc );
-			FigisMap.debug( 'FigisMap.renderer autoZoom values:', { bounds: bounds, boundsSize: bounds.getSize(), nb: nb, nc : nc, mapSize: myMap.getSize() } );
+			FigisMap.debug( 'FigisMap.renderer autoZoom values:', { bounds: bounds, boundsSize: ol.extent.getSize(bounds), nb: nb, nc : nc, mapSize: myMap.getSize() } );
 		}
 		//@eblondel 06/11/2015 single call in render()
 		//finalizeMap();
