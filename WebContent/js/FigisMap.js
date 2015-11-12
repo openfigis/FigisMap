@@ -1035,19 +1035,40 @@ FigisMap.rnd.watermarkControl = function( map, pars ) {
 			}
 		}
 	);*/
+	
+	//create base attribution for handling the watermark
+	var baseAttribution = new ol.control.Attribution({
+		className: 'ol-attribution-map',
+		collapsible: false
+	});
+	map.addControl(baseAttribution);
+	
+	//generate html for watermark
 	var mapsize = map.getSize();
-	var poweredByHtml = '<ul><li><img' +
+	var poweredByHtml = '<img' +
 		( pars.watermark.src ? ' src="' + pars.watermark.src + '"' : '' ) +
 		( pars.watermark.width ? ' width="' + pars.watermark.width + '"' : '' ) +
 		( pars.watermark.height ? ' height="' + pars.watermark.height + '"' : '' ) +
 		( pars.watermark.wclass ? ' class="' + pars.watermark.wclass + '"' : '' ) +
 		( pars.watermark.id ? ' id="' + pars.watermark.id + '"' : '' ) +
 		( pars.watermark.title ? ' title="' + pars.watermark.title + '"' : '' ) +
-		'/></li></ul>';
+		'/>';
 	
-	if(document.getElementsByClassName("ol-attribution").length > 0){
-		document.getElementsByClassName("ol-attribution")[0].innerHTML = poweredByHtml;
+	//manage the display of watermark (logo)
+	if(document.getElementsByClassName("ol-attribution-map").length > 0){
+		document.getElementsByClassName("ol-attribution-map")[0].getElementsByTagName("li")[0].innerHTML = poweredByHtml;
 	}
+	
+	//hack to remove the baselayer attribution that for some reason is also added to the ol-attribution-map
+	//while explicitely referenced on ol-attribution-baselayer (to investigate if there is a cleaner solution)
+	map.on('postrender', function() {
+		if(document.getElementsByClassName("ol-attribution-map").length > 0){
+			if(document.getElementsByClassName("ol-attribution-map")[0].getElementsByTagName("li").length > 1){
+				document.getElementsByClassName("ol-attribution-map")[0].getElementsByTagName("li")[1].remove();
+			}
+		}
+	});
+	
 };
 
 /**
@@ -1682,8 +1703,11 @@ FigisMap.renderer = function(options) {
 				},
 				wrapX: true,
 				serverType : p.base.cached ? undefined : 'geoserver',
-				attributions: p.attribution ? [new ol.Attribution({html : p.attribution})] : []
-			})
+				attributions: p.attribution ? [ 
+					new ol.Attribution({
+						html : p.attribution
+					})] : []
+				})
 		})
 		//baselayer group
 		var baselayers = new ol.layer.Group({
@@ -1717,14 +1741,18 @@ FigisMap.renderer = function(options) {
 				zoom : 0,
 				maxResolution : mapMaxRes
 			}),
-			logo: pars.watermark
+			controls: [],
+			logo: false
 		});
 			
 		// Managing OL controls
 		//---------------------
-		//!OL2 if (! pars.options.skipLayerSwitcher ) myMap.addControl( new OpenLayers.Control.LayerSwitcher() );
-		//if (! pars.options.skipLoadingPanel ) myMap.addControl( new OpenLayers.Control.LoadingPanel() ); // TODO ? OL3
-		//if (! pars.options.skipNavigation ) myMap.addControl( new OpenLayers.Control.Navigation({ zoomWheelEnabled: true }) );
+		//default controls (explicitly added for information and possible customization with options)
+		myMap.addControl( new ol.control.Zoom() );
+		myMap.addControl( new ol.control.Rotate() );
+		myMap.addControl( new ol.control.Attribution({collapsible : false, className : 'ol-attribution-baselayer'}) );
+		
+		//optional controls
 		if (! pars.options.skipLayerSwitcher ) myMap.addControl( new ol.control.LayerSwitcher());
 		if (! pars.options.skipWatermark ) FigisMap.rnd.watermarkControl( myMap, p );
 		if (! pars.options.skipMouse ) FigisMap.rnd.mouseControl( myMap, p );
