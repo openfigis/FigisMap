@@ -337,22 +337,16 @@ FigisMap.ol.reBound = function( proj0, proj1, bounds ) {
 	if ( ! ans ) {
 		//!OL2 var source = new Proj4js.Proj( 'EPSG:' + proj0 );
 		//!OL2 var dest   = new Proj4js.Proj( 'EPSG:' + proj1 );
-		var source = new ol.proj.Projection({ code: 'EPSG:'+proj0 });
-		var target = new ol.proj.Projection({ code: 'EPSG:'+proj1 });
-		
 		//!OL2 var min = new OpenLayers.Geometry.Point(bounds.left, bounds.bottom);
 		//!OL2 var max = new OpenLayers.Geometry.Point(bounds.right, bounds.top);
-		var min = new ol.geom.Point([bounds[0], bounds[1]], 'XY');
-		var max = new ol.geom.Point([bounds[2], bounds[3]], 'XY');
-		
 		//!OL2 var minpt = Proj4js.transform(source, dest, min);
 		//!OL2 var maxpt = Proj4js.transform(source, dest, max);
 		//!OL2 ans = new OpenLayers.Bounds(minpt.x, minpt.y, maxpt.x, maxpt.y);
-		min.transform(source, target);
-		max.transform(source, target);
-		var minpt = min.getCoordinates();
-		var maxpt = max.getCoordinates();
-		ans = [minpt[0], minpt[1], maxpt[0], maxpt[1]];
+		var source = new ol.proj.Projection({ code: 'EPSG:'+proj0 });
+		var target = new ol.proj.Projection({ code: 'EPSG:'+proj1 });
+		var extentGeom = ol.geom.Polygon.fromExtent(bounds);
+		extentGeom.transform(source, target);		
+		ans = extentGeom.getExtent();
 	}
 	if ( proj1 == 4326 ) ans = FigisMap.ol.dateline( ans );
 	return ans;
@@ -2052,14 +2046,12 @@ FigisMap.renderer = function(options) {
 			if ( proj == 3031 ) {
 				// center to south pole in polar projection
 				nc = FigisMap.ol.reCenter( 4326, proj );
-			} else if ( proj == 900913 ) {
+			} else if ( proj == 900913 || proj == 3349 ) {
 				// center to Pacific centre in Mercator - only if larger than 35k km (whole world)
-				FigisMap.debug("Fishing in the Pacific",nb);
-				var nbw = Math.abs( nb[3] - nb[0]);
-				FigisMap.debug("nbw",nbw);
+				var nbw = Math.abs( nb[0] - nb[2]);
 				if ( nbw > 35000000 ) {
 					nc = FigisMap.ol.reCenter( 4326, proj );
-					nc.lat = ( nb.top + nb.bottom )/2;
+					nc.lat = ( nb[3] + nb[1] )/2;
 				}
 			}
 			if ( nc ) myMap.getView().setCenter( nc );
