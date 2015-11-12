@@ -430,7 +430,7 @@ FigisMap.ol.extend = function( bounds1, bounds2 ) {
 	//!OL2 var b1 = { left: bounds1.left +180, bottom: bounds1.bottom, right: bounds1.right +180, top: bounds1.top };
 	//!OL2 var b2 = { left: bounds2.left +180, bottom: bounds2.bottom, right: bounds2.right +180, top: bounds2.top };
 	var b1 = { left: bounds1[0] +180, bottom: bounds1[1], right: bounds1[2] +180, top: bounds1[3] };
-	var b2 = { left: bounds2[0] +180, bottom: bounds2[1], right: bounds2[2] +180, top: bounds2[4] };
+	var b2 = { left: bounds2[0] +180, bottom: bounds2[1], right: bounds2[2] +180, top: bounds2[3] };
 	
 	var ans = new Object();
 	ans.bottom = b1.bottom > b2.bottom ? b2.bottom : b1.bottom;
