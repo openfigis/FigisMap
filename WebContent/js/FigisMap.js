@@ -488,6 +488,14 @@ FigisMap.ol.gmlBbox = function( xmlDoc ) {
 		return false;
 	}
 };
+
+FigisMap.ol.zoomToExtent = function( myMap, bounds ) {
+	var v = myMap.getView();
+	if ( typeof bounds == 'null' ) bounds = [-180,-90,180,90];
+	v.fit( bounds, myMap.getSize() );
+	//v.setCenter( parseInt( (bounds[0] + bounds[2]) / 2 ), parseInt( (bounds[1] + bounds[3]) / 2 ) );
+};
+
 /*
 FigisMap.ol.gmlBbox = function( xmlDoc ) {
 	var cnode, e;
@@ -1744,7 +1752,10 @@ FigisMap.renderer = function(options) {
 			controls: [],
 			logo: false
 		});
-			
+		
+		if ( ! myMap.zoomToExtent ) myMap.zoomToExtent = function( boundsArray ) {  return FigisMap.ol.zoomToExtent( this, boundsArray) };
+		if ( ! myMap.zoomToMaxExtent ) myMap.zoomToMaxExtent = function() {  return FigisMap.ol.zoomToExtent( this, null ) };
+		
 		// Managing OL controls
 		//---------------------
 		//default controls (explicitly added for information and possible customization with options)
@@ -1879,16 +1890,19 @@ FigisMap.renderer = function(options) {
 		// handlig the zoom/center/extent
 		if ( p.global ) {
 			//!OL2 myMap.zoomToMaxExtent();
-			myMap.getView().fit(boundsBox, myMap.getSize());
+			//myMap.getView().fit(boundsBox, myMap.getSize());
+			myMap.zoomToMaxExtent();
 			FigisMap.debug('Render for p.global');
 			//finalizeMap(); @eblondel moved to single call
 		} else if ( p.extent || p.center || p.zoom ) {
 			//!OL2 myMap.zoomToMaxExtent();
-			myMap.getView().fit(boundsBox, myMap.getSize());
+			//myMap.getView().fit(boundsBox, myMap.getSize());
+			myMap.zoomToExtent( boundsBox );
 			FigisMap.debug('Render for Extent', p.extent, 'zoomLevel', p.zoom, 'Center', p.center );
 			
 			//!OL2 if ( p.extent ) myMap.zoomToExtent( FigisMap.ol.reBound( p.dataProj, projection, p.extent ), false);
-			if( p.extent ) myMap.getView().fit(FigisMap.ol.reBound(p.dataProj, projection, p.extent), myMap.getSize());
+			//if( p.extent ) myMap.getView().fit(FigisMap.ol.reBound(p.dataProj, projection, p.extent), myMap.getSize());
+			if( p.extent ) myMap.zoomToExtent(FigisMap.ol.reBound(p.dataProj, projection, p.extent));
 			
 			//!OL2 if ( p.zoom ) myMap.zoomTo( p.zoom, true );
 			if( p.zoom ) myMap.getView().setZoom(p.zoom);
@@ -2031,7 +2045,8 @@ FigisMap.renderer = function(options) {
 			var nb = FigisMap.ol.reBound( p.dataProj, proj, bounds );
 			
 			//!OL2 myMap.zoomToExtent( nb, false );
-			myMap.getView().fit(nb, myMap.getSize());
+			//myMap.getView().fit(nb, myMap.getSize());
+			myMap.zoomToExtent( nb );
 			
 			var nc = false;
 			if ( proj == 3031 ) {
