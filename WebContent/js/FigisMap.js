@@ -470,15 +470,15 @@ FigisMap.ol.gmlBbox = function( xmlDoc ) {
 		var gml = new ol.format.WFS({gmlFormat : new ol.format.GML2()});
 		var features = gml.readFeatures( xmlDoc );
 		FigisMap.debug('FigisMap.ol.gmlbbox - Features', features);
-		var b = ol.extent.createEmpty();
+		var extent;
 		for ( var i = 0; i < features.length; i++ ) {
 			var feature = features[i];
 			var fb = feature.getProperties().boundedBy;
-			fb = [fb[1], fb[0], fb[3], fb[2]]; //hack required to have right ordered bbox (investigate if it's not a bug in OL3)
+			var bounds = [fb[1], fb[0], fb[3], fb[2]]; //hack required to have right ordered bbox (investigate if it's not a bug in OL3)
 			if ( i == 0) {
-				extent = fb;
+				extent = bounds;
 			} else {
-				extent = FigisMap.ol.extend(extent, fb);
+				extent = FigisMap.ol.extend(extent, bounds);
 			}
 		}
 		FigisMap.debug('FigisMap.ol.gmlbbox - Extent', extent);
