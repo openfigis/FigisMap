@@ -2054,13 +2054,15 @@ FigisMap.renderer = function(options) {
 				nc = FigisMap.ol.reCenter( 4326, proj );
 			} else if ( proj == 900913 ) {
 				// center to Pacific centre in Mercator - only if larger than 35k km (whole world)
-				var nbw = Math.abs( nb.right - nb.left );
+				FigisMap.debug("Fishing in the Pacific",nb);
+				var nbw = Math.abs( nb[3] - nb[0]);
+				FigisMap.debug("nbw",nbw);
 				if ( nbw > 35000000 ) {
 					nc = FigisMap.ol.reCenter( 4326, proj );
 					nc.lat = ( nb.top + nb.bottom )/2;
 				}
 			}
-			if ( nc ) myMap.setCenter( nc );
+			if ( nc ) myMap.getView().setCenter( nc );
 			FigisMap.debug( 'FigisMap.renderer autoZoom values:', { bounds: bounds, boundsSize: ol.extent.getSize(bounds), nb: nb, nc : nc, mapSize: myMap.getSize() } );
 		}
 		//@eblondel 06/11/2015 single call in render()
