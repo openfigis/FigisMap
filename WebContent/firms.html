@@ -31,45 +31,44 @@
 
 <body onload="setViewerPage('e-link','firms-link', 'firms-html')">
 	<div id="wrapper">
-		<div id="top">
-			<table width="100%" cellpadding="0" cellspacing="0" border="0">
-				<tr>
-					<td align="left">
-						<a href="http://www.fao.org" target="_blank"><img border=0 style="vertical-align: middle;" src="img/FIGIS_banner-logo.gif" alt="FOOD AND AGRICULTURE ORGANIZATION OF THE UNITED NATIONS" title="FOOD AND AGRICULTURE ORGANIZATION OF THE UNITED NATIONS"/></a>
-					</td>
-					<td align="right">
-						<a href="http://www.fao.org/fishery" target="_blank"><img border=0 style="vertical-align: middle;" src="img/FIGIS_banner-text.gif" alt="FAO Fisheries and Aquaculture Department" title="FAO Fisheries and Aquaculture Department"/></a>
-					</td>
-				</tr>
-				<tr>
-					<td>
-						<h1 id="title">FIRMS Stocks and Fisheries Map Viewer</h1>
-					</td>
-				</tr>
-			</table>
+		<div id="header">
+			<div id="top">
+				<table width="100%" cellpadding="0" cellspacing="0" border="0">
+					<tr>
+						<td align="left">
+							<a href="http://www.fao.org" target="_blank"><img border=0 style="vertical-align: middle;" src="img/FIGIS_banner-logo.gif" alt="FOOD AND AGRICULTURE ORGANIZATION OF THE UNITED NATIONS" title="FOOD AND AGRICULTURE ORGANIZATION OF THE UNITED NATIONS"/></a>
+						</td>
+						<td align="right">
+							<a href="http://www.fao.org/fishery" target="_blank"><img border=0 style="vertical-align: middle;" src="img/FIGIS_banner-text.gif" alt="FAO Fisheries and Aquaculture Department" title="FAO Fisheries and Aquaculture Department"/></a>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<h1 id="title">FIRMS Stocks and Fisheries Map Viewer</h1>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<!-- Top bar -->
+			<div id="topBar">
+				<label id="lblLayer">Select FIRMS resource:</label>
+				<select id="SelectLayer" onchange="setViewer(null, null, null, 'e-link', 'firms-link', 'firms-html')">
+					<option value="">(Select a resource...)</option>
+					<option value="resource">Marine Resources</option>
+					<option value="fishery">Fisheries</option>
+				</select>
+				&nbsp;&nbsp;
+				<label id="lblSRS">Select Projection:</label>
+				<select id="SelectSRS" onchange="setViewer(null, null, this.value, 'e-link', 'firms-link', 'firms-html')">
+					<option value="4326" default="">WGS84 (4326)</option>
+					<option value='3349'>Mercator (3857)</option>
+					<!-- <option value="3031">South Polar (3031)</option> -->
+				</select>
+				<input id="txtCql" type="hidden">
+				<input id="command" type="hidden">
+				<input id="opt" type="hidden">
+			</div>
 		</div>
-		<br/>
-		
-		<!-- Top bar -->
-		<div id="topBar">
-			<label id="lblLayer">Select FIRMS resource:</label>
-			<select id="SelectLayer" onchange="setViewer(null, null, null, 'e-link', 'firms-link', 'firms-html')">
-				<option value="">(Select a resource...)</option>
-				<option value="resource">Marine Resources</option>
-				<option value="fishery">Fisheries</option>
-			</select>
-			&nbsp;&nbsp;
-			<label id="lblSRS">Select Projection:</label>
-			<select id="SelectSRS" onchange="setViewer(null, null, this.value, 'e-link', 'firms-link', 'firms-html')">
-				<option value="4326" default="">WGS84 (4326)</option>
-				<option value='3349'>Mercator (3857)</option>
-				<!-- <option value="3031">South Polar (3031)</option> -->
-			</select>
-			<input id="txtCql" type="hidden">
-			<input id="command" type="hidden">
-			<input id="opt" type="hidden">
-		</div>
-		
 		<!-- Map wrapper -->
 		<div id="mapWrapper">
 			<div id="main">
@@ -91,19 +90,16 @@
 			</div>
 			<br/>
 		</div>
-
-		<div id="disclaimer">
-			<p><strong>Disclaimer:</strong> The designations employed and the presentation of material in the map(s) are for illustration only and do not imply the expression of any opinion whatsoever on the part of FAO concerning the legal or constitutional status of any country, territory or sea area, or concerning the delimitation of frontiers or boundaries.</p>
+		<div id="footer">
+			<div id="bottomBar1">
+				powered by
+				<a alt="FIGIS web site" title="FIGIS web site" href="/fishery/figis/en">FIGIS</a>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				<a alt="FAO (C)Copyright" title="FAO Copyright" target="_blank" href="http://www.fao.org/corp/copyright/en/">
+					© FAO, <span id="copyYear">2011</span> 
+				</a>
+			</div>
 		</div>
-		<div id="bottomBar1">
-			powered by
-			<a alt="FIGIS web site" title="FIGIS web site" href="/fishery/figis/en">FIGIS</a>
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<a alt="FAO (C)Copyright" title="FAO Copyright" target="_blank" href="http://www.fao.org/corp/copyright/en/">
-				© FAO, <span id="copyYear">2011</span> 
-			</a>
-		</div>
-		<div id="bottomBar2"></div>
 	</div>
 	<script type="text/javascript" language="javascript">
 	// <![CDATA[
@@ -116,6 +112,7 @@
 			return void(0);
 		}
 		updateCopyYear();
+		if ( FigisMap ) if ( FigisMap.lastMap) FigisMap.lastMap.zoomToMaxExtent();
 	// ]]>
 	</script>
 </body>
