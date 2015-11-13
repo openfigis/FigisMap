@@ -27,8 +27,9 @@ var FigisMap = {
 };
 
 /**
+ * --------------------------------------------------------------------------------------
  * FigisMap layer definitions
- * 
+ * --------------------------------------------------------------------------------------
  */
 FigisMap.fifao = {
 	cbs : 'fifao:country_bounds',
@@ -69,8 +70,26 @@ FigisMap.fifaoStyles = {
 };
 
 /**
- * FigisMap default configurations
+ * FigisMap.isFaoArea
+ * @param layername
  * 
+ */
+FigisMap.isFaoArea = function( layerName ) {
+	switch ( layerName ) {
+		case FigisMap.fifao.maj : return true; break;
+		case FigisMap.fifao.ma2 : return true; break;
+		case FigisMap.fifao.div : return true; break;
+		case FigisMap.fifao.sdi : return true; break;
+		case FigisMap.fifao.sub : return true; break;
+		default	 : return false;
+	}
+};
+
+
+/**
+ * --------------------------------------------------------------------------------------
+ * FigisMap default configurations
+ * --------------------------------------------------------------------------------------
  */
 FigisMap.defaults = {
 	lang		: document.documentElement.getAttribute('lang') ? document.documentElement.getAttribute('lang').toLowerCase() : 'en',
@@ -88,22 +107,16 @@ FigisMap.defaults = {
 };
 
 /**
+ * --------------------------------------------------------------------------------------
  * FigisMap environment configurations
- * 
+ * --------------------------------------------------------------------------------------
  */
 
-//FigisMap.isDeveloper ? false : ( FigisMap.isTesting ? FigisMap.currentSiteURI.indexOf(':8484') < 1 : ( FigisMap.currentSiteURI.indexOf('http://www.fao.org') != 0 ) );
-FigisMap.useProxy = false;
-if ( ( FigisMap.currentSiteURI.indexOf(':8282') > 1 ) || ( FigisMap.currentSiteURI.indexOf(':8383') > 1 ) || FigisMap.isRemoteDeveloper) FigisMap.useProxy = true;
-
+//configure environments and set-up various URL variable
 FigisMap.geoServerAbsBase = FigisMap.isDeveloper ? (FigisMap.isRemoteDeveloper ? 'http://www.fao.org' : 'http://192.168.1.106:8484') : ( FigisMap.isTesting ? 'http://168.202.3.223:8484' : ('http://' + document.domain ) );
 FigisMap.geoServerBase = FigisMap.isRemoteDeveloper ? 'http://www.fao.org' : '';
-
+FigisMap.localPathForGeoserver = "/figis/geoserver";
 FigisMap.httpBaseRoot = FigisMap.isRemoteDeveloper ? '' : FigisMap.geoServerBase + '/figis/geoserver/factsheets/';
-
-FigisMap.localPathForGeoserver = "/figis/geoserver"; // "/figis/geoserverdv"
-
-FigisMap.data = (FigisMap.isRemoteDeveloper ? 'http://figisapps.fao.org' : '') + "/figis/moniker.jsonp.FigisMap.loadStaticMapData/figismapdata3";
 
 FigisMap.rnd.vars = {
 	geoserverURL		: FigisMap.geoServerBase + FigisMap.localPathForGeoserver,
@@ -119,12 +132,19 @@ FigisMap.rnd.vars = {
 	absWfs			: FigisMap.geoServerAbsBase + FigisMap.localPathForGeoserver + '/wfs?request=GetFeature&version=1.0.0&typename='
 };
 
+//Path for FigisMapData
+FigisMap.data = (FigisMap.isRemoteDeveloper ? 'http://figisapps.fao.org' : '') + "/figis/moniker.jsonp.FigisMap.loadStaticMapData/figismapdata3";
+
+//proxy configuration
+FigisMap.useProxy = false;
+if ( ( FigisMap.currentSiteURI.indexOf(':8282') > 1 ) || ( FigisMap.currentSiteURI.indexOf(':8383') > 1 ) || FigisMap.isRemoteDeveloper) FigisMap.useProxy = true;
 if ( FigisMap.useProxy ) FigisMap.rnd.vars.wfs = ( FigisMap.isRemoteDeveloper ? '' : FigisMap.currentSiteURI + '/figis/proxy/' ) +'/cgi-bin/proxy.cgi?url=' + escape( FigisMap.rnd.vars.absWfs );
 
 
 /**
+ * --------------------------------------------------------------------------------------
  * FigisMap loader functions
- * 
+ * --------------------------------------------------------------------------------------
  */
 
 /**
@@ -182,6 +202,12 @@ FigisMap.loadScript = function(path, charset) {
 					'></script>');
 }
 
+/**
+ * --------------------------------------------------------------------------------------
+ * FigisMap script dependencies
+ * --------------------------------------------------------------------------------------
+ */
+
 //FigisMap dependencies
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/proj4.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/4326.js');
@@ -193,6 +219,12 @@ FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-layerswitcher.js'
 //FigisMap data
 FigisMap.loadScript(FigisMap.data, "UTF-8");
 
+
+/**
+ * --------------------------------------------------------------------------------------
+ * FigisMap console utils
+ * --------------------------------------------------------------------------------------
+ */
 
 /**
  * FigisMap.console
@@ -245,48 +277,15 @@ FigisMap.error = function() {
 }
 
 /**
- * FigisMap.label
- * @param label
- * @param p
+ * --------------------------------------------------------------------------------------
+ * FigisMap general utils
+ * --------------------------------------------------------------------------------------
  */
-FigisMap.label = function( label, p ) {
-	var lang = p && p.lang ? p.lang : ( FigisMap.lang ? FigisMap.lang : FigisMap.defaults.lang );
-	var defLang = ( lang == FigisMap.defaults.lang ) ? 'en' : FigisMap.defaults.lang;
-	if ( ! label ) return '';
-	var l = label.toUpperCase();
-	if ( p && p.staticLabels && p.staticLabels[l] ) {
-		switch ( typeof p.staticLabels[l] ) {
-			case 'string'	: return p.staticLabels[l]; break;
-			case 'object'	: return ( typeof p.staticLabels[l][lang] ) == 'string' ? p.staticLabels[l][lang] : p.staticLabels[l][defLang]; break;
-		}
-	}
-	if ( FigisMap.staticLabels && FigisMap.staticLabels[l] ) {
-		switch ( typeof FigisMap.staticLabels[l] ) {
-			case 'string'	: return FigisMap.staticLabels[l]; break;
-			case 'object'	: return ( typeof FigisMap.staticLabels[l][lang] ) == 'string' ? String(FigisMap.staticLabels[l][lang]) : FigisMap.staticLabels[l][defLang]; break;
-		}
-	}
-	return label;
-}
-
-/**
- * FigisMap.isFaoArea
- * @param layername
- * 
- */
-FigisMap.isFaoArea = function( layerName ) {
-	switch ( layerName ) {
-		case FigisMap.fifao.maj : return true; break;
-		case FigisMap.fifao.ma2 : return true; break;
-		case FigisMap.fifao.div : return true; break;
-		case FigisMap.fifao.sdi : return true; break;
-		case FigisMap.fifao.sub : return true; break;
-		default	 : return false;
-	}
-};
 
 /**
  * FigisMap.getXMLHttpRequest
+ * Configures an XMLHttpRequest
+ * @return the request
  * 
  */
 FigisMap.getXMLHttpRequest = function() {
@@ -309,6 +308,40 @@ FigisMap.getXMLHttpRequest = function() {
 	return req;
 };
 
+
+/**
+ * FigisMap.label
+ * @param label
+ * @param p -> a FigisMap parameters object
+ * @return the label
+ */
+FigisMap.label = function( label, p ) {
+	var lang = p && p.lang ? p.lang : ( FigisMap.lang ? FigisMap.lang : FigisMap.defaults.lang );
+	var defLang = ( lang == FigisMap.defaults.lang ) ? 'en' : FigisMap.defaults.lang;
+	if ( ! label ) return '';
+	var l = label.toUpperCase();
+	if ( p && p.staticLabels && p.staticLabels[l] ) {
+		switch ( typeof p.staticLabels[l] ) {
+			case 'string'	: return p.staticLabels[l]; break;
+			case 'object'	: return ( typeof p.staticLabels[l][lang] ) == 'string' ? p.staticLabels[l][lang] : p.staticLabels[l][defLang]; break;
+		}
+	}
+	if ( FigisMap.staticLabels && FigisMap.staticLabels[l] ) {
+		switch ( typeof FigisMap.staticLabels[l] ) {
+			case 'string'	: return FigisMap.staticLabels[l]; break;
+			case 'object'	: return ( typeof FigisMap.staticLabels[l][lang] ) == 'string' ? String(FigisMap.staticLabels[l][lang]) : FigisMap.staticLabels[l][defLang]; break;
+		}
+	}
+	return label;
+}
+
+
+/**
+ * --------------------------------------------------------------------------------------
+ * FigisMap OpenLayers functions
+ * --------------------------------------------------------------------------------------
+ */
+
 /**
  * FigisMap.ol.reBound
  * Function to reproject geographic boundaries
@@ -323,7 +356,6 @@ FigisMap.ol.reBound = function( proj0, proj1, bounds ) {
 	proj1 = parseInt( String( proj1.projCode ? proj1.projCode : proj1 ).replace(/^EPSG:/,'') );
 	if ( bounds == null ) {
 		proj0 = 4326;
-		//!OL2 bounds = new OpenLayers.Bounds(-180, -90, 180, 90);
 		bounds = [-180, -90, 180, 90]
 	}
 	var ans = false;
@@ -331,17 +363,9 @@ FigisMap.ol.reBound = function( proj0, proj1, bounds ) {
 	if ( proj1 == 3349 ) proj1 = 900913;
 	if ( proj0 == proj1 ) ans = bounds;
 	if ( proj1 == 3031 ){
-		//!OL2 return new OpenLayers.Bounds(-12400000,-12400000, 12400000,12400000);
 		return [-12400000,-12400000, 12400000,12400000];
 	}
 	if ( ! ans ) {
-		//!OL2 var source = new Proj4js.Proj( 'EPSG:' + proj0 );
-		//!OL2 var dest   = new Proj4js.Proj( 'EPSG:' + proj1 );
-		//!OL2 var min = new OpenLayers.Geometry.Point(bounds.left, bounds.bottom);
-		//!OL2 var max = new OpenLayers.Geometry.Point(bounds.right, bounds.top);
-		//!OL2 var minpt = Proj4js.transform(source, dest, min);
-		//!OL2 var maxpt = Proj4js.transform(source, dest, max);
-		//!OL2 ans = new OpenLayers.Bounds(minpt.x, minpt.y, maxpt.x, maxpt.y);
 		var source = new ol.proj.Projection({ code: 'EPSG:'+proj0 });
 		var target = new ol.proj.Projection({ code: 'EPSG:'+proj1 });
 		var extentGeom = ol.geom.Polygon.fromExtent(bounds);
@@ -356,6 +380,7 @@ FigisMap.ol.reBound = function( proj0, proj1, bounds ) {
 /**
  * FigisMap.ol.dateline
  * @param b (a bounds array)
+ * @return an object representing a geographic extent (with left/bottom/right/top properties)
  */
 FigisMap.ol.dateline = function( b ) {
 	if ( b.left < 0 && b.right > 0 && ( b.right - b.left ) < 300  ) {
@@ -380,7 +405,10 @@ FigisMap.ol.dateline = function( b ) {
 /**
  * FigisMap.ol.reCenter
  * Function used to reproject a center coordinates
- * 
+ * @param proj0 -> the source projection
+ * @param proj1 -> the target projection
+ * @param center -> the center coordinates
+ * @return the projected center
  */
 FigisMap.ol.reCenter = function( proj0, proj1, center ) {
 	proj0 = parseInt( String( proj0.projCode ? proj0.projCode : proj0 ).replace(/^EPSG:/,'') );
@@ -388,29 +416,21 @@ FigisMap.ol.reCenter = function( proj0, proj1, center ) {
 	if ( proj0 == 3349 ) proj0 = 900913;
 	if ( proj1 == 3349 ) proj1 = 900913;
 	if ( center == null ) {
-		//!OL2 if ( proj1 == 900913 ) return new OpenLayers.LonLat(20037508.34, 4226661.92);
 		if( proj1 == 900913 ) return [20037508.34, 4226661.92];
 		proj0 = 4326;
-		//!OL2 center = new OpenLayers.LonLat( 0, 0 );
 		center = [0,0];
 	}
 	if ( proj0 == proj1 ) return center;
 	
-	//!OL2 if ( proj1 == 3031 ) return new OpenLayers.LonLat(156250.0, 703256.0);
 	if( proj1 == 3031 ) return [156250.0, 703256.0];
 	
 	var newCenter;
-	//!OL2 var source = new Proj4js.Proj( 'EPSG:' + proj0 );
-	//!OL2 var dest   = new Proj4js.Proj( 'EPSG:' + proj1 );
 	var source = new ol.proj.Projection({ code: 'EPSG:'+proj0 });
 	var dest = new ol.proj.Projection({ code: 'EPSG:'+proj1 });
-	
-	//!OL2 var centerPoint = new OpenLayers.Geometry.Point( center.lon, center.lat );
-	//!OL2 var newCenterPoint = Proj4js.transform(source, dest, centerPoint);
-	//!OL2 return new OpenLayers.LonLat( newCenterPoint.x, newCenterPoint.y );
 	var centerPoint = new ol.geom.Point(center, 'XY');
 	centerPoint.transform(source, dest);
 	newCenter = centerPoint.getCoordinates();
+	
 	return newCenter;
 	
 };
@@ -419,10 +439,10 @@ FigisMap.ol.reCenter = function( proj0, proj1, center ) {
  * FigisMap.ol.extend
  * @param bounds1
  * @param bounds2
+ * @return an array representing the extended geographic bounds
  */
 FigisMap.ol.extend = function( bounds1, bounds2 ) {
-	//!OL2 var b1 = { left: bounds1.left +180, bottom: bounds1.bottom, right: bounds1.right +180, top: bounds1.top };
-	//!OL2 var b2 = { left: bounds2.left +180, bottom: bounds2.bottom, right: bounds2.right +180, top: bounds2.top };
+	
 	var b1 = { left: bounds1[0] +180, bottom: bounds1[1], right: bounds1[2] +180, top: bounds1[3] };
 	var b2 = { left: bounds2[0] +180, bottom: bounds2[1], right: bounds2[2] +180, top: bounds2[3] };
 	
@@ -446,7 +466,7 @@ FigisMap.ol.extend = function( bounds1, bounds2 ) {
 	if ( ans.left > ans.right ) ans.left -= 360;
 // 	FigisMap.debug('Extend:', { b1_in : bounds1, b1_calc: b1}, { b2_in: bounds2, b2_calc: b2 }, ans );
 // 	FigisMap.debug( 'Widths', { leftMin: leftMin, leftMax: leftMax, rightMin: rightMin, rightMax: rightMax, wAtl: wAtl, wPac: wPac } );
-	//!OL2 return new OpenLayers.Bounds( ans.left, ans.bottom, ans.right, ans.top );
+
 	return [ans.left, ans.bottom, ans.right, ans.top];
 };
 
@@ -458,8 +478,6 @@ FigisMap.ol.extend = function( bounds1, bounds2 ) {
 FigisMap.ol.gmlBbox = function( xmlDoc ) {
 	var e;
 	try {
-		//!OL2 var gml = new OpenLayers.Format.GML();
-		//!OL2 var feat = gml.read( xmlDoc );
 		FigisMap.debug('FigisMap.ol.gmlBbox - XML:', xmlDoc);
 		var gml = new ol.format.WFS({gmlFormat : new ol.format.GML2()});
 		var features = gml.readFeatures( xmlDoc );
@@ -483,51 +501,29 @@ FigisMap.ol.gmlBbox = function( xmlDoc ) {
 	}
 };
 
+/**
+ * Convenience method to zoom to a given extent
+ * @param map
+ * @param bounds
+ * 
+ */
 FigisMap.ol.zoomToExtent = function( myMap, bounds ) {
 	var v = myMap.getView();
 	if ( typeof bounds == 'null' ) bounds = [-180,-90,180,90];
 	v.fit( bounds, myMap.getSize() );
-	//v.setCenter( parseInt( (bounds[0] + bounds[2]) / 2 ), parseInt( (bounds[1] + bounds[3]) / 2 ) );
 };
 
-/*
-FigisMap.ol.gmlBbox = function( xmlDoc ) {
-	var cnode, e;
-	try {
-		cnode = xmlDoc.documentElement.getElementsByTagName('boundedBy')[0].getElementsByTagName('Box')[0].getElementsByTagName('coordinates')[0];
-	} catch( e ) {
-		try {
-			cnode = xmlDoc.documentElement.getElementsByTagNameNS('*','boundedBy')[0].getElementsByTagNameNS('*','Box')[0].getElementsByTagNameNS('*','coordinates')[0];
-		} catch(e) {
-			cnode = false;
-		}
-	}
-	if ( cnode ) {
-		var ctext = cnode.firstChild.nodeValue.split(' ');
-		var lbrt = ctext[0].split(cnode.getAttribute('cs')).concat( ctext[1].split(cnode.getAttribute('cs')) );
-		for ( var i = 0; i < 4; i++ ) lbrt[i] = parseFloat( lbrt[i].split( cnode.getAttribute('decimal') ).join('.') );
-		return new OpenLayers.Bounds( lbrt[0], lbrt[1], lbrt[2], lbrt[3] );
-	} else {
-		try {
-			var g = new OpenLayers.Format.GML();
-			var feat = g.read( xmlDoc );
-			if ( ! feat && feat[0] && feat[0].bounds ) return false;
-			var bounds = feat[0].bounds;
-			for ( var i = 1; i < feat.length; i++ ) if ( feat[i].bounds) bounds.extend( feat[i].bounds );
-			return bounds;
-		} catch(e) {
-			FigisMap.debug('FigisMap.ol.gmlBbox exception:', e, e.message, 'XML document:',xmlDoc );
-			return false;
-		}
-	}
-};
-*/
+/**
+ * --------------------------------------------------------------------------------------
+ * FigisMap Parser functions
+ * --------------------------------------------------------------------------------------
+ */
 
 /**
  * FigisMap.parser.layer
  * @param obj
  * @param setProperties
- * 
+ * @return a layer object
  */
 FigisMap.parser.layer = function( obj, setProperties ) {
 	if ( typeof ( obj ) == 'string' ) obj = { 'layer' : String( obj ) };
@@ -545,10 +541,10 @@ FigisMap.parser.layer = function( obj, setProperties ) {
 };
 
 /**
- * FigisMap.parser.layer
+ * FigisMap.parser.layers
  * @param obj
  * @param setProperties
- * 
+ * @return an array of layer objects
  */
 FigisMap.parser.layers = function( obj, setProperties ) {
 	if ( typeof obj == 'undefined' || typeof obj == 'boolean' ) return false;
@@ -644,6 +640,12 @@ FigisMap.parser.div = function( d ) {
 	return ( !! d.div ) ? d : { 'div': false, 'id': false };
 };
 
+/**
+ * FigisMap.parser.projection
+ * @param p
+ * @return the EPSG numeric code of the projection
+ * 
+ */
 FigisMap.parser.projection = function( p ) {
 	var proj = p.projection;
 	if ( proj ) {
@@ -663,7 +665,7 @@ FigisMap.parser.projection = function( p ) {
 /**
  * FigisMap.parser.watermark
  * @param p
- * 
+ * @return a watermark object
  */
 FigisMap.parser.watermark = function( p ) {
 	var w = {
@@ -691,7 +693,7 @@ FigisMap.parser.watermark = function( p ) {
 /**
  * FigisMap.parser.countries
  * @param p
- * 
+ * @return the countries
  */
 FigisMap.parser.countries = function( p ) {
 	var cnt = p.countries;
@@ -733,6 +735,7 @@ FigisMap.parser.checkLayerTitles = function( layers, pars ) {
 /**
  * FigisMap.parser.parse
  * @param p
+ * @return the parameters for the FigisMap
  * 
  */
 FigisMap.parser.parse = function( p ) {
@@ -826,6 +829,13 @@ FigisMap.parser.parse = function( p ) {
 	
 	return p;
 }
+
+
+/**
+ * --------------------------------------------------------------------------------------
+ * FigisMap factsheet specific methods
+ * --------------------------------------------------------------------------------------
+ */
 
 /**
  * FigisMap.fs.parse
@@ -957,6 +967,157 @@ FigisMap.fs.dsort = function( p, dtype ) {
 	}
 };
 
+
+/**
+ * --------------------------------------------------------------------------------------
+ * FigisMap RFB specific methods
+ * --------------------------------------------------------------------------------------
+ */
+
+/**
+ * FigisMap.rfb.list
+ * 
+ */
+FigisMap.rfb.list = function() {
+	var ans = new Array();
+	if ( FigisMap.rfbLayerSettings ) for ( var i in FigisMap.rfbLayerSettings ) if ( ! FigisMap.rfbLayerSettings[i].skip ) ans.push( i );
+	return ans;
+};
+
+/**
+ * FigisMap.rfb.getSettings
+ * @param rfb
+ * @param pars
+ * 
+ */
+FigisMap.rfb.getSettings = function( rfb, pars ) {
+	if ( pars && ! ( pars.isViewer || pars.rfb )  ) return null;
+	var v = FigisMap.rfbLayerSettings[ rfb ];
+	if ( ! v ) return null;
+	if ( (typeof v.centerCoords)=='string' ) v.centerCoords = eval(v.centerCoords);
+	if ( (typeof v.zoomExtent)=='string' ) v.zoomExtent = eval(v.zoomExtent);
+	v.name = rfb;
+	return v;
+};
+
+/**
+ * FigisMap.rfb.getDescriptor
+ * @param layerName
+ * @param pars
+ * 
+ */
+FigisMap.rfb.getDescriptor = function( layerName, pars ) {
+	if ( ! FigisMap.rfbLayerDescriptors ) return '';
+	var ldn = layerName.replace(/[' ]/g,'');
+	var ld = FigisMap.rfbLayerDescriptors[ldn];
+	if ( ! ld ) return '';
+	if ( typeof ld == 'string' ) return ld;
+	var title = ld.label ? FigisMap.label( ld.label, pars ) : ld.title;
+	if ( ld.link ) return '<a href="' + ld.link + '" title="' + title + '" target="_blank"><b>' + title + '</b></a>';
+	if ( title ) return '<b>'+ title + '</b>';
+	return '';
+}
+
+/**
+ * FigisMap.rfb.getCountries
+ * @param layerName
+ * 
+ */
+FigisMap.rfb.getCountries = function( layerName ) {
+	if ( ! FigisMap.rfbLayerCountries ) return null;
+	layerName = layerName.replace(/[' ]/g,'').toUpperCase();
+	if ( layerName.indexOf("_DEP") > 0) layerName = layerName.replace(/_DEP$/,'');
+	return FigisMap.rfbLayerCountries[ layerName ];
+}
+
+/**
+ * FigisMap.rfb.preparse
+ * @param pars
+ */
+FigisMap.rfb.preparse = function( pars ) {
+	if ( pars.rfbPreparsed || pars.rfb == null ) return false;
+	pars.distribution = FigisMap.parser.layers( pars.distribution );
+	if ( ! pars.distribution ) pars.distribution = new Array();
+	var sett = FigisMap.rfb.getSettings( pars.rfb );
+	if ( sett ) {
+		var type = new Object();
+		if ( ! sett.type ) sett.type = 'MI';
+		type.m = ( sett.type.toLowerCase().indexOf('m') != -1 );
+		type.i = ( sett.type.toLowerCase().indexOf('i') != -1 );
+		type.r = ( sett.type.toLowerCase().indexOf('r') != -1 );
+		type.a = ( sett.type.toLowerCase().indexOf('a') != -1 );
+		var title = FigisMap.getStyleRuleDescription( sett.style, pars );
+		var baseTitle = FigisMap.label('Area of competence', pars );
+		var skipTitle = ( title == '' );
+		if ( type.m ) {
+			var ttitle = skipTitle ? baseTitle : title;
+			if ( type.i ) ttitle += ' ' + FigisMap.label('(marine)', pars);
+			pars.distribution.push( { rfb: pars.rfb, settings: sett, layer: FigisMap.fifao.RFB,
+				filter: "RFB = '" + pars.rfb + "' AND DISPORDER = '1'",
+				dispOrder : 1,
+				style: sett.style,
+				hideInSwitcher: false,
+				title: ttitle,
+				skipTitle: skipTitle
+			} );
+		}
+		if ( type.i ) {
+			var ttitle = skipTitle ? baseTitle : title;
+			if ( type.m ) ttitle += ' ' + FigisMap.label('(inland)', pars);
+			pars.distribution.push( { rfb: pars.rfb, settings: sett, layer: FigisMap.fifao.RFB,
+				filter: "RFB = '" + pars.rfb + "' AND DISPORDER = '2'",
+				dispOrder : 2,
+				style: sett.style,
+				hideInSwitcher: false,
+				title: ttitle,
+				skipTitle: skipTitle
+			} );
+		}
+		if ( type.r ) {
+			var ttitle = FigisMap.label('Regulatory area', pars );;
+			pars.distribution.push( { rfb: pars.rfb, settings: sett, layer: FigisMap.fifao.RFB,
+				filter: "RFB = '" + pars.rfb + "' AND DISPORDER = '2'",
+				dispOrder : 2,
+				style: sett.style,
+				hideInSwitcher: false,
+				title: ttitle,
+				skipLegend: true
+			} );
+		}
+		if ( type.a ) {
+			var ttitle = FigisMap.label('Established limits of the area of competence', pars );;
+			pars.distribution.push( { rfb: pars.rfb, settings: sett, layer: FigisMap.fifao.RFB,
+				filter: "RFB = '" + pars.rfb + "_DEP'",
+				style: '',
+				hideInSwitcher: false,
+				title: ttitle,
+				skipLegend: true
+			} );
+		}
+		if ( pars.attribution == null ) pars.attribution = FigisMap.rfb.getDescriptor( pars.rfb, pars );
+		if ( ! pars.projection ) pars.projection =  sett.srs ? sett.srs : FigisMap.defaults.projection(pars);
+		if ( pars.global == null && sett.globalZoom != null ) pars.global = sett.globalZoom;
+		if ( pars.extent == null ) {
+			if ( sett.zoomExtent ) pars.extent = sett.zoomExtent;
+			if ( sett.zoomLevel ) pars.zoom = sett.zoomLevel;
+			if ( sett.centerCoords ) pars.center = sett.centerCoords;
+			if ( ! pars.dataProj ) pars.dataProj =  sett.srs ? sett.srs : FigisMap.defaults.projection(pars);
+		} else {
+			if ( ! pars.dataProj ) pars.dataProj =  pars.projection;
+			if ( pars.center == null ) pars.center = false;
+		}
+	}
+	if ( ! pars.mapSize ) pars.mapSize = 'L';
+	if ( pars.landMask == null ) pars.landMask = true;
+	return ( pars.rfbPreparsed = true );
+};
+
+/**
+ * --------------------------------------------------------------------------------------
+ * FigisMap Rendering methods
+ * --------------------------------------------------------------------------------------
+ */
+
 /**
  * FigisMap.rnd.maxResolution
  * @param proj
@@ -1017,27 +1178,6 @@ FigisMap.rnd.maxResolution = function( proj, pars ) {
 FigisMap.rnd.watermarkControl = function( map, pars ) {
 	if ( ! pars.watermark ) return;
 	
-	/*!OL2
-	var poweredByControl = new OpenLayers.Control();
-	OpenLayers.Util.extend(
-		poweredByControl,
-		{
-			draw: function () {
-				OpenLayers.Control.prototype.draw.apply(this, arguments);
-				this.div.innerHTML = '<img' +
-					( pars.watermark.src ? ' src="' + pars.watermark.src + '"' : '' ) +
-					( pars.watermark.width ? ' width="' + pars.watermark.width + '"' : '' ) +
-					( pars.watermark.height ? ' height="' + pars.watermark.height + '"' : '' ) +
-					( pars.watermark.wclass ? ' class="' + pars.watermark.wclass + '"' : '' ) +
-					( pars.watermark.id ? ' id="' + pars.watermark.id + '"' : '' ) +
-					( pars.watermark.title ? ' title="' + pars.watermark.title + '"' : '' ) +
-					( ( ! pars.watermark.noPos && pars.watermark.width && pars.watermark.height ) ? ( ' style="position:absolute;left:' + (this.map.size.w - pars.watermark.width - 5) + 'px;top:' + (this.map.size.h - pars.watermark.height - 5) + 'px;"' ) : '' ) +
-					'/>';
-				return this.div;
-			}
-		}
-	);*/
-	
 	//create base attribution for handling the watermark
 	var baseAttribution = new ol.control.Attribution({
 		className: 'ol-attribution-map',
@@ -1080,16 +1220,7 @@ FigisMap.rnd.watermarkControl = function( map, pars ) {
  * 
  */
 FigisMap.rnd.mouseControl = function( map, pars ) {
-	/*!OL2
-	 map.addControl(
-		new OpenLayers.Control.MousePosition( {
-			prefix		: "lon: ",
-			separator	: ", lat: ",
-			numDigits	: 2,
-			granularity	: 1000, // see http://dev.openlayers.org/docs/files/OpenLayers/Control/MousePosition-js.html#OpenLayers.Control.MousePosition.granularity
-			displayProjection : new OpenLayers.Projection("EPSG:4326")
-		} )
-	);*/
+
 	var mouseControl = new ol.control.MousePosition({
 		coordinateFormat: function(coord){
 			return 'lon: '+coord[0].toFixed(2)+', lat: '+coord[1].toFixed(2);
@@ -1363,144 +1494,6 @@ FigisMap.rnd.countriesLegend = function( pars ) {
 };
 
 /**
- * FigisMap.rfb.list
- * 
- */
-FigisMap.rfb.list = function() {
-	var ans = new Array();
-	if ( FigisMap.rfbLayerSettings ) for ( var i in FigisMap.rfbLayerSettings ) if ( ! FigisMap.rfbLayerSettings[i].skip ) ans.push( i );
-	return ans;
-};
-
-/**
- * FigisMap.rfb.getSettings
- * @param rfb
- * @param pars
- * 
- */
-FigisMap.rfb.getSettings = function( rfb, pars ) {
-	if ( pars && ! ( pars.isViewer || pars.rfb )  ) return null;
-	var v = FigisMap.rfbLayerSettings[ rfb ];
-	if ( ! v ) return null;
-	if ( (typeof v.centerCoords)=='string' ) v.centerCoords = eval(v.centerCoords);
-	if ( (typeof v.zoomExtent)=='string' ) v.zoomExtent = eval(v.zoomExtent);
-	v.name = rfb;
-	return v;
-};
-
-/**
- * FigisMap.rfb.getDescriptor
- * @param layerName
- * @param pars
- * 
- */
-FigisMap.rfb.getDescriptor = function( layerName, pars ) {
-	if ( ! FigisMap.rfbLayerDescriptors ) return '';
-	var ldn = layerName.replace(/[' ]/g,'');
-	var ld = FigisMap.rfbLayerDescriptors[ldn];
-	if ( ! ld ) return '';
-	if ( typeof ld == 'string' ) return ld;
-	var title = ld.label ? FigisMap.label( ld.label, pars ) : ld.title;
-	if ( ld.link ) return '<a href="' + ld.link + '" title="' + title + '" target="_blank"><b>' + title + '</b></a>';
-	if ( title ) return '<b>'+ title + '</b>';
-	return '';
-}
-
-/**
- * FigisMap.rfb.getCountries
- * @param layerName
- * 
- */
-FigisMap.rfb.getCountries = function( layerName ) {
-	if ( ! FigisMap.rfbLayerCountries ) return null;
-	layerName = layerName.replace(/[' ]/g,'').toUpperCase();
-	if ( layerName.indexOf("_DEP") > 0) layerName = layerName.replace(/_DEP$/,'');
-	return FigisMap.rfbLayerCountries[ layerName ];
-}
-
-/**
- * FigisMap.rfb.preparse
- * @param pars
- */
-FigisMap.rfb.preparse = function( pars ) {
-	if ( pars.rfbPreparsed || pars.rfb == null ) return false;
-	pars.distribution = FigisMap.parser.layers( pars.distribution );
-	if ( ! pars.distribution ) pars.distribution = new Array();
-	var sett = FigisMap.rfb.getSettings( pars.rfb );
-	if ( sett ) {
-		var type = new Object();
-		if ( ! sett.type ) sett.type = 'MI';
-		type.m = ( sett.type.toLowerCase().indexOf('m') != -1 );
-		type.i = ( sett.type.toLowerCase().indexOf('i') != -1 );
-		type.r = ( sett.type.toLowerCase().indexOf('r') != -1 );
-		type.a = ( sett.type.toLowerCase().indexOf('a') != -1 );
-		var title = FigisMap.getStyleRuleDescription( sett.style, pars );
-		var baseTitle = FigisMap.label('Area of competence', pars );
-		var skipTitle = ( title == '' );
-		if ( type.m ) {
-			var ttitle = skipTitle ? baseTitle : title;
-			if ( type.i ) ttitle += ' ' + FigisMap.label('(marine)', pars);
-			pars.distribution.push( { rfb: pars.rfb, settings: sett, layer: FigisMap.fifao.RFB,
-				filter: "RFB = '" + pars.rfb + "' AND DISPORDER = '1'",
-				dispOrder : 1,
-				style: sett.style,
-				hideInSwitcher: false,
-				title: ttitle,
-				skipTitle: skipTitle
-			} );
-		}
-		if ( type.i ) {
-			var ttitle = skipTitle ? baseTitle : title;
-			if ( type.m ) ttitle += ' ' + FigisMap.label('(inland)', pars);
-			pars.distribution.push( { rfb: pars.rfb, settings: sett, layer: FigisMap.fifao.RFB,
-				filter: "RFB = '" + pars.rfb + "' AND DISPORDER = '2'",
-				dispOrder : 2,
-				style: sett.style,
-				hideInSwitcher: false,
-				title: ttitle,
-				skipTitle: skipTitle
-			} );
-		}
-		if ( type.r ) {
-			var ttitle = FigisMap.label('Regulatory area', pars );;
-			pars.distribution.push( { rfb: pars.rfb, settings: sett, layer: FigisMap.fifao.RFB,
-				filter: "RFB = '" + pars.rfb + "' AND DISPORDER = '2'",
-				dispOrder : 2,
-				style: sett.style,
-				hideInSwitcher: false,
-				title: ttitle,
-				skipLegend: true
-			} );
-		}
-		if ( type.a ) {
-			var ttitle = FigisMap.label('Established limits of the area of competence', pars );;
-			pars.distribution.push( { rfb: pars.rfb, settings: sett, layer: FigisMap.fifao.RFB,
-				filter: "RFB = '" + pars.rfb + "_DEP'",
-				style: '',
-				hideInSwitcher: false,
-				title: ttitle,
-				skipLegend: true
-			} );
-		}
-		if ( pars.attribution == null ) pars.attribution = FigisMap.rfb.getDescriptor( pars.rfb, pars );
-		if ( ! pars.projection ) pars.projection =  sett.srs ? sett.srs : FigisMap.defaults.projection(pars);
-		if ( pars.global == null && sett.globalZoom != null ) pars.global = sett.globalZoom;
-		if ( pars.extent == null ) {
-			if ( sett.zoomExtent ) pars.extent = sett.zoomExtent;
-			if ( sett.zoomLevel ) pars.zoom = sett.zoomLevel;
-			if ( sett.centerCoords ) pars.center = sett.centerCoords;
-			if ( ! pars.dataProj ) pars.dataProj =  sett.srs ? sett.srs : FigisMap.defaults.projection(pars);
-		} else {
-			if ( ! pars.dataProj ) pars.dataProj =  pars.projection;
-			if ( pars.center == null ) pars.center = false;
-		}
-	}
-	if ( ! pars.mapSize ) pars.mapSize = 'L';
-	if ( pars.landMask == null ) pars.landMask = true;
-	return ( pars.rfbPreparsed = true );
-};
-
-/**
  * FigisMap.getStyleRuleDescription
  * @param SYTLE
  * @param pars
@@ -1604,7 +1597,6 @@ FigisMap.draw = function( pars ) {
 	var rnd = new FigisMap.renderer( pars.options );
 	var theMap = rnd.render( pars );
 	
-	//!OL2 FigisMap.lastMap = ( theMap && theMap.id && theMap.id.indexOf('OpenLayers.')==0 ) ? theMap : false;
 	FigisMap.lastMap = ( theMap && theMap.getTarget() ) ? theMap : false;
 	FigisMap.renderedMaps[ pars.target.id ] = FigisMap.lastMap;
 	
@@ -1647,14 +1639,6 @@ FigisMap.renderer = function(options) {
 		
 		var mapMaxRes = FigisMap.rnd.maxResolution( projection, p );
 		
-		/*!OL2
-		 switch ( projection ) {
-			case   3031 : myBounds = new OpenLayers.Bounds(-25000000, -25000000, 25000000, 25000000); break;
-			case 900913 : myBounds = new OpenLayers.Bounds(-20037508.34, -20037508.34, 20037508.34, 20037508.34); break;
-			default     : projection = 4326; myBounds = new OpenLayers.Bounds(-180, -90, 180, 90);
-		}
-		boundsOrigin = new Array( myBounds.left, myBounds.bottom );
-		boundsBox = new Array( myBounds.left, myBounds.bottom, myBounds.right, myBounds.top );*/
 		switch ( projection ) {
 			case	3031 : myBounds = [-25000000, -25000000, 25000000, 25000000]; break;
 			case	900913 : myBounds = [-20037508.34, -20037508.34, 20037508.34, 20037508.34]; break;
@@ -1673,20 +1657,6 @@ FigisMap.renderer = function(options) {
 		if (pars.options.skipLayerSwitcher) myMapControls = [];
 		if (pars.options.skipLoadingPanel) myMapControls = [];
 		if (pars.options.skipNavigation) myMapControls = [];
-		
-		/*!OL2
-		myMap = new OpenLayers.Map(
-			p.target.id,
-			{
-				controls: myMapControls,
-				maxExtent: myBounds,
-				restrictedExtent: ( projection == 3031 ? myBounds : null ),
-				maxResolution: mapMaxRes,
-				projection: new OpenLayers.Projection( 'EPSG:' + projection ),
-				units: ( projection == 4326 ? 'degrees' : 'm' )
-			}
-		);
-		 */
 
 		//manage base layers
 		//------------------
@@ -1761,16 +1731,7 @@ FigisMap.renderer = function(options) {
 		if (! pars.options.skipLayerSwitcher ) myMap.addControl( new ol.control.LayerSwitcher());
 		if (! pars.options.skipWatermark ) FigisMap.rnd.watermarkControl( myMap, p );
 		if (! pars.options.skipMouse ) FigisMap.rnd.mouseControl( myMap, p );
-		
-		/*!OL2
-		if ( p.attribution ) {
-			// myMap.addControl( new OpenLayers.Control.Attribution() ); // seems to be unnecessary
-			myMap.baseLayer.attribution = p.attribution;
-		}*/
-		
 		if ( ! pars.options.skipScale ) if (projection != 3031) {
-	
-			// Modification for changing unit		//?OL2 myMap.addControl( new OpenLayers.Control.ScaleLine({ maxWidth: 180, bottomOutUnits: "nmi", geodesic: true }) );
 			myMap.addControl( new ol.control.ScaleLine({className: 'ol-scale-line-metric', units: 'metric', maxWidth: 180}) );
 			myMap.addControl( new ol.control.ScaleLine({className: 'ol-scale-line-nautical', units: 'nautical', maxWidth: 180}) );
 		}
@@ -1778,16 +1739,6 @@ FigisMap.renderer = function(options) {
 		//Managing layers 
 		//---------------
 
-		// myMap.baseLayer
-		/*
-		 myMap.addLayer( new OpenLayers.Layer.WMS(
-			p.base.title,
-			( p.base.cached ? FigisMap.rnd.vars.gwc : FigisMap.rnd.vars.wms ),
-			{ layers: p.base.layer, format: olImageFormat, TILED: true, TILESORIGIN: boundsOrigin, BBOX: boundsBox },
-			{ wrapDateLine: true, buffer: 0, ratio: 1, singleTile: false }
-		) );*/
-
-		
 		var layers = FigisMap.rnd.addAutoLayers( FigisMap.rnd.initLayers( p ), p );
 		
 		for ( var i = 0; i < layers.length; i++ ) {
@@ -1820,7 +1771,6 @@ FigisMap.renderer = function(options) {
 				wp.url = ( l.cached ? FigisMap.rnd.vars.gwc : FigisMap.rnd.vars.wms );
 
 				//params
-				//!OL2 wp.params = { FORMAT: olImageFormat, TRANSPARENT: true, TILED: true, TILESORIGIN: boundsOrigin, BBOX: boundsBox };
 				wp.params = {
 						'LAYERS' : l.layer,
 						'VERSION': '1.1.1',
@@ -1832,11 +1782,6 @@ FigisMap.renderer = function(options) {
 				if ( l.filter && l.filter != '*' ) wp.params.CQL_FILTER = l.filter;
 				
 				//layer config
-				//!OL2 wp.options = { wrapDateLine: true, ratio: 1, buffer: 0, singleTile: false, opacity: 1.0 };
-				//!OL2 if ( l.hideInSwitcher ) wp.options.displayInLayerSwitcher = false;
-				//!OL2 if ( l.opacity ) wp.options.opacity = l.opacity;
-				//!OL2 if ( l.hidden ) wp.options.visibility = false;
-				//?OL2 l.wms = new OpenLayers.Layer.WMS( wp.name, wp.url, wp.params, wp.options );
 				l.wms = new ol.layer.Tile({
 					title : l.hideInSwitcher? undefined : wp.name, //implicit way to hide a layer from layerswitcher
 					source : new ol.source.TileWMS({
@@ -1859,10 +1804,6 @@ FigisMap.renderer = function(options) {
 			if ( l.inMap ) continue;
 			if ( ! l.wms ) continue;
 			
-			//@eblondel 05/11/2015 - move this above
-			//if ( l.style && l.style != '*' && l.style != 'default' ) l.wms.mergeNewParams({ STYLES: l.style });
-			
-			//!OL2 myMap.addLayer( l.wms );
 			olLayers.push( l.wms );
 			l.inMap = true;
 		}
@@ -1884,27 +1825,21 @@ FigisMap.renderer = function(options) {
 		// handlig the zoom/center/extent
 		if ( p.global ) {
 			//!OL2 myMap.zoomToMaxExtent();
-			//myMap.getView().fit(boundsBox, myMap.getSize());
 			myMap.zoomToMaxExtent();
 			FigisMap.debug('Render for p.global');
 			//finalizeMap(); @eblondel moved to single call
 		} else if ( p.extent || p.center || p.zoom ) {
 			//!OL2 myMap.zoomToMaxExtent();
-			//myMap.getView().fit(boundsBox, myMap.getSize());
 			myMap.zoomToExtent( boundsBox );
 			FigisMap.debug('Render for Extent', p.extent, 'zoomLevel', p.zoom, 'Center', p.center );
 			
 			//!OL2 if ( p.extent ) myMap.zoomToExtent( FigisMap.ol.reBound( p.dataProj, projection, p.extent ), false);
-			//if( p.extent ) myMap.getView().fit(FigisMap.ol.reBound(p.dataProj, projection, p.extent), myMap.getSize());
 			if( p.extent ) myMap.zoomToExtent(FigisMap.ol.reBound(p.dataProj, projection, p.extent));
 			
-			//!OL2 if ( p.zoom ) myMap.zoomTo( p.zoom, true );
 			if( p.zoom ) myMap.getView().setZoom(p.zoom);
 			
-			//!OL2 if ( p.center ) myMap.setCenter( FigisMap.ol.reCenter( p.dataProj, projection, p.center) );
 			if ( p.center ) myMap.getView().setCenter( FigisMap.ol.reCenter( p.dataProj, projection, p.center) );
-			
-			//finalizeMap(); @eblondel moved to single call
+
 		} else {
 			autoZoom( layers );
 		}
@@ -1921,32 +1856,6 @@ FigisMap.renderer = function(options) {
 		return myMap;
 		
 	} //function ends
-	
-	/*function finalizeMap() {
-		FigisMap.debug('Finalizing map:', myMap, 'olLayers:',olLayers);
-		
-		myMap.updateSize(); //remains unchanged method in OL3
-		
-		//!OL2 myMap.addLayers( olLayers );
-		for (var i = 0; i < olLayers.length; i++) {
-			overlays.getLayers().push(olLayers[i]);
-		}
-		
-		/*if ( FigisMap.isDeveloper || FigisMap.isTesting ) {
-			myMap.events.register(
-				'moveend',
-				this,
-				function(){
-					FigisMap.console( [
-						'Map moved/zoomed, center:', myMap.getCenter(),
-						'Extent:', myMap.getExtent(),
-						'Projection:', myMap.getProjection(),
-						'zoomLevel:', myMap.zoom
-					], false );
-				}
-			);
-		}
-	}*/
 	
 	function autoZoom( layers ) {
 		FigisMap.debug('Check autoZoom on:', layers, 'toBoundArray:', toBoundArray);
@@ -1979,7 +1888,6 @@ FigisMap.renderer = function(options) {
 			FigisMap.debug('No autozoom layers found');
 			//!OL2 myMap.zoomToMaxExtent();
 			//myMap.getView().fit(myMap.getView().get('extent'), myMap.getSize()); TODO OL3
-			//finalizeMap(); @eblondel moved to single call in render()
 		}
 	}
 	
@@ -2033,13 +1941,11 @@ FigisMap.renderer = function(options) {
 			//bounds = myMap.getMaxExtent(); TODO OL3
 		}
 		if ( bounds ) {
-			//!OL2 var proj = parseInt( myMap.projection.projCode.replace(/^EPSG:/,'') );
 			var proj = parseInt( myMap.getView().getProjection().getCode().replace(/^EPSG:/,'') );
 			
 			var nb = FigisMap.ol.reBound( p.dataProj, proj, bounds );
 			
 			//!OL2 myMap.zoomToExtent( nb, false );
-			//myMap.getView().fit(nb, myMap.getSize());
 			myMap.zoomToExtent( nb );
 			
 			var nc = false;
@@ -2057,8 +1963,6 @@ FigisMap.renderer = function(options) {
 			if ( nc ) myMap.getView().setCenter( nc );
 			FigisMap.debug( 'FigisMap.renderer autoZoom values:', { bounds: bounds, boundsSize: ol.extent.getSize(bounds), nb: nb, nc : nc, mapSize: myMap.getSize() } );
 		}
-		//@eblondel 06/11/2015 single call in render()
-		//finalizeMap();
 	}
 	
 	
