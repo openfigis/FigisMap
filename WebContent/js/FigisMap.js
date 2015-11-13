@@ -133,7 +133,7 @@ FigisMap.rnd.vars = {
 };
 
 //Path for FigisMapData
-FigisMap.data = (FigisMap.isRemoteDeveloper ? 'http://figisapps.fao.org' : '') + "/figis/moniker.jsonp.FigisMap.loadStaticMapData/figismapdata3";
+FigisMap.data = (FigisMap.isRemoteDeveloper ? 'http://figisapps.fao.org' : '') + "/figis/moniker.jsonp.FigisMap.loadStaticMapData/figismapdata";
 
 //proxy configuration
 FigisMap.useProxy = false;
@@ -994,10 +994,24 @@ FigisMap.rfb.getSettings = function( rfb, pars ) {
 	if ( pars && ! ( pars.isViewer || pars.rfb )  ) return null;
 	var v = FigisMap.rfbLayerSettings[ rfb ];
 	if ( ! v ) return null;
-	if ( (typeof v.centerCoords)=='string' ) v.centerCoords = eval(v.centerCoords);
-	if ( (typeof v.zoomExtent)=='string' ) v.zoomExtent = eval(v.zoomExtent);
+	if ( v.centerCoords ) v.centerCoords = FigisMap.rfb.evalOL( v.centerCoords );
+	if ( v.zoomExtent ) v.zoomExtent = FigisMap.rfb.evalOL( v.zoomExtent );
 	v.name = rfb;
 	return v;
+};
+
+/**
+ * FigisMap.rfb.evalOL
+ * Supports string values for both OL2 and OL3 Bounds/LonLat syntax
+ * @param value
+ * @returns parsed value
+ */
+FigisMap.rfb.evalOL = function( str ) {
+	if ( (typeof str)=='string' ) {
+		if ( str.indexOf(' OpenLayers.') > 0 ) str = '[' + str.replace(/^.+\((.+)\).*$/,"$1") + ']';
+		str = eval( str );
+	}
+	return str;
 };
 
 /**
