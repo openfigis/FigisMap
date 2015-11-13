@@ -1008,8 +1008,10 @@ FigisMap.rfb.getSettings = function( rfb, pars ) {
  */
 FigisMap.rfb.evalOL = function( str ) {
 	if ( (typeof str)=='string' ) {
-		if ( str.indexOf(' OpenLayers.') > 0 ) str = '[' + str.replace(/^.+\((.+)\).*$/,"$1") + ']';
-		str = eval( str );
+		if ( str.indexOf(' OpenLayers.') > 0 ) str = str.replace(/^.+\((.+)\).*$/,"$1");
+		str = str.replace(/[^0-9,.+-]/g,'');
+		if ( str === '' ) return null;
+		str = eval( '[' + str + ']' );
 	}
 	return str;
 };
