@@ -509,7 +509,7 @@ FigisMap.ol.gmlBbox = function( xmlDoc ) {
  */
 FigisMap.ol.zoomToExtent = function( myMap, bounds ) {
 	var v = myMap.getView();
-	if ( typeof bounds == 'null' ) bounds = [-180,-90,180,90];
+	if (( ! bounds ) || (typeof bounds == 'undefined') ) bounds = [-180,-90,180,90];
 	v.fit( bounds, myMap.getSize() );
 };
 
@@ -1732,7 +1732,7 @@ FigisMap.renderer = function(options) {
 		});
 		
 		if ( ! myMap.zoomToExtent ) myMap.zoomToExtent = function( boundsArray ) {  return FigisMap.ol.zoomToExtent( this, boundsArray) };
-		if ( ! myMap.zoomToMaxExtent ) myMap.zoomToMaxExtent = function() {  return FigisMap.ol.zoomToExtent( this, null ) };
+		if ( ! myMap.zoomToMaxExtent ) myMap.zoomToMaxExtent = function() {  return FigisMap.ol.zoomToExtent( this, false ) };
 		
 		// Managing OL controls
 		//---------------------
