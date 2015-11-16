@@ -43,7 +43,7 @@ function addViewer(extent, zoom, projection, elinkDiv, urlLink, htmlLink, layer)
 	//vector cluster layer
 	if(layer && layer != "") {
 		pars.vectorLayer = {
-			source: FigisMap.rnd.vars.wfs + 'firms:all_points_' + layer,
+			source: FigisMap.rnd.vars.wfs + 'firms:' + layer + '_all_points',
 			title: layer == 'resource' ? "Marine resources" : "Fisheries",
 			icon: 'img/firms/' + layer + '.png', 
 			cluster: true,
