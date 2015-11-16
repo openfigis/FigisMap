@@ -213,6 +213,13 @@ FigisMap.loadAllScripts = function() {
 			}
 			FigisMap.scriptTempPars = undefined;
 		}
+		if ( FigisMap.scriptTempCallback ) {
+			for ( var i = 0; i < FigisMap.scriptTempCallback.length; i++ ) {
+				var callback = FigisMap.scriptTempCallback[i];
+				setTimeout( callback, 10 );
+			}
+			FigisMap.scriptTempCallback = undefined;
+		}
 		FigisMap.scriptsAreLoading = false;
 	} else {
 		var s = FigisMap.scripts.shift();
@@ -233,11 +240,15 @@ FigisMap.drawInit = function( pars ) {
 	FigisMap.scriptTempPars.push( pars );
 	return FigisMap.init();
 };
-FigisMap.init = function() {
+FigisMap.init = function( callback ) {
 	if ( FigisMap.scriptsLoaded ) return true;
 	if ( ! FigisMap.scriptsAreLoading ) {
 		FigisMap.scriptsAreLoading = true;
 		setTimeout( FigisMap.loadAllScripts, 10 );
+	}
+	if ( typeof callback != 'undefined' ) {
+		if ( ! FigisMap.scriptTempCallback ) FigisMap.scriptTempCallback = [];
+		FigisMap.scriptTempCallback.push( callback );
 	}
 	return false;
 };
