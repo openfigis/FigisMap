@@ -511,18 +511,33 @@ FigisMap.ol.extend = function( bounds1, bounds2 ) {
 	return [ans.left, ans.bottom, ans.right, ans.top];
 };
 
+
+/**
+ * FigisMap.ol.readFeatures
+ * Function to read Features from WFS (default GML2 format)
+ * @param xml
+ * @return an array of features
+ */
+FigisMap.ol.readFeatures = function( xmlDoc ) {
+	
+	FigisMap.debug('FigisMap.ol.gmlBbox - XML:', xmlDoc);
+	var gml = new ol.format.WFS({gmlFormat : new ol.format.GML2()});
+	
+	var features = gml.readFeatures( xmlDoc );
+	FigisMap.debug('FigisMap.ol.gmlbbox - Features', features);
+	return features;
+}
+
 /**
  * FigisMap.ol.gmlBbox
  * Extracts the bounding box from a GML document
  * @param xmlDoc
+ * @return an array representing the bbox
  */
 FigisMap.ol.gmlBbox = function( xmlDoc ) {
 	var e;
 	try {
-		FigisMap.debug('FigisMap.ol.gmlBbox - XML:', xmlDoc);
-		var gml = new ol.format.WFS({gmlFormat : new ol.format.GML2()});
-		var features = gml.readFeatures( xmlDoc );
-		FigisMap.debug('FigisMap.ol.gmlbbox - Features', features);
+		var features = FigisMap.ol.readFeatures( xmlDoc )
 		var extent;
 		for ( var i = 0; i < features.length; i++ ) {
 			var feature = features[i];

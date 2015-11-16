@@ -43,7 +43,7 @@ function addViewer(extent, zoom, projection, elinkDiv, urlLink, htmlLink, layer)
 	//vector cluster layer
 	if(layer && layer != "") {
 		pars.vectorLayer = {
-			source: 'all_points_' + layer,
+			source: FigisMap.rnd.vars.wfs + 'firms:all_points_' + layer,
 			title: layer == 'resource' ? "Marine resources" : "Fisheries",
 			icon: 'img/firms/' + layer + '.png', 
 			cluster: true,
@@ -65,13 +65,6 @@ function addViewer(extent, zoom, projection, elinkDiv, urlLink, htmlLink, layer)
 	}
 	
 	if ( document.getElementById(elinkDiv) ) document.getElementById(elinkDiv).style.display = "none";
-	
-	FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-animatedclusterlayer.js');
-	FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-selectclusterinteraction.js');
-	FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/FigisMap-cluster.js');
-	
-	FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-popup.js');
-	FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/FigisMap-popup.js');
 	
 	myMap = FigisMap.draw( pars );
 	
@@ -148,9 +141,15 @@ function setViewerPage(elinkDiv, urlLink, htmlLink) {
 		layer = 'resource';
 	}
 	
-	/*
-	* Load the Viewer using the request parameters
-	*/
+	//Load dependencies
+	FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-animatedclusterlayer.js');
+	FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-selectclusterinteraction.js');
+	FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/FigisMap-cluster.js');
+	
+	FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-popup.js');
+	FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/FigisMap-popup.js');
+	
+	//Load the Viewer using the request parameters
 	addViewer( extent, zoom, prj, elinkDiv, urlLink, htmlLink, layer);
 }
 
