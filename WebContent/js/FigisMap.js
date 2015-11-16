@@ -206,11 +206,13 @@ FigisMap.loadScript = function(url, charset) {
 FigisMap.loadAllScripts = function() {
 	FigisMap.scriptsLoaded = ! FigisMap.scripts[0];
 	if ( FigisMap.scriptsLoaded ) {
-		for ( var i = 0; i < FigisMap.scriptTempPars.length; i++ ) {
-			var pars = FigisMap.scriptTempPars[i];
-			FigisMap.draw( pars );
+		if ( FigisMap.scriptTempPars ) {
+			for ( var i = 0; i < FigisMap.scriptTempPars.length; i++ ) {
+				var pars = FigisMap.scriptTempPars[i];
+				FigisMap.draw( pars );
+			}
+			FigisMap.scriptTempPars = undefined;
 		}
-		FigisMap.scriptTempPars = undefined;
 		FigisMap.scriptsAreLoading = false;
 	} else {
 		var s = FigisMap.scripts.shift();
@@ -229,6 +231,10 @@ FigisMap.drawInit = function( pars ) {
 	if ( FigisMap.scriptsLoaded ) return true;
 	if ( ! FigisMap.scriptTempPars ) FigisMap.scriptTempPars = [];
 	FigisMap.scriptTempPars.push( pars );
+	return FigisMap.init();
+};
+FigisMap.init = function() {
+	if ( FigisMap.scriptsLoaded ) return true;
 	if ( ! FigisMap.scriptsAreLoading ) {
 		FigisMap.scriptsAreLoading = true;
 		setTimeout( FigisMap.loadAllScripts, 10 );

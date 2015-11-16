@@ -1,5 +1,13 @@
 var myMap = false;
 
+function RFBinit() {
+	if ( FigisMap.init() ) {
+		setRFBPage("e-link","rfbs-link","rfbs-html");
+	} else {
+		setTimeout('RFBinit()',100);
+	}
+}
+
 /**
 * function setRFB
 *       extent -> The extent to zoom after the layer is rendered (optional).
