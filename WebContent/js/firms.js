@@ -66,6 +66,13 @@ function addViewer(extent, zoom, projection, elinkDiv, urlLink, htmlLink, layer)
 	
 	if ( document.getElementById(elinkDiv) ) document.getElementById(elinkDiv).style.display = "none";
 	
+	FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-animatedclusterlayer.js');
+	FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-selectclusterinteraction.js');
+	FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/FigisMap-cluster.js');
+	
+	FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-popup.js');
+	FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/FigisMap-popup.js');
+	
 	myMap = FigisMap.draw( pars );
 	
 	if ( myMap ) {

@@ -11,8 +11,8 @@
  * 
  */
 var FigisMap = {
-	version	: "1.0-OL3-SNAPSHOT",
-	parser	: new Object(), // parsing methods collection
+	version		: "1.0-OL3-SNAPSHOT",
+	parser		: new Object(), // parsing methods collection
 	fs		: new Object(), // specific fact sheets methods collection
 	rfb		: new Object(), // specific RFB methods collection
 	rnd		: new Object(), // FigisMap.renderer specific collection of methods and variabes
@@ -23,6 +23,9 @@ var FigisMap = {
 	renderedMaps	: new Object(),
 	isTesting	: ( document.domain.indexOf('figisapps')==0 || document.domain.indexOf('figis02')==0 ||document.domain.indexOf('168.202.')==0||document.domain.indexOf('www-data.fao.org')==0 ),
 	currentSiteURI	: location.href.replace(/^([^:]+:\/\/[^\/]+).*$/,"$1"),
+	scripts		: [],
+	scriptsReqs	: [],
+	scriptsLoaded	: true,
 	debugLevel	: 1 // 0|false|null: debug off, 1|true:console, 2: console + error alert
 };
 
@@ -195,13 +198,30 @@ FigisMap.loadStaticMapData = function(md) {
  * @param path - the javascript resource path (mandatory)
  * @param charset (optional)
  */
-FigisMap.loadScript = function(path, charset) {
-	document.write('<script type="text/javascript" language="javascript" ' + 
-					'src="' + path + '" ' +
-					(typeof charset != 'string'? 'charset="'+charset+'"' : '') +
-					'></script>');
-}
-
+FigisMap.loadScript = function(url, charset) {
+	FigisMap.scriptsLoaded  = false;
+	if (typeof charset != 'string') charset = false;
+	FigisMap.scripts.push([url, charset]);
+};
+FigisMap.initScripts = function() {
+	FigisMap.scriptsLoaded = ! FigisMap.scripts[0];
+	if ( FigisMap.scriptsLoaded ) {
+		var pars = FigisMap.scriptTempPars;
+		FigisMap.scriptTempPars = undefined;
+		FigisMap.draw( pars );
+	} else {
+		var s = FigisMap.scripts.shift();
+		FigisMap.scriptsReqs.push( s );
+		var head = document.getElementsByTagName('head')[0];
+		var script = document.createElement('script');
+		script.type = 'text/javascript';
+		script.src = s[0];
+		if (typeof s[1] == 'string') script.charset = s[1];
+		script.onreadystatechange = FigisMap.initScripts;
+		script.onload = FigisMap.initScripts;
+		head.appendChild(script);
+	}
+};
 
 /**
  * --------------------------------------------------------------------------------------
@@ -332,15 +352,6 @@ FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/3031.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/900913.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-layerswitcher.js');
-
-//Testing FigisMap cluster
-FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-animatedclusterlayer.js');
-FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-selectclusterinteraction.js');
-FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/FigisMap-cluster.js');
-
-//Testing FigisMap popup
-FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-popup.js');
-FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/FigisMap-popup.js');
 
 //FigisMap data
 FigisMap.loadScript(FigisMap.data, "UTF-8");
@@ -1605,6 +1616,11 @@ FigisMap.getStyleRuleDescription = function(STYLE, pars) {
 */
 FigisMap.draw = function( pars ) {
 	
+	if ( ! FigisMap.scriptsLoaded ) {
+		FigisMap.scriptTempPars = pars;
+		FigisMap.initScripts();
+		return void(0);
+	}
 	FigisMap.rfb.preparse( pars );
 	pars = FigisMap.parser.parse( pars );
 	if ( pars.parserError ) {
