@@ -1247,20 +1247,17 @@ FigisMap.rnd.watermarkControl = function( map, pars ) {
 		( pars.watermark.title ? ' title="' + pars.watermark.title + '"' : '' ) +
 		'/>';
 	
-	var tgtdoc = map.getTargetElement();
 	//manage the display of watermark (logo)
-	if( tgtdoc.getElementsByClassName("ol-attribution-map").length > 0){
-		tgtdoc.getElementsByClassName("ol-attribution-map")[0].getElementsByTagName("li")[0].innerHTML = poweredByHtml;
-	}
+	var attMaps = map.getTargetElement().getElementsByClassName("ol-attribution-map");
+	if( attMaps.length > 0) attMaps[0].getElementsByTagName("li")[0].innerHTML = poweredByHtml;
 	
 	//hack to remove the baselayer attribution that for some reason is also added to the ol-attribution-map
 	//while explicitely referenced on ol-attribution-baselayer (to investigate if there is a cleaner solution)
 	map.on('postrender', function() {
-		var tgtdoc = this.getTargetElement(); // "this" should be a reference to the map object
-		if( tgtdoc.getElementsByClassName("ol-attribution-map").length > 0){
-			if( tgtdoc.getElementsByClassName("ol-attribution-map")[0].getElementsByTagName("li").length > 1){
-				tgtdoc.getElementsByClassName("ol-attribution-map")[0].getElementsByTagName("li")[1].remove();
-			}
+		var attMaps = this.getTargetElement().getElementsByClassName("ol-attribution-map");
+		if( attMaps.length > 0){
+			var attLis = attMaps[0].getElementsByTagName("li");
+			if( attLis.length > 1) attLis[1].remove();
 		}
 	});
 	
