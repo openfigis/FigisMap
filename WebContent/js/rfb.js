@@ -1,11 +1,7 @@
 var myMap = false;
 
 function RFBinit() {
-	if ( FigisMap.init() ) {
-		setRFBPage("e-link","rfbs-link","rfbs-html");
-	} else {
-		setTimeout('RFBinit()',100);
-	}
+	setRFBPage("e-link","rfbs-link","rfbs-html");
 }
 
 /**

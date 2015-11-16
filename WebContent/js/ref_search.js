@@ -110,14 +110,10 @@ RS.loadSpecies = function() {
 };
 
 RS.init = function() {
-	if ( FigisMap.init() ) {
-		RS.internal.init();
-		if ( RS.speciesLoaded ) {
-			RS.wa.reset();
-			RS.spc.reset();
-		}
-	} else {
-		setTimeout('RS.init()',100);
+	RS.internal.init();
+	if ( RS.speciesLoaded ) {
+		RS.wa.reset();
+		RS.spc.reset();
 	}
 	return void(0);
 };
