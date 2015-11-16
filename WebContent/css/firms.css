@@ -11,10 +11,10 @@ ul, li { list-style-type: none; }
 #topBar { background-color: rgb(51, 102, 153); color: white; font-size: 12px; margin: 0; padding: 0 10px; text-align: right; }
 #topBar a, #topBar a:visited { color: #fff; cursor: pointer; }
 #topBar a:hover, #topBar a:active { color: #f90; cursor: pointer; }
-#mapWrapper { position: absolute; display: block; top: 152px; left: 0; right: 0; bottom: 30px; }
+#mapWrapper { position: absolute; display: block; top: 152px; left: 0; right: 0; bottom: 18px; }
 #main { position: absolute; top: 5px; left: 10px; right: 220px; bottom: 5px; }
 #map { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
-#sidebar { border-left-color: #000; border-left-width: 1px; border-style: solid; border-width: 0px 1px; float: right; font-size: 12px; height: 550px; padding: 0; width: 210px; overflow: auto ; }
+#sidebar { border: solid 1px #000; border-width: 0 0 0 1px; bottom: 0; font-size: 12px; padding: 0; position: absolute; right: 0; top: 0; width: 210px; }
 #sidebar .legend { margin: .5em; }
 #sidebar .legendTitle { font-weight: bold; padding: .5em 0; }
 #MemberCountries { }
