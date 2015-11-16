@@ -203,12 +203,15 @@ FigisMap.loadScript = function(url, charset) {
 	if (typeof charset != 'string') charset = false;
 	FigisMap.scripts.push([url, charset]);
 };
-FigisMap.initScripts = function() {
+FigisMap.loadAllScripts = function() {
 	FigisMap.scriptsLoaded = ! FigisMap.scripts[0];
 	if ( FigisMap.scriptsLoaded ) {
-		var pars = FigisMap.scriptTempPars;
+		for ( var i = 0; i < FigisMap.scriptTempPars.length; i++ ) {
+			var pars = FigisMap.scriptTempPars[i];
+			FigisMap.draw( pars );
+		}
 		FigisMap.scriptTempPars = undefined;
-		FigisMap.draw( pars );
+		FigisMap.scriptsAreLoading = false;
 	} else {
 		var s = FigisMap.scripts.shift();
 		FigisMap.scriptsReqs.push( s );
@@ -217,10 +220,20 @@ FigisMap.initScripts = function() {
 		script.type = 'text/javascript';
 		script.src = s[0];
 		if (typeof s[1] == 'string') script.charset = s[1];
-		script.onreadystatechange = FigisMap.initScripts;
-		script.onload = FigisMap.initScripts;
+		script.onreadystatechange = FigisMap.loadAllScripts;
+		script.onload = FigisMap.loadAllScripts;
 		head.appendChild(script);
 	}
+};
+FigisMap.drawInit = function( pars ) {
+	if ( FigisMap.scriptsLoaded ) return true;
+	if ( ! FigisMap.scriptTempPars ) FigisMap.scriptTempPars = [];
+	FigisMap.scriptTempPars.push( pars );
+	if ( ! FigisMap.scriptsAreLoading ) {
+		FigisMap.scriptsAreLoading = true;
+		setTimeout( FigisMap.loadAllScripts, 10 );
+	}
+	return false;
 };
 
 /**
@@ -1616,11 +1629,8 @@ FigisMap.getStyleRuleDescription = function(STYLE, pars) {
 */
 FigisMap.draw = function( pars ) {
 	
-	if ( ! FigisMap.scriptsLoaded ) {
-		FigisMap.scriptTempPars = pars;
-		FigisMap.initScripts();
-		return void(0);
-	}
+	if ( ! FigisMap.drawInit( pars ) ) return void(0);
+	
 	FigisMap.rfb.preparse( pars );
 	pars = FigisMap.parser.parse( pars );
 	if ( pars.parserError ) {
