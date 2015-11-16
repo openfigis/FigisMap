@@ -1257,7 +1257,9 @@ FigisMap.rnd.watermarkControl = function( map, pars ) {
 		var attMaps = this.getTargetElement().getElementsByClassName("ol-attribution-map");
 		if( attMaps.length > 0){
 			var attLis = attMaps[0].getElementsByTagName("li");
-			if( attLis.length > 1) attLis[1].remove();
+			while( attLis.length > 1) {
+				attLis.pop().remove();
+			}
 		}
 	});
 	
