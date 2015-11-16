@@ -202,28 +202,6 @@ FigisMap.loadScript = function(path, charset) {
 					'></script>');
 }
 
-/**
- * --------------------------------------------------------------------------------------
- * FigisMap script dependencies
- * --------------------------------------------------------------------------------------
- */
-
-//FigisMap dependencies
-FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/proj4.js');
-FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/4326.js');
-FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/3031.js');
-FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/900913.js');
-FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3.js');
-FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-layerswitcher.js');
-
-//Testing FigisMap cluster
-FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-animatedclusterlayer.js');
-FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-selectclusterinteraction.js');
-FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/FigisMap-cluster.js');
-
-//FigisMap data
-FigisMap.loadScript(FigisMap.data, "UTF-8");
-
 
 /**
  * --------------------------------------------------------------------------------------
@@ -339,6 +317,34 @@ FigisMap.label = function( label, p ) {
 	}
 	return label;
 }
+
+
+/**
+ * --------------------------------------------------------------------------------------
+ * FigisMap script dependencies
+ * --------------------------------------------------------------------------------------
+ */
+
+//FigisMap dependencies
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/proj4.js');
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/4326.js');
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/3031.js');
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/900913.js');
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3.js');
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-layerswitcher.js');
+
+//Testing FigisMap cluster
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-animatedclusterlayer.js');
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-selectclusterinteraction.js');
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/FigisMap-cluster.js');
+
+//Testing FigisMap popup
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-popup.js');
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/FigisMap-popup.js');
+
+//FigisMap data
+FigisMap.loadScript(FigisMap.data, "UTF-8");
+
 
 
 /**
@@ -1877,6 +1883,12 @@ FigisMap.renderer = function(options) {
 		if( pars.vectorLayer ) {
 			FigisMap.debug('FigisMap - cluster layer', pars.vectorLayer);
 			FigisMap.rnd.configureVectorLayer(myMap, overlays, pars.vectorLayer);
+		}
+		
+		//Testing popup
+		if( pars.popup ) {
+			FigisMap.debug('FigisMap - popup', pars.popup);
+			FigisMap.rnd.configurePopup(myMap, pars.popup);
 		}
 		
 		FigisMap.debug('myMap:', myMap );

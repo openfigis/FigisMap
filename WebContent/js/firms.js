@@ -52,6 +52,18 @@ function addViewer(extent, zoom, projection, elinkDiv, urlLink, htmlLink, layer)
 		}
 	}
 	
+	//popup (with test content handler)
+	pars.popup = {
+		handler: function(feature) {
+			var html = '<div style="font-size:12px">';
+			html += '<span style="font-weight:bold">ID: </span>' + feature.get('FIGIS_ID');
+			html += '<br>';
+			html += '<span style="font-weight:bold">TITLE: </span>' + feature.get('TITLE');
+			html += '</div>';
+			return html;
+		}
+	}
+	
 	if ( document.getElementById(elinkDiv) ) document.getElementById(elinkDiv).style.display = "none";
 	
 	myMap = FigisMap.draw( pars );
