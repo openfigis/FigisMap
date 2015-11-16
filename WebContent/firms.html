@@ -28,6 +28,16 @@
 	<!-- FIRMS viewer -->
 	<link rel="stylesheet" href="css/firms.css" type="text/css" />
 	<script type="text/javascript" src="js/firms.js"></script>
+	
+	<!-- Embedded Link tool -->
+	<script type="text/javascript" language="javascript">
+		// <![CDATA[
+			function embedLink() {
+				setViewerEmbedLink('e-link', 'firms-link', 'firms-html');
+				document.getElementById('EmbedLink').blur();
+			}
+		// ]]>
+	</script>
 </head>
 
 <body onload="setViewerPage('e-link','firms-link', 'firms-html')">
@@ -65,6 +75,7 @@
 					<option value='3349'>Mercator (3857)</option>
 					<!-- <option value="3031">South Polar (3031)</option> -->
 				</select>
+				<a href="javascript:embedLink();" id="EmbedLink" title="Link or embed this FIRMS map"><span>Link</span></a>
 				<input id="txtCql" type="hidden">
 				<input id="command" type="hidden">
 				<input id="opt" type="hidden">
