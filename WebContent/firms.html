@@ -33,14 +33,14 @@
 	<script type="text/javascript" language="javascript">
 		// <![CDATA[
 			function embedLink() {
-				setViewerEmbedLink('e-link', 'firms-link', 'firms-html');
+				FV.setViewerEmbedLink('e-link', 'firms-link', 'firms-html');
 				document.getElementById('EmbedLink').blur();
 			}
 		// ]]>
 	</script>
 </head>
 
-<body onload="setViewerPage('e-link','firms-link', 'firms-html')">
+<body onload="FigisMap.init( FV.init )">
 	<div id="wrapper">
 		<div id="header">
 			<div id="top">
@@ -63,14 +63,14 @@
 			<!-- Top bar -->
 			<div id="topBar">
 				<label id="lblLayer">Select FIRMS resource:</label>
-				<select id="SelectLayer" onchange="setViewer(null, null, null, 'e-link', 'firms-link', 'firms-html')">
+				<select id="SelectLayer" onchange="FV.setViewer(null, null, null, 'e-link', 'firms-link', 'firms-html')">
 					<option value="">(Select a resource...)</option>
 					<option value="resource">Marine Resources</option>
 					<option value="fishery">Fisheries</option>
 				</select>
 				&nbsp;&nbsp;
 				<label id="lblSRS">Select Projection:</label>
-				<select id="SelectSRS" onchange="setViewer(null, null, this.value, 'e-link', 'firms-link', 'firms-html')">
+				<select id="SelectSRS" onchange="FV.setViewer(null, null, this.value, 'e-link', 'firms-link', 'firms-html')">
 					<option value="4326" default="">WGS84 (4326)</option>
 					<option value='3349'>Mercator (3857)</option>
 					<!-- <option value="3031">South Polar (3031)</option> -->

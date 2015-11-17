@@ -4,12 +4,26 @@
  * 
  */
 
-var myMap = false;
-
 var performAutoZoom = true;
 
+//Load dependencies
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-animatedclusterlayer.js');
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-selectclusterinteraction.js');
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/FigisMap-cluster.js');
+
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-popup.js');
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/FigisMap-popup.js');
+
+var FV = new Object();
+
+FV.myMap = false;
+
+FV.init = function() {
+	FV.setViewerPage('e-link','firms-link', 'firms-html');
+};
+
 /**
-* addViewer function.
+* FV.addViewer function.
 *       extent -> The extent to zoom after the layer is rendered (optional).
 *       zoom -> The zoom level of the map (optional).
 *       mapProjection -> The map projection (optional).
@@ -18,7 +32,7 @@ var performAutoZoom = true;
 *       htmlLink -> The id of the html input field of the embed-link (optional if not using the embed link div).
 *       layer -> the FIRMS layer to use as cluster layer
 **/
-function addViewer(extent, zoom, projection, elinkDiv, urlLink, htmlLink, layer){
+FV.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, layer){
 
 	//parameters
 	var pars = {
@@ -67,11 +81,11 @@ function addViewer(extent, zoom, projection, elinkDiv, urlLink, htmlLink, layer)
 	
 	if ( document.getElementById(elinkDiv) ) document.getElementById(elinkDiv).style.display = "none";
 	
-	myMap = FigisMap.draw( pars );
+	FV.myMap = FigisMap.draw( pars );
 	
-	if ( myMap ) {
+	if ( FV.myMap ) {
 		if ( document.getElementById(elinkDiv) ) {
-			myMap.on('moveend',
+			FV.myMap.on('moveend',
 					function(){
 						document.getElementById(elinkDiv).style.display = "none";
 						document.getElementById(urlLink).value = "";
@@ -80,10 +94,10 @@ function addViewer(extent, zoom, projection, elinkDiv, urlLink, htmlLink, layer)
 			);
 		}
 	}
-}
+};
 
 /**
-* setViewer function.
+* FV.setViewer function.
 *       extent -> The extent to zoom after the layer is rendered (optional).
 *       zoom -> The zoom level of the map (optional).
 *       mapProjection -> The map projection (optional).
@@ -91,7 +105,7 @@ function addViewer(extent, zoom, projection, elinkDiv, urlLink, htmlLink, layer)
 *       urlLink -> The id of the url input field of the embed-link (optional if not using the embed link div).
 *       htmlLink -> The id of the html input field of the embed-link (optional if not using the embed link div).
 **/
-function setViewer(extent, zoom, projection, elinkDiv, urlLink, htmlLink){
+FV.setViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink){
 	
 	if ( ! projection ) {
 		document.getElementById("SelectSRS").value = '4326';
@@ -100,16 +114,16 @@ function setViewer(extent, zoom, projection, elinkDiv, urlLink, htmlLink){
 	if(!zoom || zoom == 0) zoom = 1;
 	var layer = document.getElementById("SelectLayer").value;
 	
-	addViewer(extent, zoom, projection, elinkDiv, urlLink, htmlLink, layer);
-}
+	FV.addViewer(extent, zoom, projection, elinkDiv, urlLink, htmlLink, layer);
+};
 
 /**
-* setViewerPage function. Load the base FIRMS Map applying the user request parameters, if any
+* FV.setViewerPage function. Load the base FIRMS Map applying the user request parameters, if any
 * @param elinkDiv -> The embed-link id  (optional if not using the embed link div).
 * @param urlLink -> The id of the url input field of the embed-link (optional if not using the embed link div).
 * @param htmlLink -> The id of the html input field of the embed-link (optional if not using the embed link div).
 */
-function setViewerPage(elinkDiv, urlLink, htmlLink) {
+FV.setViewerPage = function(elinkDiv, urlLink, htmlLink) {
 	
 	var layer, extent, zoom, prj;
 	
@@ -142,17 +156,9 @@ function setViewerPage(elinkDiv, urlLink, htmlLink) {
 		layer = 'resource';
 	}
 	
-	//Load dependencies
-	FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-animatedclusterlayer.js');
-	FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-selectclusterinteraction.js');
-	FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/FigisMap-cluster.js');
-	
-	FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-popup.js');
-	FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/FigisMap-popup.js');
-	
 	//Load the Viewer using the request parameters
-	addViewer( extent, zoom, prj, elinkDiv, urlLink, htmlLink, layer);
-}
+	FV.addViewer( extent, zoom, prj, elinkDiv, urlLink, htmlLink, layer);
+};
 
 /**
 * setFirmsViewerEmberLink function. Manage the expand/collapse of the Embed-Link div.
@@ -160,7 +166,7 @@ function setViewerPage(elinkDiv, urlLink, htmlLink) {
 * @param viewerLinkId -> The id of the url input field of the embed-link.
 * @param viewerHtmlId -> The id of the html input field of the embed-link.
 */
-function setViewerEmbedLink(targetId, viewerLinkId, viewerHtmlId){
+FV.setViewerEmbedLink = function(targetId, viewerLinkId, viewerHtmlId){
 	
 	if ( ! ( document.getElementById ) ) return void(0);
 	
@@ -173,10 +179,12 @@ function setViewerEmbedLink(targetId, viewerLinkId, viewerHtmlId){
 		divId.style.display = "block";
 		var baseURL = location.href.replace(/#.*$/,'').replace(/\?.*$/,'');
 		
+		if ( ! FV.myMap ) FV.myMap = FigisMap.lastMap;
+		
 		//Building the request url containing the map status.
 		baseURL += "?layer=" + document.getElementById("SelectLayer").value
-			+ "&extent=" + myMap.getView().calculateExtent(myMap.getSize()).join(',')
-			+ "&zoom=" + myMap.getView().getZoom()
+			+ "&extent=" + FV.myMap.getView().calculateExtent(FV.myMap.getSize()).join(',')
+			+ "&zoom=" + FV.myMap.getView().getZoom()
 			+ "&prj=" + document.getElementById("SelectSRS").value;
 		
 		//Setting the input fields of the embed-link div
@@ -195,4 +203,3 @@ function setViewerEmbedLink(targetId, viewerLinkId, viewerHtmlId){
 		htmlId.value = "";
 	}
 }
-
