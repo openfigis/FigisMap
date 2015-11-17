@@ -241,7 +241,10 @@ FigisMap.drawInit = function( pars ) {
 	return FigisMap.init();
 };
 FigisMap.init = function( callback ) {
-	if ( FigisMap.scriptsLoaded ) return true;
+	if ( FigisMap.scriptsLoaded ) {
+		if ( callback ) setTimeout( callback, 10 );
+		return true;
+	}
 	if ( ! FigisMap.scriptsAreLoading ) {
 		FigisMap.scriptsAreLoading = true;
 		setTimeout( FigisMap.loadAllScripts, 10 );
