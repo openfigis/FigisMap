@@ -56,8 +56,9 @@ function addViewer(extent, zoom, projection, elinkDiv, urlLink, htmlLink, layer)
 	pars.popup = {
 		handler: function(feature) {
 			var html = '<div style="font-size:12px">';
-			html += '<span style="font-weight:bold">ID: </span>' + feature.get('FIGIS_ID');
-			html += '<br>';
+			html += '<span style="font-weight:bold">DOMAIN: </span>' + feature.get('DOMAIN') + '<br>';
+			html += '<span style="font-weight:bold">FIGIS ID: </span>' + feature.get('FIGIS_ID') + '<br>';
+			html += '<span style="font-weight:bold">LANG: </span>' + feature.get('LANG') + '<br>';
 			html += '<span style="font-weight:bold">TITLE: </span>' + feature.get('TITLE');
 			html += '</div>';
 			return html;
