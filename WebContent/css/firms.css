@@ -41,3 +41,22 @@ ul, li { list-style-type: none; }
 #e-link label { font-size: 10px; }
 #legend { margin-bottom: 0px; }
 .legend img { vertical-align: middle; }
+
+
+/* FIRMS viewer popup */
+.ol-popup {
+	padding: 0 !important;
+	border: none !important;
+	background-color:transparent !important;
+}
+
+.ol-popup-content {
+	width: auto !important;
+	height: auto !important;
+	min-width: none !important;
+	max-height: 400px !important;
+}
+
+.ol-popup-closer {
+	font-size:100% !important;
+}

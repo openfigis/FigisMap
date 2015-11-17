@@ -68,14 +68,13 @@ FV.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, l
 	
 	//popup (with test content handler)
 	pars.popup = {
-		handler: function(feature) {
-			var html = '<div style="font-size:12px">';
-			html += '<span style="font-weight:bold">DOMAIN: </span>' + feature.get('DOMAIN') + '<br>';
-			html += '<span style="font-weight:bold">FIGIS ID: </span>' + feature.get('FIGIS_ID') + '<br>';
-			html += '<span style="font-weight:bold">LANG: </span>' + feature.get('LANG') + '<br>';
-			html += '<span style="font-weight:bold">TITLE: </span>' + feature.get('TITLE');
-			html += '</div>';
-			return html;
+		resourceHandler : function(feature) {
+			return '/figis/moniker.html/firmsviewerpopup/'+ feature.get('DOMAIN') + '/' + feature.get('FIGIS_ID') + '/' + feature.get('LANG');
+		},
+		contentHandler : function(feature, request) {
+			var content = document.createElement("div");
+			content.appendChild(request.responseXML.children[0]);
+			return content.innerHTML;
 		}
 	}
 	
