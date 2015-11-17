@@ -1486,6 +1486,11 @@ FigisMap.rnd.mainLegend = function( layers, pars ) {
 	var useSections = ( pars.legendType.indexOf('P') < 0 );
 	var llayers = FigisMap.rnd.sort4legend( layers, pars );
 	if ( useTables && ! useSections ) LegendHTML += '<table cellpadding="0" cellspacing="0" border="0">';
+	
+	//add basic legend for vector layer (if existing)
+	//warning: for now not supported when useSections = true
+	if( pars.vectorLayer ) LegendHTML += FigisMap.rnd.addVectorLayerLegend(pars.vectorLayer);
+	
 	for (var i = 0; i < llayers.length; i++) {
 		var l = llayers[ i ];
 		if ( useSections && l.division ) {
@@ -1906,9 +1911,6 @@ FigisMap.renderer = function(options) {
 			});
 		}*/
 		
-		// BUILDING THE LEGEND
-		FigisMap.rnd.legend( layers, p );
-		
 		// handlig the zoom/center/extent
 		if ( p.global ) {
 			//!OL2 myMap.zoomToMaxExtent();
@@ -1942,7 +1944,7 @@ FigisMap.renderer = function(options) {
 		//Testing cluster
 		if( pars.vectorLayer ) {
 			FigisMap.debug('FigisMap - cluster layer', pars.vectorLayer);
-			FigisMap.rnd.configureVectorLayer(myMap, overlays, pars.vectorLayer);
+			FigisMap.rnd.addVectorLayer(myMap, overlays, pars.vectorLayer);
 		}
 		
 		//Testing popup
@@ -1950,6 +1952,9 @@ FigisMap.renderer = function(options) {
 			FigisMap.debug('FigisMap - popup', pars.popup);
 			FigisMap.rnd.configurePopup(myMap, pars.popup);
 		}
+		
+		// BUILDING THE LEGEND
+		FigisMap.rnd.legend( layers, p );
 		
 		FigisMap.debug('myMap:', myMap );
 		return myMap;

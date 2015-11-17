@@ -3,14 +3,9 @@
  * An experimental function to configure a vector layer, clustered or not
  * @param map
  * @param overlays
- * @param source
- * @param title
- * @param isCluster
- * @param clusterDistance
- * @param iconResource
- * @param iconCluster
+ * @param layer
  */
-FigisMap.rnd.configureVectorLayer = function(map, overlays, layer) {
+FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 
 	if( !layer.source ) alert("Missing vector layer 'source'");
 	if( !layer.title ) alert("Missing vector layer 'title'");
@@ -101,3 +96,17 @@ FigisMap.rnd.configureVectorLayer = function(map, overlays, layer) {
 		alert("Only Cluster vector layers are currently supported by FigisMap");
 	}
 }
+
+
+/**
+ * FigisMap.rnd.addVectorLayerLegend
+ * @param layer
+ * @param useTables
+ * @return the html legend content as string
+ */
+FigisMap.rnd.addVectorLayerLegend = function( layer , useTables) {
+	var LegendHTML = "";
+	var iconHTML = '<img src="' + layer.icon +'"/>';
+	LegendHTML += '<tr><td>' + iconHTML + '</td><td><span>' + layer.title + '</span></td></tr>';
+	return LegendHTML;
+};
