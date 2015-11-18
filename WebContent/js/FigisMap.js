@@ -1804,7 +1804,9 @@ FigisMap.renderer = function(options) {
 				projection : viewProj,
 				center : ol.extent.getCenter(boundsBox),
 				extent: boundsBox,
-				zoom : 0,
+				zoom : 1,
+				minZoom: 1,
+				zoomFactor: (projection == 4326)? 3 : 2,
 				maxResolution : mapMaxRes
 			}),
 			controls: [],
@@ -1818,7 +1820,7 @@ FigisMap.renderer = function(options) {
 		//---------------------
 		//default controls (explicitly added for information and possible customization with options)
 		myMap.addControl( new ol.control.Zoom() );
-		myMap.addControl( new ol.control.ZoomToMaxExtent({ extent: boundsBox, zoom: pars.zoom}) );
+		myMap.addControl( new ol.control.ZoomToMaxExtent({ extent: boundsBox, zoom: myMap.getView().getZoom()}) );
 		myMap.addControl( new ol.control.Rotate() );
 		myMap.addControl( new ol.control.Attribution({collapsible : false, className : 'ol-attribution-baselayer'}) );
 		
