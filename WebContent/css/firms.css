@@ -42,8 +42,9 @@ ul, li { list-style-type: none; }
 #legend { margin-bottom: 0px; }
 .legend img { vertical-align: middle; }
 
+@media print { #sidePanelsContainer { display: none; } }
+#sidePanelsContainer { bottom: 2em; left: .5em; position: absolute; width: 180px; z-index: 100; font-size: 12px; }
 #sidePanelsContainer * { transition: all .5s; }
-#sidePanelsContainer { bottom: 30px; left: 10px; position: absolute; width: 180px; z-index: 10; font-size: 12px; }
 #sidePanelsContainer blockquote { background-color: rgba(255,255,255,.8); opacity: 0; margin: 0; overflow-y: hidden; padding: 0 10px; border-radius: 0 0 10px 10px; }
 #sidePanelsContainer div.panel { border-radius: 10px; margin-top: .5em; }
 #sidePanelsContainer div.panel:hover { box-shadow: 2px 2px 4px #666; }
@@ -52,7 +53,7 @@ ul, li { list-style-type: none; }
 #sidePanelsContainer #projectionPanel:hover blockquote { height: 40px; }
 #sidePanelsContainer #legendPanel:hover blockquote { height: 90px; }
 #sidePanelsContainer h4 { background-color: rgba(51,102,153,.6); border-radius: 10px; color: rgba(255,255,255,.6); font-size: 100%; margin: 0; padding: 5px 10px; text-align: left; }
-#sidePanelsContainer div:hover h4 { background-color: rgba(51,102,153,1); border-radius: 10px 10px 0 0; color: rgba(255,255,255,.9); }
+#sidePanelsContainer div.panel:hover h4 { background-color: rgba(51,102,153,1); border-radius: 10px 10px 0 0; color: rgba(255,255,255,.9); }
 
 /* FIRMS viewer popup */
 .ol-popup { padding: 0 !important; border: none !important; background-color:transparent !important; }
