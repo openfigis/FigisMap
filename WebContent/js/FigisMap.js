@@ -385,6 +385,8 @@ FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/3031.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/900913.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-layerswitcher.js');
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-zoomtomaxextent.js');
+
 
 //FigisMap data
 FigisMap.loadScript(FigisMap.data, "UTF-8");
@@ -1816,6 +1818,7 @@ FigisMap.renderer = function(options) {
 		//---------------------
 		//default controls (explicitly added for information and possible customization with options)
 		myMap.addControl( new ol.control.Zoom() );
+		myMap.addControl( new ol.control.ZoomToMaxExtent({ extent: boundsBox, zoom: pars.zoom}) );
 		myMap.addControl( new ol.control.Rotate() );
 		myMap.addControl( new ol.control.Attribution({collapsible : false, className : 'ol-attribution-baselayer'}) );
 		

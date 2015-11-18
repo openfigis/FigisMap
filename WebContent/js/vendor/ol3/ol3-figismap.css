@@ -1,7 +1,15 @@
 /**
-* Custom OpenLayers 3 CSS stylesheet for FigisMap
-*
-*/
+ * OL3 css stylesheets imports
+ */
+@import url("ol3.css");
+@import url("ol3-layerswitcher.css");
+@import url("ol3-zoomtomaxextent.css");
+@import url("ol3-popup.css");
+
+/**
+ * Custom OpenLayers 3 CSS stylesheet for FigisMap
+ *
+ */
 
 /**
 * MousePosition control
@@ -243,4 +251,3 @@
 .ol-attribution-baselayer.ol-logo-only button,.ol-attribution-baselayer.ol-uncollapsible button{
 	display:none
 }
-
