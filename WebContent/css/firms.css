@@ -42,21 +42,18 @@ ul, li { list-style-type: none; }
 #legend { margin-bottom: 0px; }
 .legend img { vertical-align: middle; }
 
+#sidePanelsContainer * { transition: all .5s; }
+#sidePanelsContainer { bottom: 30px; left: 10px; position: absolute; width: 180px; z-index: 10; font-size: 12px; }
+#sidePanelsContainer blockquote { background-color: rgba(255,255,255,.8); opacity: 0; margin: 0; overflow-y: hidden; padding: 0 10px; border-radius: 0 0 10px 10px; }
+#sidePanelsContainer>div { border-radius: 10px; }
+#sidePanelsContainer>div:hover { box-shadow: 2px 2px 4px #666; }
+#sidePanelsContainer div blockquote { height: 0px; }
+#sidePanelsContainer div:hover blockquote { padding: 5px 10px; height: 40px; opacity: 1; }
+#sidePanelsContainer h4 { background-color: rgba(51,102,153,.6); border-radius: 10px; color: rgba(255,255,255,.6); font-size: 100%; margin: 0; padding: 5px 10px; text-align: left; }
+#sidePanelsContainer div:hover h4 { background-color: rgba(51,102,153,1); border-radius: 10px 10px 0 0; color: rgba(255,255,255,.9); }
 
 /* FIRMS viewer popup */
-.ol-popup {
-	padding: 0 !important;
-	border: none !important;
-	background-color:transparent !important;
-}
-
-.ol-popup-content {
-	width: auto !important;
-	height: auto !important;
-	min-width: none !important;
-	max-height: 400px !important;
-}
-
-.ol-popup-closer {
-	font-size:100% !important;
-}
+.ol-popup { padding: 0 !important; border: none !important; background-color:transparent !important; }
+.ol-popup-content { width: auto !important; height: auto !important; min-width: none !important; }
+.ol-popup-closer { font-size:100% !important; }
+.ol-popup-content { max-height: 400px !important; }

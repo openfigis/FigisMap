@@ -37,7 +37,7 @@ FV.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, l
 	//parameters
 	var pars = {
 		target		: 'map',
-		context		: 'firmsViewer',
+		context		: 'FIRMS-Viewer',
 		projection	: projection,
 		legend		: 'legend',
 		projection	: projection,
@@ -49,7 +49,7 @@ FV.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, l
 			cached: true,
 			filter: "",
 			label: "Oceans basemap",
-			layer: "fifao:OB_LR",
+			layer: FigisMap.fifao.obl,
 			title: "Oceans basemap",
 			type: "base"
 		}
@@ -109,14 +109,25 @@ FV.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, l
 **/
 FV.setViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink){
 	
-	if ( ! projection ) {
-		document.getElementById("SelectSRS").value = '4326';
-	}
+	if ( ! projection ) FV.setProjection(4326);
 	
 	if(!zoom || zoom == 0) zoom = 1;
 	var layer = document.getElementById("SelectLayer").value;
 	
 	FV.addViewer(extent, zoom, projection, elinkDiv, urlLink, htmlLink, layer);
+};
+
+FV.getProjection = function() {
+	if ( document.getElementById('SelectSRS4326').checked ) return '4326';
+	if ( document.getElementById('SelectSRS3349').checked ) return '3349';
+	document.getElementById('SelectSRS4326').checked = true;
+	return '4326';
+};
+
+FV.setProjection = function( p ) {
+	document.getElementById('SelectSRS4326').checked = false;
+	document.getElementById('SelectSRS3349').checked = false;
+	document.getElementById('SelectSRS' + String(p) ).checked = true;
 };
 
 /**
@@ -151,8 +162,8 @@ FV.setViewerPage = function(elinkDiv, urlLink, htmlLink) {
 		if ( zoom == '' ) zoom = null;
 		if ( zoom != null ) zoom = parseInt( zoom );
 		if ( prj == '' ) prj = null;
-		if ( prj != null ) document.getElementById("SelectSRS").value = prj;
-	}else{
+		if ( prj != null ) FV.setProjection( prj );
+	} else {
 		zoom = 1;
 		document.getElementById("SelectLayer").value = 'resource';
 		layer = 'resource';
@@ -187,7 +198,7 @@ FV.setViewerEmbedLink = function(targetId, viewerLinkId, viewerHtmlId){
 		baseURL += "?layer=" + document.getElementById("SelectLayer").value
 			+ "&extent=" + FV.myMap.getView().calculateExtent(FV.myMap.getSize()).join(',')
 			+ "&zoom=" + FV.myMap.getView().getZoom()
-			+ "&prj=" + document.getElementById("SelectSRS").value;
+			+ "&prj=" + FV.getProjection();
 		
 		//Setting the input fields of the embed-link div
 		linkId.value = baseURL;

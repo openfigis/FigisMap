@@ -57,13 +57,15 @@
 					<option value="resource">Marine Resources</option>
 					<option value="fishery">Fisheries</option>
 				</select>
+				<!--
 				&nbsp;&nbsp;
 				<label id="lblSRS">Select Projection:</label>
 				<select id="SelectSRS" onchange="FV.setViewer(null, null, this.value, 'e-link', 'firms-link', 'firms-html')">
 					<option value="4326" default="">WGS84 (4326)</option>
 					<option value='3349'>Mercator (3857)</option>
-					<!-- <option value="3031">South Polar (3031)</option> -->
+					<!- - <option value="3031">South Polar (3031)</option> - ->
 				</select>
+				-->
 				<a href="javascript:embedLink();" id="EmbedLink" title="Link or embed this FIRMS map"><span>Link</span></a>
 				<input id="txtCql" type="hidden">
 				<input id="command" type="hidden">
@@ -74,6 +76,21 @@
 		<div id="mapWrapper">
 			<div id="main">
 				<div id="map" class="map"></div>
+				<div id="sidePanelsContainer">
+					<div id="projectionPanel" class="close">
+						<h4>Change projection</h4>
+						<blockquote>
+							<div>
+								<input type="radio" name="SelectSRS" onchange="FV.setViewer(null,null,this.value,'e-link','firms-link','firms-html')" value="4326" checked="checked" id="SelectSRS4326" />
+								<label for="SelectSRS4326">WGS84 (4326)</label>
+							</div>
+							<div>
+								<input type="radio" name="SelectSRS" onchange="FV.setViewer(null,null,this.value,'e-link','firms-link','firms-html')" value="3349" id="SelectSRS3349" />
+								<label for="SelectSRS3349">Mercator (3857)</label>
+							</div>
+						<blockquote>
+					</div>
+				</div>
 			</div>
 			<div id="sidebar">
 				<div id="e-link">
