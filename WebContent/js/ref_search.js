@@ -53,7 +53,7 @@ RS.internal.init2 = function() {
 	setSpeciesPage('e-link', 'url-link', 'html-link');
 }
 
-RS.internal.loadSpecies = function( req, status ) {
+RS.internal.loadSpecies = function( req ) {
 	var xml;
 	if ( req.documentElement ) {
 		xml = req;
@@ -99,14 +99,15 @@ RS.internal.loadSpecies = function( req, status ) {
 }
 
 RS.loadSpecies = function() {
-	//!OL2 OpenLayers.Request.GET({ url: RS.spXmlUri, callback: RS.internal.loadSpecies });
-	$.ajax( {
- 		async	: false,
- 		type	: "GET",
- 		cache	: true,
- 		url	: RS.spXmlUri,
- 		success	: RS.internal.loadSpecies
- 	} );
+	var xmlHttp = FigisMap.getXMLHttpRequest();
+	xmlHttp.onreadystatechange = function() {
+		if ( xmlHttp.readyState != 4 ) return void(0);
+		if (xmlHttp.status == 200) {
+			RS.internal.loadSpecies(xmlHttp);
+		}
+	}
+	xmlHttp.open('GET', RS.spXmlUri, true);
+	xmlHttp.send('');
 };
 
 RS.init = function() {
