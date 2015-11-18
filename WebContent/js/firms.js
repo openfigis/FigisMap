@@ -41,7 +41,10 @@ FV.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, l
 		projection	: projection,
 		legend		: 'legend',
 		projection	: projection,
-		options		: {labels: true },
+		options		: {
+			skipScale: true,
+			labels: true
+		},
 		base		: {
 			cached: true,
 			filter: "",
