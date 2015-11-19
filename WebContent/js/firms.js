@@ -22,6 +22,26 @@ FV.init = function() {
 	FV.setViewerPage('e-link','firms-link', 'firms-html');
 };
 
+FV.loadingPanelOptions = {
+	showpanel	: false,
+	onstart		: function()
+		{
+			var d = this.getMap().getTargetElement().ownerDocument;
+			d.getElementById('progressIndicatorValue').style.width='2%';
+			d.getElementById('progressIndicator').style.display='block';
+		},
+	onprogress	: function(i,j)
+		{
+			var d = this.getMap().getTargetElement().ownerDocument;
+			d.getElementById('progressIndicatorValue').style.width=String(parseInt(100 * i / j))+'%';
+		},
+	onend		: function()
+		{
+			var d = this.getMap().getTargetElement().ownerDocument;
+			d.getElementById('progressIndicator').style.display='none';
+		}
+};
+
 /**
 * FV.addViewer function.
 *       extent -> The extent to zoom after the layer is rendered (optional).
@@ -43,7 +63,8 @@ FV.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, l
 		projection	: projection,
 		options		: {
 			skipScale: true,
-			labels: true
+			labels: true,
+			loadingPanelOptions : FV.loadingPanelOptions
 		},
 		base		: {
 			cached: true,
@@ -54,8 +75,11 @@ FV.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, l
 			type: "base"
 		}
 	};
-	if ( zoom != null ) pars.zoom = zoom;
-	if ( extent != null ) pars.extent = extent;
+	
+	FV.lastExtent = extent ? extent : ( FV.myMap ? FV.myMap.getView().calculateExtent(FV.myMap.getSize()).join(',') : null );
+	if ( FV.lastExtent ) pars.extent = FV.lastExtent.split(',');
+	FV.lastZoom = zoom != 1 ? zoom : ( FV.myMap ? FV.myMap.getView().getZoom() : 1 );
+	if ( FV.lastZoom ) pars.zoom = FV.lastZoom;
 	
 	//vector cluster layer
 	if(layer && layer != "") {
@@ -109,25 +133,53 @@ FV.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, l
 **/
 FV.setViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink){
 	
-	if ( ! projection ) FV.setProjection(4326);
+	if ( ! projection ) FV.currentProjection(4326);
 	
 	if(!zoom || zoom == 0) zoom = 1;
-	var layer = document.getElementById("SelectLayer").value;
+	var layer = FV.currentLayer();
 	
 	FV.addViewer(extent, zoom, projection, elinkDiv, urlLink, htmlLink, layer);
 };
 
-FV.getProjection = function() {
-	if ( document.getElementById('SelectSRS4326').checked ) return '4326';
-	if ( document.getElementById('SelectSRS3349').checked ) return '3349';
-	document.getElementById('SelectSRS4326').checked = true;
-	return '4326';
+FV.currentProjection = function( p ) {
+	if ( p ) {
+		p = String( p )
+		document.getElementById('SelectSRS4326').checked = ( p == '4326');
+		document.getElementById('SelectSRS3349').checked = ( p == '3349');
+	} else {
+		if ( document.getElementById('SelectSRS4326').checked ) p = '4326';
+		if ( ! p ) if ( document.getElementById('SelectSRS3349').checked ) p = '3349';
+		if ( ! p ) {
+			document.getElementById('SelectSRS4326').checked = true;
+			p = '4326';
+		}
+	}
+	return p;
 };
 
-FV.setProjection = function( p ) {
-	document.getElementById('SelectSRS4326').checked = false;
-	document.getElementById('SelectSRS3349').checked = false;
-	document.getElementById('SelectSRS' + String(p) ).checked = true;
+FV.currentLayer = function( l ) {
+	if ( l ) {
+		l = String(l);
+		FV.setLayerStatus('resource', (l == 'resource') );
+		FV.setLayerStatus('fishery', (l == 'fishery') );
+	} else {
+		if ( document.getElementById('resourceSwitcher-resource').checked ) l = 'resource';
+		if ( ! l ) if ( document.getElementById('resourceSwitcher-fishery').checked ) l = 'fishery';
+		if ( ! l ) {
+			FV.setLayerStatus('resource',true);
+			FV.setLayerStatus('fishery',false);
+			l = 'resource';
+		}
+	}
+	return l;
+}
+
+FV.setLayerStatus = function( l, mode ) {
+	with ( document.getElementById('resourceSwitcher-' + l ) ) {
+		checked = mode;
+		parentNode.className= mode ? 'active' : 'inactive';
+		parentNode.setAttribute('class', mode ? 'active' : 'inactive' );
+	}
 };
 
 /**
@@ -155,17 +207,17 @@ FV.setViewerPage = function(elinkDiv, urlLink, htmlLink) {
 			}
 		}
 		
-		if ( layer && layer != "" ) document.getElementById("SelectLayer").value = layer;
+		if ( layer && layer != "" ) FV.currentLayer( layer );
 		
 		if ( extent == "" ) extent = null;
 		if ( extent != null ) extent = extent.split(",");
 		if ( zoom == '' ) zoom = null;
 		if ( zoom != null ) zoom = parseInt( zoom );
 		if ( prj == '' ) prj = null;
-		if ( prj != null ) FV.setProjection( prj );
+		if ( prj != null ) FV.currentProjection( prj );
 	} else {
 		zoom = 1;
-		document.getElementById("SelectLayer").value = 'resource';
+		FV.currentLayer('resource');
 		layer = 'resource';
 	}
 	
@@ -195,10 +247,10 @@ FV.setViewerEmbedLink = function(targetId, viewerLinkId, viewerHtmlId){
 		if ( ! FV.myMap ) FV.myMap = FigisMap.lastMap;
 		
 		//Building the request url containing the map status.
-		baseURL += "?layer=" + document.getElementById("SelectLayer").value
+		baseURL += "?layer=" + FV.currentLayer()
 			+ "&extent=" + FV.myMap.getView().calculateExtent(FV.myMap.getSize()).join(',')
 			+ "&zoom=" + FV.myMap.getView().getZoom()
-			+ "&prj=" + FV.getProjection();
+			+ "&prj=" + FV.currentProjection();
 		
 		//Setting the input fields of the embed-link div
 		linkId.value = baseURL;
@@ -215,4 +267,4 @@ FV.setViewerEmbedLink = function(targetId, viewerLinkId, viewerHtmlId){
 		linkId.value = "";
 		htmlId.value = "";
 	}
-}
+};

@@ -51,12 +51,14 @@
 			</div>
 			<!-- Top bar -->
 			<div id="topBar">
+				<!--
 				<label id="lblLayer">Select FIRMS resource:</label>
 				<select id="SelectLayer" onchange="FV.setViewer(null, null, null, 'e-link', 'firms-link', 'firms-html')">
 					<option value="">(Select a resource...)</option>
 					<option value="resource">Marine Resources</option>
 					<option value="fishery">Fisheries</option>
 				</select>
+				-->
 				<!--
 				&nbsp;&nbsp;
 				<label id="lblSRS">Select Projection:</label>
@@ -76,6 +78,16 @@
 		<div id="mapWrapper">
 			<div id="main">
 				<div id="map" class="map"></div>
+				<div id="resourceSwitcher">
+					<div id="resourceSwitcherPanelResource">
+						<input type="radio" name="SelectLayer" onchange="FV.currentLayer(this.value);FV.setViewer(null,null,null,'e-link','firms-link','firms-html')" value="resource" checked="checked" id="resourceSwitcher-resource" />
+						<label for="resourceSwitcher-resource">Marine Resources</label>
+					</div>
+					<div id="resourceSwitcherPanelFishery">
+						<input type="radio" name="SelectLayer" onchange="FV.currentLayer(this.value);FV.setViewer(null,null,null,'e-link','firms-link','firms-html')" value="fishery" id="resourceSwitcher-fishery" />
+						<label for="resourceSwitcher-fishery">Fishery</label>
+					</div>
+				</div>
 				<div id="sidePanelsContainer">
 					<div id="legendPanel" class="panel">
 						<h4>Legend</h4>
@@ -96,6 +108,9 @@
 							</div>
 						<blockquote>
 					</div>
+				</div>
+				<div id="progressIndicator" style="display:none;">
+					<div id="progressIndicatorValue"></div>
 				</div>
 			</div>
 			<div id="sidebar">
