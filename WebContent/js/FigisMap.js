@@ -386,7 +386,7 @@ FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/900913.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-layerswitcher.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-zoomtomaxextent.js');
-
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-loadingpanel.js');
 
 //FigisMap data
 FigisMap.loadScript(FigisMap.data, "UTF-8");
@@ -1635,6 +1635,7 @@ FigisMap.getStyleRuleDescription = function(STYLE, pars) {
 				labels			: (boolean) use labels - defaults to options.colors
 				skipLayerSwitcher	: (boolean) omit layer switcher if true
 				skipLoadingPanel	: (boolean) omit Loading panel (spinning wheel) if true
+				loadingPanelOptions	: (Object) object of options passed to LoadingPanel
 				skipNavigation		: (boolean) omit Navigation panel (arrows) if true
 				skipWatermark		: (boolean) omit Watermark if true
 				skipMouse		: (boolean) omit shift-mouse drag for zoom if true
@@ -1819,13 +1820,14 @@ FigisMap.renderer = function(options) {
 		// Managing OL controls
 		//---------------------
 		//default controls (explicitly added for information and possible customization with options)
+		if ( ! pars.options.skipLoadingPanel ) myMap.addControl( new ol.control.LoadingPanel( pars.options.loadingPanelOptions ? pars.options.loadingPanelOptions : null ) );
 		myMap.addControl( new ol.control.Zoom() );
 		myMap.addControl( new ol.control.ZoomToMaxExtent({ extent: boundsBox, zoom: myMap.getView().getZoom()}) );
 		myMap.addControl( new ol.control.Rotate() );
 		myMap.addControl( new ol.control.Attribution({collapsible : false, className : 'ol-attribution-baselayer'}) );
 		
 		//optional controls
-		if (! pars.options.skipLayerSwitcher ) myMap.addControl( new ol.control.LayerSwitcher());
+		if (! pars.options.skipLayerSwitcher ) myMap.addControl( new ol.control.LayerSwitcher( pars.options.layerSwitcherOptions ? pars.options.layerSwitcherOptions : null ) );
 		if (! pars.options.skipWatermark ) FigisMap.rnd.watermarkControl( myMap, p );
 		if (! pars.options.skipMouse ) FigisMap.rnd.mouseControl( myMap, p );
 		if ( ! pars.options.skipScale ) if (projection != 3031) {
@@ -1890,6 +1892,9 @@ FigisMap.renderer = function(options) {
 					opacity : ( l.opacity )? l.opacity : 1.0,
 					visible : ( l.hidden )? false : true
 				});
+
+				//add skipLegend parameter to inherit from layerswitcher
+				l.wms.skipLegend = l.skipLegend;
 			}
 		}
 		

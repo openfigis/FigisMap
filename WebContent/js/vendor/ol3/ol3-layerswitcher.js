@@ -13,6 +13,8 @@ ol.control.LayerSwitcher = function(opt_options) {
     var tipLabel = options.tipLabel ?
       options.tipLabel : 'Legend';
 
+    this.displayLegend_ = options.displayLegend ? options.displayLegend : false;
+
     this.mapListeners = [];
 
     this.hiddenClassName = 'ol-unselectable ol-control layer-switcher';
@@ -146,6 +148,35 @@ ol.control.LayerSwitcher.prototype.setVisible_ = function(lyr, visible) {
     }
 };
 
+
+/**
+ * Builds a GetLegendGraphic WMS request to handle layer legend
+ * @param {ol.layer.TileWMS} lyr WMS Layer
+ * @return {String} string representing the GetLegendGraphic URL request
+ * 
+ */
+ol.control.LayerSwitcher.prototype.getLegendGraphic_ = function(lyr) {
+	
+	var source = lyr.getSource();
+	if( !(source instanceof ol.source.TileWMS) ) return false;
+	
+	var params = source.getParams();
+
+	var request = '';
+	request += source.getUrls()[0] + '?';
+	request += 'VERSION=1.0.0';
+	request += '&REQUEST=GetLegendGraphic';
+	request += '&LAYER=' + params.LAYERS;
+	request += '&STYLE=' + ( (params.STYLES)? params.STYLES : '');
+	request += '&LEGEND_OPTIONS=forcelabels:on;forcerule:True;fontSize:12'; //maybe to let as options
+	request += '&SCALE=139770286.4465912'; //to investigate
+	request += '&FORMAT=image/png';
+	request += '&TRANSPARENT=true';
+	
+	return request;
+}
+
+
 /**
  * Render all layers that are children of a group.
  * @private
@@ -193,6 +224,25 @@ ol.control.LayerSwitcher.prototype.renderLayer_ = function(lyr, idx) {
         label.innerHTML = lyrTitle;
         li.appendChild(label);
 
+    }
+
+    //handling legend graphic for overlays
+    if( this.displayLegend_ && !lyr.getLayers && lyr.get('type') != 'base' && !lyr.skipLegend){
+   	
+	var imgSrc = false;
+	if(lyr instanceof ol.layer.Tile){
+		imgSrc = this.getLegendGraphic_(lyr);
+	}else if(lyr instanceof ol.layer.Vector){
+		imgSrc = (lyr.icon)? lyr.icon : false;
+	}
+	
+	if(imgSrc){
+		var legend = document.createElement('div');
+		legend.style.marginLeft = "15px";
+		var img = '<img src="'+imgSrc+'" />';
+		legend.innerHTML = img;
+		li.appendChild(legend);
+	}
     }
 
     return li;

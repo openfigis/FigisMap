@@ -27,7 +27,7 @@ FV.loadingPanelOptions = {
 	onstart		: function()
 		{
 			var d = this.getMap().getTargetElement().ownerDocument;
-			d.getElementById('progressIndicatorValue').style.width='2%';
+			d.getElementById('progressIndicatorValue').style.width='0px';
 			d.getElementById('progressIndicator').style.display='block';
 		},
 	onprogress	: function(i,j)
@@ -64,7 +64,8 @@ FV.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, l
 		options		: {
 			skipScale: true,
 			labels: true,
-			loadingPanelOptions : FV.loadingPanelOptions
+			loadingPanelOptions : FV.loadingPanelOptions,
+			layerSwitcherOptions: {displayLegend: true}
 		},
 		base		: {
 			cached: true,

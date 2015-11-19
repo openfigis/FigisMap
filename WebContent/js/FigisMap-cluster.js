@@ -66,6 +66,10 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 				return style;
 			}
 		});
+
+		//adding layer.icon to layer object (for inheriting in layerswitcher)
+		clusterLayer.icon = layer.icon;
+
 		if ( overlays ) {
 			overlays.getLayers().push(clusterLayer);
 		} else {
