@@ -49,7 +49,7 @@ ul, li { list-style-type: none; }
 div.sidePanel:hover, .ol-unselectable.ol-control.layer-switcher.shown { box-shadow: 2px 2px 4px #666; }
 .sidePanel blockquote { background-color: rgba(255,255,255,.8); border-radius: 0 0 10px 10px; margin: 0; opacity: 0; overflow-y: hidden; padding: 0 10px; }
 .sidePanel blockquote { height: 0px; }
-.sidePanel:hover blockquote { padding: 5px 10px; opacity: 1; }
+.sidePanel:hover blockquote { padding: 5px 10px 0 10px; opacity: 1; }
 #projectionPanel { position: absolute; top: 0; left:60px; width: 140px; }
 #linkPanel { position: absolute; top: 0; right:300px; width: 220px; }
 body.embed #linkPanel { display: none; }
