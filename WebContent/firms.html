@@ -30,6 +30,14 @@
 </head>
 
 <body onload="FigisMap.init( FV.init )">
+	<script type="text/javascript" language="javascript">
+	// <![CDATA[
+		if ( location.search.indexOf("embed=") != -1 ) {
+			document.body.className='embed';
+			document.body.setAttribute('class','embed');
+		}
+	// ]]>
+	</script>
 	<div id="wrapper">
 		<div id="header">
 			<div id="top">
@@ -88,26 +96,18 @@
 						<label for="resourceSwitcher-fishery">Fishery</label>
 					</div>
 				</div>
-				<div id="sidePanelsContainer">
-					<div id="legendPanel" class="panel">
-						<h4>Legend</h4>
-						<blockquote id="legend" class="legend">
-							 
-						<blockquote>
-					</div>
-					<div id="projectionPanel" class="panel">
-						<h4>Change projection</h4>
-						<blockquote>
-							<div>
-								<input type="radio" name="SelectSRS" onchange="FV.setViewer(null,null,this.value,'e-link','firms-link','firms-html')" value="4326" checked="checked" id="SelectSRS4326" />
-								<label for="SelectSRS4326">WGS84 (4326)</label>
-							</div>
-							<div>
-								<input type="radio" name="SelectSRS" onchange="FV.setViewer(null,null,this.value,'e-link','firms-link','firms-html')" value="3349" id="SelectSRS3349" />
-								<label for="SelectSRS3349">Mercator (3857)</label>
-							</div>
-						<blockquote>
-					</div>
+				<div id="projectionPanel" class="sidePanel">
+					<h4>Projection</h4>
+					<blockquote>
+						<div>
+							<input type="radio" name="SelectSRS" onchange="FV.setViewer(null,null,this.value,'e-link','firms-link','firms-html')" value="4326" checked="checked" id="SelectSRS4326" />
+							<label for="SelectSRS4326">WGS84 (4326)</label>
+						</div>
+						<div>
+							<input type="radio" name="SelectSRS" onchange="FV.setViewer(null,null,this.value,'e-link','firms-link','firms-html')" value="3349" id="SelectSRS3349" />
+							<label for="SelectSRS3349">Mercator (3857)</label>
+						</div>
+					<blockquote>
 				</div>
 				<div id="progressIndicator" style="display:none;">
 					<div id="progressIndicatorValue"></div>
@@ -131,30 +131,6 @@
 			</div>
 			<br/>
 		</div>
-		<div id="footer">
-			<div id="bottomBar1">
-				powered by
-				<a alt="FIGIS web site" title="FIGIS web site" href="/fishery/figis/en">FIGIS</a>
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				<a alt="FAO (C)Copyright" title="FAO Copyright" target="_blank" href="http://www.fao.org/corp/copyright/en/">
-					© FAO, <span id="copyYear">2011</span> 
-				</a>
-			</div>
-		</div>
 	</div>
-	<script type="text/javascript" language="javascript">
-	// <![CDATA[
-		function updateCopyYear() {
-			var uy = new Date();
-			uy = parseInt(uy.getFullYear() ? uy.getFullYear() : uy.getYear());
-			var py = parseInt( document.getElementById('copyYear').innerHTML );
-			if ( isNaN(uy) || isNaN(py) ) return void(0);
-			if ( uy > py ) document.getElementById('copyYear').innerHTML = String( uy );
-			return void(0);
-		}
-		updateCopyYear();
-		if ( FigisMap ) if ( FigisMap.lastMap) FigisMap.lastMap.zoomToMaxExtent();
-	// ]]>
-	</script>
 </body>
 </html>

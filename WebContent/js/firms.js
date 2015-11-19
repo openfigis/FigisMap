@@ -59,13 +59,12 @@ FV.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, l
 		target		: 'map',
 		context		: 'FIRMS-Viewer',
 		projection	: projection,
-		legend		: 'legend',
 		projection	: projection,
 		options		: {
 			skipScale: true,
 			labels: true,
 			loadingPanelOptions : FV.loadingPanelOptions,
-			layerSwitcherOptions: {displayLegend: true}
+			layerSwitcherOptions: { displayLegend: true }
 		},
 		base		: {
 			cached: true,
