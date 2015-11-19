@@ -100,6 +100,7 @@ ol.control.LoadingPanel.prototype.registerLayerLoadEvents_ = function(layer) {
 			this_.loadStatus_ = false;
 			this_.loadProgress_ = [0,1];
 			this_.show();
+			if(this_.oncustomstart) this_.oncustomstart.apply(this_,[]);
 		}
 		this.loading = (this.loading)? this.loading+1 : 1;
 		this.isLoaded = this_.updateSourceLoadStatus_(this);
