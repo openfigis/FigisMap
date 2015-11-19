@@ -51,19 +51,23 @@
 			</div>
 			<!-- Top bar -->
 			<div id="topBar">
+				<!--
 				<label id="lblLayer">Select FIRMS resource:</label>
 				<select id="SelectLayer" onchange="FV.setViewer(null, null, null, 'e-link', 'firms-link', 'firms-html')">
 					<option value="">(Select a resource...)</option>
 					<option value="resource">Marine Resources</option>
 					<option value="fishery">Fisheries</option>
 				</select>
+				-->
+				<!--
 				&nbsp;&nbsp;
 				<label id="lblSRS">Select Projection:</label>
 				<select id="SelectSRS" onchange="FV.setViewer(null, null, this.value, 'e-link', 'firms-link', 'firms-html')">
 					<option value="4326" default="">WGS84 (4326)</option>
 					<option value='3349'>Mercator (3857)</option>
-					<!-- <option value="3031">South Polar (3031)</option> -->
+					<!- - <option value="3031">South Polar (3031)</option> - ->
 				</select>
+				-->
 				<a href="javascript:embedLink();" id="EmbedLink" title="Link or embed this FIRMS map"><span>Link</span></a>
 				<input id="txtCql" type="hidden">
 				<input id="command" type="hidden">
@@ -74,6 +78,40 @@
 		<div id="mapWrapper">
 			<div id="main">
 				<div id="map" class="map"></div>
+				<div id="resourceSwitcher">
+					<div id="resourceSwitcherPanelResource">
+						<input type="radio" name="SelectLayer" onchange="FV.currentLayer(this.value);FV.setViewer(null,null,null,'e-link','firms-link','firms-html')" value="resource" checked="checked" id="resourceSwitcher-resource" />
+						<label for="resourceSwitcher-resource">Marine Resources</label>
+					</div>
+					<div id="resourceSwitcherPanelFishery">
+						<input type="radio" name="SelectLayer" onchange="FV.currentLayer(this.value);FV.setViewer(null,null,null,'e-link','firms-link','firms-html')" value="fishery" id="resourceSwitcher-fishery" />
+						<label for="resourceSwitcher-fishery">Fishery</label>
+					</div>
+				</div>
+				<div id="sidePanelsContainer">
+					<div id="legendPanel" class="panel">
+						<h4>Legend</h4>
+						<blockquote id="legend" class="legend">
+							 
+						<blockquote>
+					</div>
+					<div id="projectionPanel" class="panel">
+						<h4>Change projection</h4>
+						<blockquote>
+							<div>
+								<input type="radio" name="SelectSRS" onchange="FV.setViewer(null,null,this.value,'e-link','firms-link','firms-html')" value="4326" checked="checked" id="SelectSRS4326" />
+								<label for="SelectSRS4326">WGS84 (4326)</label>
+							</div>
+							<div>
+								<input type="radio" name="SelectSRS" onchange="FV.setViewer(null,null,this.value,'e-link','firms-link','firms-html')" value="3349" id="SelectSRS3349" />
+								<label for="SelectSRS3349">Mercator (3857)</label>
+							</div>
+						<blockquote>
+					</div>
+				</div>
+				<div id="progressIndicator" style="display:none;">
+					<div id="progressIndicatorValue"></div>
+				</div>
 			</div>
 			<div id="sidebar">
 				<div id="e-link">
@@ -86,8 +124,10 @@
 						<input id="firms-html" type="text" readonly="readonly" value="" onclick="this.focus();this.select();" />
 					</div>
 				</div>
+				<!--
 				<div class="legend legendTitle">Legend</div>
 				<div id="legend" class="legend"> </div>
+				-->
 			</div>
 			<br/>
 		</div>
