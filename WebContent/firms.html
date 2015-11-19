@@ -17,16 +17,6 @@
 	<!-- FIRMS viewer -->
 	<link rel="stylesheet" href="css/firms.css" type="text/css" />
 	<script type="text/javascript" src="js/firms.js"></script>
-	
-	<!-- Embedded Link tool -->
-	<script type="text/javascript" language="javascript">
-		// <![CDATA[
-			function embedLink() {
-				FV.setViewerEmbedLink('e-link', 'firms-link', 'firms-html');
-				document.getElementById('EmbedLink').blur();
-			}
-		// ]]>
-	</script>
 </head>
 
 <body onload="FigisMap.init( FV.init )">
@@ -40,46 +30,20 @@
 	</script>
 	<div id="wrapper">
 		<div id="header">
-			<div id="top">
+			<div id="top1">
 				<table width="100%" cellpadding="0" cellspacing="0" border="0">
 					<tr>
 						<td align="left">
-							<a href="http://www.fao.org" target="_blank"><img border=0 style="vertical-align: middle;" src="img/FIGIS_banner-logo.gif" alt="FOOD AND AGRICULTURE ORGANIZATION OF THE UNITED NATIONS" title="FOOD AND AGRICULTURE ORGANIZATION OF THE UNITED NATIONS"/></a>
+							<img border="0" src="img/firms/sitelogotext.png" alt="" title=""/>
 						</td>
 						<td align="right">
-							<a href="http://www.fao.org/fishery" target="_blank"><img border=0 style="vertical-align: middle;" src="img/FIGIS_banner-text.gif" alt="FAO Fisheries and Aquaculture Department" title="FAO Fisheries and Aquaculture Department"/></a>
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<h1 id="title">FIRMS Stocks and Fisheries Map Viewer</h1>
+							<img border="0" src="img/firms/sitelogoimage.png" alt="" title=""/>
 						</td>
 					</tr>
 				</table>
 			</div>
-			<!-- Top bar -->
-			<div id="topBar">
-				<!--
-				<label id="lblLayer">Select FIRMS resource:</label>
-				<select id="SelectLayer" onchange="FV.setViewer(null, null, null, 'e-link', 'firms-link', 'firms-html')">
-					<option value="">(Select a resource...)</option>
-					<option value="resource">Marine Resources</option>
-					<option value="fishery">Fisheries</option>
-				</select>
-				-->
-				<!--
-				&nbsp;&nbsp;
-				<label id="lblSRS">Select Projection:</label>
-				<select id="SelectSRS" onchange="FV.setViewer(null, null, this.value, 'e-link', 'firms-link', 'firms-html')">
-					<option value="4326" default="">WGS84 (4326)</option>
-					<option value='3349'>Mercator (3857)</option>
-					<!- - <option value="3031">South Polar (3031)</option> - ->
-				</select>
-				-->
-				<a href="javascript:embedLink();" id="EmbedLink" title="Link or embed this FIRMS map"><span>Link</span></a>
-				<input id="txtCql" type="hidden">
-				<input id="command" type="hidden">
-				<input id="opt" type="hidden">
+			<div id="top2">
+				<span>Stocks and Fisheries Map Viewer</span>
 			</div>
 		</div>
 		<!-- Map wrapper -->
@@ -88,11 +52,11 @@
 				<div id="map" class="map"></div>
 				<div id="resourceSwitcher">
 					<div id="resourceSwitcherPanelResource">
-						<input type="radio" name="SelectLayer" onchange="FV.currentLayer(this.value);FV.setViewer(null,null,null,'e-link','firms-link','firms-html')" value="resource" checked="checked" id="resourceSwitcher-resource" />
+						<input type="radio" name="SelectLayer" onchange="FV.currentLayer(this.value);FV.setViewer()" value="resource" id="resourceSwitcher-resource" />
 						<label for="resourceSwitcher-resource">Marine Resources</label>
 					</div>
 					<div id="resourceSwitcherPanelFishery">
-						<input type="radio" name="SelectLayer" onchange="FV.currentLayer(this.value);FV.setViewer(null,null,null,'e-link','firms-link','firms-html')" value="fishery" id="resourceSwitcher-fishery" />
+						<input type="radio" name="SelectLayer" onchange="FV.currentLayer(this.value);FV.setViewer()" value="fishery" id="resourceSwitcher-fishery" />
 						<label for="resourceSwitcher-fishery">Fishery</label>
 					</div>
 				</div>
@@ -100,12 +64,29 @@
 					<h4>Projection</h4>
 					<blockquote>
 						<div>
-							<input type="radio" name="SelectSRS" onchange="FV.setViewer(null,null,this.value,'e-link','firms-link','firms-html')" value="4326" checked="checked" id="SelectSRS4326" />
+							<input type="radio" name="SelectSRS" onchange="FV.setViewer(null,null,this.value)" value="4326" checked="checked" id="SelectSRS4326" />
 							<label for="SelectSRS4326">WGS84 (4326)</label>
 						</div>
 						<div>
-							<input type="radio" name="SelectSRS" onchange="FV.setViewer(null,null,this.value,'e-link','firms-link','firms-html')" value="3349" id="SelectSRS3349" />
+							<input type="radio" name="SelectSRS" onchange="FV.setViewer(null,null,this.value)" value="3349" id="SelectSRS3349" />
 							<label for="SelectSRS3349">Mercator (3857)</label>
+						</div>
+					<blockquote>
+				</div>
+				<div id="linkPanel" class="sidePanel" onmouseover="FV.setViewerEmbedLink()">
+					<h4>Link</h4>
+					<blockquote>
+						<div>
+							<label for="firms-link">Paste the link in email or chat</label>
+							<input id="firms-link" type="text" readonly="readonly" value="" onclick="this.focus();this.select();" /> 
+						</div>
+						<div>
+							<label for="firms-html">Paste the HTML in a web site</label>
+							<input id="firms-html" type="text" readonly="readonly" value="" onclick="this.focus();this.select();" />
+						</div>
+						<div>
+							<label for="firms-embed">Paste the link to embed the map</label>
+							<input id="firms-embed" type="text" readonly="readonly" value="" onclick="this.focus();this.select();" />
 						</div>
 					<blockquote>
 				</div>
@@ -113,23 +94,6 @@
 					<div id="progressIndicatorValue"></div>
 				</div>
 			</div>
-			<div id="sidebar">
-				<div id="e-link">
-					<div>
-						<label for="firms-link">Paste the link in email or chat</label>
-						<input id="firms-link" type="text" readonly="readonly" value="" onclick="this.focus();this.select();" /> 
-					</div>
-					<div>
-						<label for="firms-html">Paste the HTML in a web site</label>
-						<input id="firms-html" type="text" readonly="readonly" value="" onclick="this.focus();this.select();" />
-					</div>
-				</div>
-				<!--
-				<div class="legend legendTitle">Legend</div>
-				<div id="legend" class="legend"> </div>
-				-->
-			</div>
-			<br/>
 		</div>
 	</div>
 </body>

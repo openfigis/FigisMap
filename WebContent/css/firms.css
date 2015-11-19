@@ -8,13 +8,12 @@ a:hover, a:active { color: #f90; cursor: pointer; }
 ul, li { list-style-type: none; }
 .embed #header { display: none; }
 #wrapper { margin: 0; text-align: left; position: fixed; top: 0; left: 0; bottom: 0; right: 0; }
-#top { background-repeat: no-repeat; color: rgb(11, 50, 93); font-size: 25px; height: 120px; margin: 0; padding: 5px 10px; text-shadow: rgb(204, 204, 204) 2px 2px 2px; vertical-align: bottom; width: 100%; }
-#topBar { background-color: rgb(51, 102, 153); color: white; font-size: 12px; margin: 0; padding: 0 10px; text-align: right; }
-#topBar a, #topBar a:visited { color: #fff; cursor: pointer; }
-#topBar a:hover, #topBar a:active { color: #f90; cursor: pointer; }
-#mapWrapper { position: absolute; display: block; top: 144px; left: 0; right: 0; bottom: 0; }
+#top1 { font-size: 25px; height: 60px; margin: 0; padding: 0; text-shadow: rgb(204, 204, 204) 2px 2px 2px; vertical-align: bottom; width: 100%; }
+#top2 { background-color: rgb(55,96,146); height: 40px; margin: 0; padding: 0; width: 100%; overflow: hidden; }
+#top2 span { color: rgba(255,255,255,.7); font-size: 25px; font-weight: bold; line-height: 38px; margin: 0 1em; text-shadow: 2px 2px 2px rgba(0,0,0,.6); }
+#mapWrapper { position: absolute; display: block; top: 100px; left: 0; right: 0; bottom: 0; }
 .embed #mapWrapper { top: 0; }
-#main { position: absolute; top: 0; left: 0; right: 209px; bottom: 0; }
+#main { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
 #map { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
 #sidebar { border: solid 1px #000; border-width: 0 0 0 1px; bottom: 0; font-size: 12px; padding: 0; position: absolute; right: 0; top: 0; width: 210px; }
 #sidebar .legend { margin: .5em; }
@@ -52,12 +51,17 @@ div.sidePanel:hover, .ol-unselectable.ol-control.layer-switcher.shown { box-shad
 .sidePanel blockquote { height: 0px; }
 .sidePanel:hover blockquote { padding: 5px 10px; opacity: 1; }
 #projectionPanel { position: absolute; top: 0; left:60px; width: 140px; }
-#projectionPanel:hover blockquote { height: 40px; }
-.sidePanel h4 { background-color: rgba(51,102,153,.6); border-radius: 0 0 10px 10px; color: rgba(255,255,255,.6); font-size: 100%; margin: 0; padding: 5px 10px; text-align: center; }
-.sidePanel:hover h4 { background-color: rgba(51,102,153,1); border-radius: 0 0 0 0; }
+#linkPanel { position: absolute; top: 0; right:300px; width: 220px; }
+body.embed #linkPanel { display: none; }
+.sidePanel:hover blockquote { height: 100%; }
+.sidePanel h4 { background-color: rgba(55,96,146,.6); border-radius: 0 0 10px 10px; color: rgba(255,255,255,.6); font-size: 100%; margin: 0; padding: 5px 10px; text-align: center; }
+.sidePanel:hover h4 { background-color: rgba(55,96,146,1); border-radius: 0 0 0 0; }
+#linkPanel blockquote div { margin: .5em 0; padding: 0; }
+#linkPanel input { width: 195px; }
+#linkPanel blockquote label { opacity: .7; }
 .ol-unselectable.ol-control.layer-switcher { position: absolute; top: 0; right:30px; width: 220px; color: rgba(255,255,255,.6); font-size: 12px; margin: 0; padding: 0; text-align: left; }
-.ol-unselectable.ol-control.layer-switcher button { float: none; width: 220px; height: 22px; background: none; font-size: 12px; font-weight: normal; margin: 0; background-color: rgba(51,102,153,.6); border-radius: 0 0 10px 10px; }
-.ol-unselectable.ol-control.layer-switcher.shown button { background-color: rgba(51,102,153,1); border-radius: 0 0 0 0; }
+.ol-unselectable.ol-control.layer-switcher button { float: none; width: 220px; height: 26px; background: none; font-size: 12px; font-weight: normal; margin: 0; background-color: rgba(55,96,146,.6); border-radius: 0 0 10px 10px; }
+.ol-unselectable.ol-control.layer-switcher.shown button { background-color: rgba(55,96,146,1); border-radius: 0 0 0 0; }
 .ol-unselectable.ol-control.layer-switcher button:before { content: 'Legend'; color: rgba(255,255,255,.9); }
 .ol-unselectable.ol-control.layer-switcher .panel { color: #000; background-color: rgba(255,255,255,.8); border-radius: 0 0 10px 10px; margin: 0; opacity: 0; padding: 0 10px 5px 10px; }
 .ol-unselectable.ol-control.layer-switcher.shown .panel { opacity: 1; }

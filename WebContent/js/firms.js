@@ -19,7 +19,7 @@ var FV = new Object();
 FV.myMap = false;
 
 FV.init = function() {
-	FV.setViewerPage('e-link','firms-link', 'firms-html');
+	FV.setViewerPage();
 };
 
 FV.loadingPanelOptions = {
@@ -47,12 +47,9 @@ FV.loadingPanelOptions = {
 *       extent -> The extent to zoom after the layer is rendered (optional).
 *       zoom -> The zoom level of the map (optional).
 *       mapProjection -> The map projection (optional).
-*       elinkDiv -> The embed-link id  (optional if not using the embed link div).
-*       urlLink -> The id of the url input field of the embed-link (optional if not using the embed link div).
-*       htmlLink -> The id of the html input field of the embed-link (optional if not using the embed link div).
 *       layer -> the FIRMS layer to use as cluster layer
 **/
-FV.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, layer){
+FV.addViewer = function(extent, zoom, projection, layer){
 
 	//parameters
 	var pars = {
@@ -104,22 +101,7 @@ FV.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, l
 			return content.innerHTML;
 		}
 	}
-	
-	if ( document.getElementById(elinkDiv) ) document.getElementById(elinkDiv).style.display = "none";
-	
 	FV.myMap = FigisMap.draw( pars );
-	
-	if ( FV.myMap ) {
-		if ( document.getElementById(elinkDiv) ) {
-			FV.myMap.on('moveend',
-					function(){
-						document.getElementById(elinkDiv).style.display = "none";
-						document.getElementById(urlLink).value = "";
-						document.getElementById(htmlLink).value = "";
-					}
-			);
-		}
-	}
 };
 
 /**
@@ -127,18 +109,15 @@ FV.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, l
 *       extent -> The extent to zoom after the layer is rendered (optional).
 *       zoom -> The zoom level of the map (optional).
 *       mapProjection -> The map projection (optional).
-*       elinkDiv -> The embed-link id  (optional if not using the embed link div).
-*       urlLink -> The id of the url input field of the embed-link (optional if not using the embed link div).
-*       htmlLink -> The id of the html input field of the embed-link (optional if not using the embed link div).
 **/
-FV.setViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink){
+FV.setViewer = function(extent, zoom, projection){
 	
-	if ( ! projection ) FV.currentProjection(4326);
+	if ( ! projection ) projection = FV.currentProjection(4326);
 	
 	if(!zoom || zoom == 0) zoom = 1;
 	var layer = FV.currentLayer();
 	
-	FV.addViewer(extent, zoom, projection, elinkDiv, urlLink, htmlLink, layer);
+	FV.addViewer(extent, zoom, projection,layer);
 };
 
 FV.currentProjection = function( p ) {
@@ -184,11 +163,8 @@ FV.setLayerStatus = function( l, mode ) {
 
 /**
 * FV.setViewerPage function. Load the base FIRMS Map applying the user request parameters, if any
-* @param elinkDiv -> The embed-link id  (optional if not using the embed link div).
-* @param urlLink -> The id of the url input field of the embed-link (optional if not using the embed link div).
-* @param htmlLink -> The id of the html input field of the embed-link (optional if not using the embed link div).
 */
-FV.setViewerPage = function(elinkDiv, urlLink, htmlLink) {
+FV.setViewerPage = function() {
 	
 	var layer, extent, zoom, prj;
 	
@@ -222,49 +198,29 @@ FV.setViewerPage = function(elinkDiv, urlLink, htmlLink) {
 	}
 	
 	//Load the Viewer using the request parameters
-	FV.addViewer( extent, zoom, prj, elinkDiv, urlLink, htmlLink, layer);
+	FV.addViewer( extent, zoom, prj, layer);
 };
 
 /**
 * setFirmsViewerEmberLink function. Manage the expand/collapse of the Embed-Link div.
-* @param targetId -> The embed-link div id.
-* @param viewerLinkId -> The id of the url input field of the embed-link.
-* @param viewerHtmlId -> The id of the html input field of the embed-link.
 */
-FV.setViewerEmbedLink = function(targetId, viewerLinkId, viewerHtmlId){
+FV.setViewerEmbedLink = function(){
 	
 	if ( ! ( document.getElementById ) ) return void(0);
 	
-	var divId = document.getElementById(targetId);
-	var linkId = document.getElementById(viewerLinkId);
-	var htmlId = document.getElementById(viewerHtmlId);
-	if (divId.style.display == "none" || divId.style.display == "") {
-		
-		//Show the embed-link div
-		divId.style.display = "block";
-		var baseURL = location.href.replace(/#.*$/,'').replace(/\?.*$/,'');
-		
-		if ( ! FV.myMap ) FV.myMap = FigisMap.lastMap;
-		
-		//Building the request url containing the map status.
-		baseURL += "?layer=" + FV.currentLayer()
-			+ "&extent=" + FV.myMap.getView().calculateExtent(FV.myMap.getSize()).join(',')
-			+ "&zoom=" + FV.myMap.getView().getZoom()
-			+ "&prj=" + FV.currentProjection();
-		
-		//Setting the input fields of the embed-link div
-		linkId.value = baseURL;
-		
-		var htmlFrame = '<iframe src ="' + baseURL.replace(/firms\.html/,'firms_e.html') + '" width="800" height="600" frameborder="0" marginheight="0">';
-		htmlFrame += "</iframe>";
-		
-		htmlId.value = htmlFrame;
-	} else {
-
-		//Hide the embed-link div
-		divId.style.display = "none";
-		
-		linkId.value = "";
-		htmlId.value = "";
-	}
+	var baseURL = location.href.replace(/#.*$/,'').replace(/\?.*$/,'');
+	
+	if ( ! FV.myMap ) FV.myMap = FigisMap.lastMap;
+	
+	//Building the request url containing the map status.
+	baseURL += "?layer=" + FV.currentLayer()
+		+ "&extent=" + FV.myMap.getView().calculateExtent(FV.myMap.getSize()).join(',')
+		+ "&zoom=" + FV.myMap.getView().getZoom()
+		+ "&prj=" + FV.currentProjection();
+	
+	//Setting the input fields of the embed-link div
+	document.getElementById('firms-link').value = baseURL;
+	baseURL += '&embed=y';
+	document.getElementById('firms-html').value = '<iframe src ="' + baseURL + ' width="800" height="600" frameborder="0" marginheight="0"></iframe>';
+	document.getElementById('firms-embed').value = baseURL;
 };
