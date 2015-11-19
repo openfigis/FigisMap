@@ -96,5 +96,29 @@
 			</div>
 		</div>
 	</div>
+	<div id="bottomBar1">
+		<a title="FAO Copyright" target="_blank" href="http://www.fao.org/contact-us/terms/en/">
+			&copy;&nbsp;FAO,
+			<span id="copyYear">2011</span>
+			&nbsp;
+		</a>
+	</div>
+	<script type="text/javascript">
+	// <![CDATA[
+		function updateCopyYear() {
+			var uy = new Date();
+			uy = parseInt(uy.getFullYear() ? uy.getFullYear() : uy.getYear());
+			
+			// Update the year value for the FAO copyright
+			var py = parseInt( document.getElementById('copyYear').innerHTML );
+			if ( isNaN(uy) || isNaN(py) ) return void(0);
+			if ( uy > py ) document.getElementById('copyYear').innerHTML = String( uy );
+			
+			return void(0);
+		}
+		updateCopyYear();
+	// ]]>
+	</script>
+
 </body>
 </html>
