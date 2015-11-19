@@ -224,3 +224,19 @@ FV.setViewerEmbedLink = function(){
 	document.getElementById('firms-html').value = '<iframe src ="' + baseURL + ' width="800" height="600" frameborder="0" marginheight="0"></iframe>';
 	document.getElementById('firms-embed').value = baseURL;
 };
+
+
+/**
+ * Focus on a given factsheet resource. The focus is done by:
+ * - recentering map to its coordinates (TODO investigate map animation with OL3)
+ * - opening automatically its popup.
+ * @param {Integer}{String} FIGIS factsheet id, provided as integer or string 
+ */
+FV.setViewerResource = function(id) {
+	var feature = FigisMap.ol.getVectorLayerFeatureById(FV.myMap, 'FIGIS_ID', id);
+	FV.myMap.getView().setCenter(feature.getGeometry().getCoordinates());
+	var popup = FigisMap.rnd.getPopupOverlay(FV.myMap);
+	FigisMap.rnd.showPopupForFeature(popup, feature);
+}
+
+

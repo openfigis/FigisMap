@@ -9,7 +9,7 @@
  * 		- feature: the GIS feature from which to extract property values
  * 		- response: the response of the asynchronous call (if urlHandler provided)
  * 
- * @param map
+ * @param {ol.Map}
  * @param config
  */
 FigisMap.rnd.configurePopup = function(map, config) {
@@ -20,6 +20,7 @@ FigisMap.rnd.configurePopup = function(map, config) {
 	
 	//configure popup
 	var popup = new ol.Overlay.Popup();
+	popup.config = config;
 	map.addOverlay(popup);
 	
 	//display popup on click
@@ -38,25 +39,46 @@ FigisMap.rnd.configurePopup = function(map, config) {
 			return feature;
 		  });
 	  
-	  if (feature) {
-		var geometry = feature.getGeometry();
-		var coord = geometry.getCoordinates();
-		
-		if( async ) {
-			
-			var xmlHttp = FigisMap.getXMLHttpRequest();
-			xmlHttp.onreadystatechange = function() {
-				if ( xmlHttp.readyState != 4 ) return void(0);
-				if (xmlHttp.status == 200) {
-					FigisMap.debug('FigisMap.rnd.popup - async request: ', xmlHttp);
-					popup.show(evt.coordinate, config.contentHandler(feature, xmlHttp));
-				}
-			};
-			xmlHttp.open('GET', config.resourceHandler(feature), true);
-			xmlHttp.send('');
-		} else {
-			popup.show(evt.coordinate, config.contentHandler(feature, null));
-		}
-	  }
+	  if (feature) FigisMap.rnd.showPopupForFeature(popup, feature);
+	  
 	});
+}
+
+/**
+* Get (first) popup overlay from current map
+*/
+FigisMap.rnd.getPopupOverlay = function(map) {
+	var popup;
+	map.getOverlays().getArray().forEach(function(x){ if ( x instanceof ol.Overlay.Popup ) popup = x; });
+	return popup;
+}
+
+/**
+ * Show Popup for a feature
+ * @param {ol.Overlay.Popup} the target popup overlay
+ * @param {ol.Feature} the feature for which the popup should be opened
+ */
+FigisMap.rnd.showPopupForFeature = function(popup, feature) {
+	
+	var async = !!popup.config.resourceHandler;
+	
+	var geometry = feature.getGeometry();
+	var coord = geometry.getCoordinates();
+		
+	if( async ) {
+		
+		var xmlHttp = FigisMap.getXMLHttpRequest();
+		xmlHttp.onreadystatechange = function() {
+			if ( xmlHttp.readyState != 4 ) return void(0);
+			if (xmlHttp.status == 200) {
+				FigisMap.debug('FigisMap.rnd.popup - async request: ', xmlHttp);
+				popup.show(coord, popup.config.contentHandler(feature, xmlHttp));
+			}
+		};
+		xmlHttp.open('GET', popup.config.resourceHandler(feature), true);
+		xmlHttp.send('');
+	} else {
+		popup.show(coord, popup.config.contentHandler(feature, null));
+	}
+
 }

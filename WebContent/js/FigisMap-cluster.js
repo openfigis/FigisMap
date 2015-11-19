@@ -66,7 +66,7 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 				return style;
 			}
 		});
-
+		
 		//adding layer.icon to layer object (for inheriting in layerswitcher)
 		clusterLayer.icon = layer.icon;
 
@@ -75,7 +75,6 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 		} else {
 			map.addLayer(clusterLayer);
 		}
-		
 	
 		// Select interaction to spread cluster out and select features
 		var selectCluster = new ol.interaction.SelectCluster({ 
@@ -101,7 +100,6 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 	}
 }
 
-
 /**
  * FigisMap.rnd.addVectorLayerLegend
  * @param layer
@@ -114,3 +112,32 @@ FigisMap.rnd.addVectorLayerLegend = function( layer , useTables) {
 	LegendHTML += '<tr><td>' + iconHTML + '</td><td><span>' + layer.title + '</span></td></tr>';
 	return LegendHTML;
 };
+
+/**
+ * FigisMap.rnd.addVectorLayerLegend
+ * @param layer
+ * @param useTables
+ * @return the html legend content as string
+ */
+FigisMap.ol.getVectorLayerFeatureById = function(map, property, value) {
+	
+	//get target vector layer
+	var vectorlayer;
+	var overlays = map.getLayers().getArray()[1].getLayers().getArray();
+	for(var i=0; i<overlays.length;i++){
+		if(overlays[i] instanceof ol.layer.Vector){
+			vectorlayer = overlays[i];
+			break;
+		}
+	}
+			
+	//get source feature with id
+	var feat;
+	if ( vectorlayer ) {
+		var srcCluster = vectorlayer.getSource();
+		var srcFeatures = srcCluster.getSource();
+		srcFeatures.getFeatures().forEach(function(feature) { if(feature.get(property) == String(value)) feat = feature;  });
+	}
+	
+	return feat;
+}
