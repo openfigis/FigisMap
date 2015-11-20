@@ -45,7 +45,7 @@ FV.loadingPanelOptions = {
 FV.baseMapParams = function() {
 	this.target = 'map';
 	this.context = 'FIRMS-Viewer';
-	this.projection = '4326';
+	this.projection = FV.currentProjection();
 	this.options = {
 		skipScale: true,
 		labels: true,
@@ -75,6 +75,7 @@ FV.baseMapParams = function() {
 	};
 	return this;
 };
+FV.baseMapParams.prototype.setProjection = function( p ) { if( p ) this.projection = p; };
 FV.baseMapParams.prototype.setExtent = function( e ) {
 	FV.lastExtent = e ? e : ( FV.myMap ? FV.myMap.getView().calculateExtent(FV.myMap.getSize()).join(',') : null );
 	if ( FV.lastExtent ) this.extent = FV.lastExtent.split(',');
@@ -110,6 +111,7 @@ FV.addViewer = function(extent, zoom, projection, layer){
 	
 	pars.setExtent( extent );
 	pars.setZoom( zoom );
+	pars.setProjection( projection );
 	pars.setLayer( layer );
 	
 	FV.myMap = FigisMap.draw( pars );
@@ -122,7 +124,7 @@ FV.addViewer = function(extent, zoom, projection, layer){
 *       mapProjection -> The map projection (optional).
 **/
 FV.setViewer = function(extent, zoom, projection){
-	if ( ! projection ) projection = FV.currentProjection(4326);
+	if ( ! projection ) projection = FV.currentProjection();
 	if (!zoom || zoom == 0) zoom = 1;
 	FV.addViewer(extent, zoom, projection,FV.currentLayer());
 };
@@ -190,7 +192,6 @@ FV.setViewerPage = function() {
 		}
 		
 		if ( layer && layer != "" ) FV.currentLayer( layer );
-		
 		if ( extent == "" ) extent = null;
 		if ( extent != null ) extent = extent.split(",");
 		if ( zoom == '' ) zoom = null;
