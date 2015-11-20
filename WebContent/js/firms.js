@@ -130,7 +130,6 @@ FV.setViewer = function(extent, zoom, projection){
 };
 
 FV.currentProjection = function( p ) {
-	//FV.lastExtent
 	var cp;
 	if ( document.getElementById('SelectSRS4326').checked ) cp = '4326';
 	if ( ! cp ) if ( document.getElementById('SelectSRS3349').checked ) cp = '3349';
@@ -196,7 +195,6 @@ FV.setViewerPage = function() {
 		
 		if ( layer && layer != "" ) FV.currentLayer( layer );
 		if ( extent == "" ) extent = null;
-		if ( extent != null ) extent = extent.split(",");
 		if ( zoom == '' ) zoom = null;
 		if ( zoom != null ) zoom = parseInt( zoom );
 		if ( prj == '' ) prj = null;
