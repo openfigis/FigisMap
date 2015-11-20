@@ -17,6 +17,7 @@ FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/FigisMap-popup.js');
 var FV = new Object();
 
 FV.myMap = false;
+FV.currentFeatureID = false;
 
 FV.init = function() {
 	FV.setViewerPage();
@@ -39,12 +40,17 @@ FV.loadingPanelOptions = {
 		{
 			var d = this.getMap().getTargetElement().ownerDocument;
 			d.getElementById('progressIndicator').style.display='none';
+			var w = d.defaultView || d.parentWindow;
+			if ( w.FV.onDrawEnd ) {
+				w.FV.onDrawEnd.call(w);
+				w.FV.onDrawEnd = false;
+			}
 		}
 };
 
 FV.baseMapParams = function() {
 	this.target = 'map';
-	this.context = 'FIRMS-Viewer';
+	this.context = 'FAO-FIRMSViewer';
 	this.projection = FV.currentProjection();
 	this.options = {
 		skipScale: true,
@@ -71,6 +77,15 @@ FV.baseMapParams = function() {
 			var content = document.createElement("div");
 			content.appendChild(request.responseXML.children[0]);
 			return content.innerHTML;
+		},
+		onopen: function( feature ){
+			FV.currentFeatureID = feature.get('FIGIS_ID');
+		},
+		onclose: function( feature ){
+			FV.currentFeatureID = false;
+		},
+		tooltipHandler : function(feature){
+			return feature.get('TITLE');
 		}
 	};
 	return this;
@@ -118,6 +133,7 @@ FV.baseMapParams.prototype.setZoom = function( z ) {
 FV.baseMapParams.prototype.setLayer = function( l ) {
 	if(l && l != "") {
 		this.vectorLayer = {
+			id: l,
 			source: FigisMap.rnd.vars.wfs + 'firms:' + l + '_all_points',
 			title: l == 'resource' ? "Marine resources" : "Fisheries",
 			icon: 'img/firms/' + l + '.png', 
@@ -146,12 +162,15 @@ FV.addViewer = function(extent, zoom, projection, layer){
 	if ( ! layer ) layer = FV.currentLayer();
 	pars.setLayer( layer );
 	
+	FV.draw( pars );
+};
+FV.draw = function( pars ) {
 	FV.myMap = FigisMap.draw( pars );
-	
 	FV.lastExtent = null;
 	FV.lastZoom = null;
+	FV.currentFeatureID = false;
 };
-
+FV.onDrawEnd = false;
 /**
 * FV.setViewer function.
 *       extent -> The extent to zoom after the layer is rendered (optional).
@@ -220,7 +239,7 @@ FV.switchLayer = function( l ) {
 */
 FV.setViewerPage = function() {
 	
-	var layer, extent, zoom, prj;
+	var layer, extent, zoom, prj, featureid;
 	
 	if ( location.search.indexOf("layer=") != -1 ){
 		
@@ -234,6 +253,7 @@ FV.setViewerPage = function() {
 				case "extent"	: extent = param[1]; break;
 				case "zoom"	: zoom = parseInt(param[1]); break;
 				case "prj"	: prj = param[1]; break;
+				case "feat"	: featureid = param[1]; break;
 			}
 		}
 		
@@ -243,6 +263,7 @@ FV.setViewerPage = function() {
 		if ( zoom != null ) zoom = parseInt( zoom );
 		if ( prj == '' ) prj = null;
 		if ( prj != null ) FV.currentProjection( prj );
+		if ( featureid ) FV.onDrawEnd = function() { setTimeout('FV.setViewerResource('+featureid+')',10) };
 	} else {
 		zoom = 1;
 		FV.currentLayer('resource');
@@ -266,6 +287,7 @@ FV.setViewerEmbedLink = function(){
 		+ "&extent=" + FV.myMap.getView().calculateExtent(FV.myMap.getSize()).join(',')
 		+ "&zoom=" + FV.myMap.getView().getZoom()
 		+ "&prj=" + FV.currentProjection();
+	if ( FV.currentFeatureID ) url += '&feat=' + FV.currentFeatureID;
 	var urle = url + '&embed=y';
 	
 	//Setting the input fields of the embed-link div
@@ -299,8 +321,18 @@ FV.setViewerResource = function(id) {
 	FV.myMap.getView().setCenter(feature.getGeometry().getCoordinates());
 	
 	//open popup
-	var popup = FigisMap.rnd.getPopupOverlay(FV.myMap);
-	FigisMap.rnd.showPopupForFeature(popup, feature);
+	var popup = FigisMap.rnd.getPopupOverlay(FV.myMap, FV.currentLayer());
+	FigisMap.rnd.showPopupForCoordinates(popup, feature, feature.getGeometry().getCoordinates());
 };
 
 
+FV.mapResource = function( fid, ac, t ) {
+	FV.lastExtent = false;
+	var pars = new FV.baseMapParams();
+	pars.setZoom( 1 );
+	pars.setLayer( FV.currentLayer() );
+	if ( ! pars.distribution ) pars.distribution = [];
+	pars.distribution.push({ layer:FigisMap.fifao.spd, filter:"ALPHACODE='" + ac +"'", title: t, style:"species_style_852D36", autoZoom : true });
+	FV.onDrawEnd = function() { setTimeout('FV.setViewerResource('+fid+')',10) };
+	FV.draw( pars );
+};

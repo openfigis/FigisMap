@@ -2,17 +2,19 @@
 * FIRMS map viewer CSS stylesheet
 *
 */
-body { font: normal 12px; font-family: "Liberation Sans", Arial, Helvetica, sans-serif; height: 100%; margin: 0; padding: 0; text-align: center; width: 100%; }
+body { font: normal 12px; font-family: Verdana, "Liberation Sans", Arial, Helvetica, sans-serif; height: 100%; margin: 0; padding: 0; text-align: center; width: 100%; }
+body { background-color: rgb(55,96,146); }
+body.embed { background-color: white; }
 a, a:visited { color: #2d8b8c; text-decoration: none; }
 a:hover, a:active { color: #f90; cursor: pointer; }
 ul, li { list-style-type: none; }
 #header { height: 100px; width: 100%; overflow-x: hidden; }
 .embed #header { display: none; }
 #wrapper { margin: 0; text-align: left; position: fixed; top: 0; left: 0; bottom: 0; right: 0; }
-#top1 { font-size: 25px; height: 60px; margin: 0; padding: 0; text-shadow: rgb(204, 204, 204) 2px 2px 2px; vertical-align: bottom; width: 100%; }
+#top1 { background-color : #fff;font-size: 25px; height: 60px; margin: 0; padding: 0; text-shadow: rgb(204, 204, 204) 2px 2px 2px; vertical-align: bottom; width: 100%; }
 #top2 { background-color: rgb(55,96,146); height: 40px; margin: 0; padding: 0; width: 100%; overflow: hidden; }
 #top2 span { color: rgba(255,255,255,.7); font-size: 25px; font-weight: bold; line-height: 38px; margin: 0 1em; text-shadow: 2px 2px 2px rgba(0,0,0,.6); }
-#mapWrapper { position: absolute; display: block; top: 100px; left: 0; right: 0; bottom: 0; }
+#mapWrapper { position: absolute; display: block; top: 100px; left: 0; right: 0; height: 100%; background-color : #fff;}
 .embed #mapWrapper { top: 0; }
 #main { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
 #map { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
@@ -29,6 +31,7 @@ ul, li { list-style-type: none; }
 #embed-code textarea { height: 300px; }
 .embed-link { color: black; text-decoration: underline; }
 /** * OL CSS Stuff to be moved progressively * to js/vendor/ol3/ol3-figismap.css * | * V */
+/* 
 .olControlLoadingPanel { background-image: url(../img/loading.gif); background-position: center; background-repeat: no-repeat; display: none; }
 .olControlMousePosition { bottom: 0px; display: block; left: 9px; position: absolute; }
 .olControlAttribution { color: Blue; display: block; font-size: 12px !important; font-style: normal; left: 50px; position: absolute; top: 0.5em; }
@@ -37,10 +40,9 @@ ul, li { list-style-type: none; }
 .FigisMapLegend { border-top: 1px solid; clear: both; font-size: 12px; padding-top: 20px; text-align: left; width: 100%; }
 .FigisMapLegend div { display: inline; margin-right: 1em; text-align: center; }
 .FigisMapLegend div img { margin-right: 3px; vertical-align: middle; }
+ */
 /** * ^ * | */
-#e-link { background-color: rgb(51, 102, 153); display: none; height: 100px; padding: .5em 0; }
-#e-link div { color: white; padding: .5em 0; text-align: center; }
-#e-link label { font-size: 10px; }
+
 #legend { margin-bottom: 0px; }
 .legend img { vertical-align: middle; }
 
@@ -82,7 +84,7 @@ body.embed #linkPanel { display: none; }
 #resourceSwitcher div.active img.iconsearch:hover { opacity: 1; margin-top: -8px;  }
 
 #progressIndicator { background-color: rgba(128,128,128,.5); border: solid 1px rgba(64,64,64,.5); border-radius: 4px; box-shadow: 2px 2px 2px rgba(0,0,0,.5); height: 8px; left: 50%; margin-left: -8%; overflow: hidden; position: absolute; bottom: 10%; width: 16%; z-index: 100; }
-#progressIndicatorValue { background-color: rgba(255,102,0,.5); height: 14px; width: 0px; }
+#progressIndicatorValue { background-color: rgba(204,102,0,.6); height: 14px; width: 0px; }
 
 #bottomBar1 { background: none; bottom: 10px; color: black; font-size: 12px; font-weight: bold; line-height: 1.5em; margin: 0; padding: 0; opacity: .7; position: absolute; text-align: center; width: 100%; z-index: 1000; text-align: center; }
 #bottomBar1 a, #bottomBar1 a:visited { color: #000; }
