@@ -77,6 +77,9 @@ body.embed #linkPanel { display: none; }
 #resourceSwitcher div.active { opacity: .9; }
 #resourceSwitcher div.inactive:hover { opacity: .7; }
 #resourceSwitcher div.inactive:hover * { cursor: pointer; }
+#resourceSwitcher img.iconsearch { float: right; margin: 0; padding: 0; border: none; margin-top: -4px; margin-right: -6px; opacity : .7; }
+#resourceSwitcher div.active img.iconsearch { cursor: pointer; }
+#resourceSwitcher div.active img.iconsearch:hover { opacity: 1; margin-top: -8px;  }
 
 #progressIndicator { background-color: rgba(128,128,128,.5); border: solid 1px rgba(64,64,64,.5); border-radius: 4px; box-shadow: 2px 2px 2px rgba(0,0,0,.5); height: 8px; left: 50%; margin-left: -8%; overflow: hidden; position: absolute; bottom: 10%; width: 16%; z-index: 100; }
 #progressIndicatorValue { background-color: rgba(255,102,0,.5); height: 14px; width: 0px; }
