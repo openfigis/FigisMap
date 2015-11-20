@@ -76,13 +76,44 @@ FV.baseMapParams = function() {
 	return this;
 };
 FV.baseMapParams.prototype.setProjection = function( p ) { if( p ) this.projection = p; };
+/*
+	FV.baseMapParams.prototype.setExtent
+	@param e: extent, as array or string
+	Uses and sets FV.lastExtent
+	In case FV.lastExtent is boolean (false) doesn't set any extent.
+*/
 FV.baseMapParams.prototype.setExtent = function( e ) {
-	FV.lastExtent = e ? e : ( FV.myMap ? FV.myMap.getView().calculateExtent(FV.myMap.getSize()).join(',') : null );
-	if ( FV.lastExtent ) this.extent = FV.lastExtent.split(',');
+	if ( e ) {
+		if ( e.constructor === Array ) e = e.join(',');
+		FV.lastExtent = e;
+	}
+	if ( typeof FV.lastExtent == 'boolean' ) {
+		this.extent = null;
+		return false;
+	}
+	if ( ! FV.lastExtent ) FV.lastExtent = FV.myMap ? FV.myMap.getView().calculateExtent(FV.myMap.getSize()).join(',') : null;
+	this.extent = FV.lastExtent ? FV.lastExtent.split(',') : null;
+	return true;
 };
+/*
+	FV.baseMapParams.prototype.setZoom
+	@param z: zoom, integer
+	Uses and sets FV.lastZoom
+	In case FV.lastZoom is boolean (false) resets it to 1.
+*/
 FV.baseMapParams.prototype.setZoom = function( z ) {
-	FV.lastZoom = z != 1 ? z : ( FV.myMap ? FV.myMap.getView().getZoom() : 1 );
-	if ( FV.lastZoom ) this.zoom = FV.lastZoom;
+	if ( z && (z != 1) ) {
+		FV.lastZoom = z;
+		this.zoom = z;
+		return true;
+	}
+	if ( typeof FV.lastZoom == 'boolean' ) {
+		this.zoom = 1;
+		return false;
+	}
+	FV.lastZoom = FV.myMap ? FV.myMap.getView().getZoom() : 1;
+	this.zoom = FV.lastZoom;
+	return true;
 };
 FV.baseMapParams.prototype.setLayer = function( l ) {
 	if(l && l != "") {
@@ -112,9 +143,13 @@ FV.addViewer = function(extent, zoom, projection, layer){
 	pars.setProjection( projection );
 	pars.setZoom( zoom );
 	pars.setExtent( extent );
+	if ( ! layer ) layer = FV.currentLayer();
 	pars.setLayer( layer );
 	
 	FV.myMap = FigisMap.draw( pars );
+	
+	FV.lastExtent = null;
+	FV.lastZoom = null;
 };
 
 /**
@@ -142,9 +177,14 @@ FV.currentProjection = function( p ) {
 	if ( p != cp ) {
 		document.getElementById('SelectSRS4326').checked = ( p == '4326');
 		document.getElementById('SelectSRS3349').checked = ( p == '3349');
-		FV.lastExtent = null;
 	}
 	return p;
+};
+FV.switchProjection = function( p ) {
+	FV.lastExtent = false;
+	FV.lastZoom = false;
+	FV.currentProjection( p );
+	FV.setViewer();
 };
 
 FV.currentLayer = function( l ) {
@@ -169,6 +209,10 @@ FV.setLayerStatus = function( l, mode ) {
 		parentNode.className= mode ? 'active' : 'inactive';
 		parentNode.setAttribute('class', mode ? 'active' : 'inactive' );
 	}
+};
+FV.switchLayer = function( l ) {
+	FV.currentLayer( l );
+	FV.setViewer();
 };
 
 /**

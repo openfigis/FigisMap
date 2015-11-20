@@ -53,12 +53,12 @@
 				<div id="resourceSwitcher">
 					<div id="resourceSwitcherPanelResource">
 						<img src="img/firms/smallsearch.png" border="0" class="iconsearch" alt="" />
-						<input type="radio" name="SelectLayer" onchange="FV.currentLayer(this.value);FV.setViewer()" value="resource" id="resourceSwitcher-resource" />
+						<input type="radio" name="SelectLayer" onchange="FV.switchLayer(this.value)" value="resource" id="resourceSwitcher-resource" />
 						<label for="resourceSwitcher-resource">Marine Resources</label>
 					</div>
 					<div id="resourceSwitcherPanelFishery">
 						<img src="img/firms/smallsearch.png" border="0" class="iconsearch" alt="" />
-						<input type="radio" name="SelectLayer" onchange="FV.currentLayer(this.value);FV.setViewer()" value="fishery" id="resourceSwitcher-fishery" />
+						<input type="radio" name="SelectLayer" onchange="FV.switchLayer(this.value)" value="fishery" id="resourceSwitcher-fishery" />
 						<label for="resourceSwitcher-fishery">Fishery</label>
 					</div>
 				</div>
@@ -66,11 +66,11 @@
 					<h4>Projection</h4>
 					<blockquote>
 						<div>
-							<input type="radio" name="SelectSRS" onchange="FV.setViewer(null,null,this.value)" value="4326" checked="checked" id="SelectSRS4326" />
+							<input type="radio" name="SelectSRS" onchange="FV.switchProjection(this.value)" value="4326" checked="checked" id="SelectSRS4326" />
 							<label for="SelectSRS4326">WGS84 (4326)</label>
 						</div>
 						<div>
-							<input type="radio" name="SelectSRS" onchange="FV.setViewer(null,null,this.value)" value="3349" id="SelectSRS3349" />
+							<input type="radio" name="SelectSRS" onchange="FV.switchProjection(this.value)" value="3349" id="SelectSRS3349" />
 							<label for="SelectSRS3349">Mercator (3857)</label>
 						</div>
 					<blockquote>
