@@ -42,6 +42,60 @@ FV.loadingPanelOptions = {
 		}
 };
 
+FV.baseMapParams = function() {
+	this.target = 'map';
+	this.context = 'FIRMS-Viewer';
+	this.projection = '4326';
+	this.options = {
+		skipScale: true,
+		labels: true,
+		loadingPanelOptions : FV.loadingPanelOptions,
+		layerSwitcherOptions: { displayLegend: true }
+	};
+	this.base = {
+		cached: true,
+		filter: "",
+		label: "Oceans basemap",
+		layer: FigisMap.fifao.obl,
+		title: "Oceans basemap",
+		type: "base"
+	};
+	this.popup = {
+		resourceHandler : function(feature) {
+			return '/figis/moniker.html/firmsviewerpopup/'
+				+ feature.get('DOMAIN') + '/' + feature.get('FIGIS_ID')
+				+ '/' + feature.get('LANG')
+			;
+		},
+		contentHandler : function(feature, request) {
+			var content = document.createElement("div");
+			content.appendChild(request.responseXML.children[0]);
+			return content.innerHTML;
+		}
+	};
+	return this;
+};
+FV.baseMapParams.prototype.setExtent = function( e ) {
+	FV.lastExtent = e ? e : ( FV.myMap ? FV.myMap.getView().calculateExtent(FV.myMap.getSize()).join(',') : null );
+	if ( FV.lastExtent ) this.extent = FV.lastExtent.split(',');
+};
+FV.baseMapParams.prototype.setZoom = function( z ) {
+	FV.lastZoom = z != 1 ? z : ( FV.myMap ? FV.myMap.getView().getZoom() : 1 );
+	if ( FV.lastZoom ) this.zoom = FV.lastZoom;
+};
+FV.baseMapParams.prototype.setLayer = function( l ) {
+	if(l && l != "") {
+		this.vectorLayer = {
+			source: FigisMap.rnd.vars.wfs + 'firms:' + l + '_all_points',
+			title: l == 'resource' ? "Marine resources" : "Fisheries",
+			icon: 'img/firms/' + l + '.png', 
+			cluster: true,
+			clusterOptions: { distance: 30, animate: true },
+			clusterIcon: 'img/firms/' + l + '_cluster.png'
+		}
+	}
+};
+
 /**
 * FV.addViewer function.
 *       extent -> The extent to zoom after the layer is rendered (optional).
@@ -52,55 +106,12 @@ FV.loadingPanelOptions = {
 FV.addViewer = function(extent, zoom, projection, layer){
 
 	//parameters
-	var pars = {
-		target		: 'map',
-		context		: 'FIRMS-Viewer',
-		projection	: projection,
-		projection	: projection,
-		options		: {
-			skipScale: true,
-			labels: true,
-			loadingPanelOptions : FV.loadingPanelOptions,
-			layerSwitcherOptions: { displayLegend: true }
-		},
-		base		: {
-			cached: true,
-			filter: "",
-			label: "Oceans basemap",
-			layer: FigisMap.fifao.obl,
-			title: "Oceans basemap",
-			type: "base"
-		}
-	};
+	var pars = new FV.baseMapParams();
 	
-	FV.lastExtent = extent ? extent : ( FV.myMap ? FV.myMap.getView().calculateExtent(FV.myMap.getSize()).join(',') : null );
-	if ( FV.lastExtent ) pars.extent = FV.lastExtent.split(',');
-	FV.lastZoom = zoom != 1 ? zoom : ( FV.myMap ? FV.myMap.getView().getZoom() : 1 );
-	if ( FV.lastZoom ) pars.zoom = FV.lastZoom;
+	pars.setExtent( extent );
+	pars.setZoom( zoom );
+	pars.setLayer( layer );
 	
-	//vector cluster layer
-	if(layer && layer != "") {
-		pars.vectorLayer = {
-			source: FigisMap.rnd.vars.wfs + 'firms:' + layer + '_all_points',
-			title: layer == 'resource' ? "Marine resources" : "Fisheries",
-			icon: 'img/firms/' + layer + '.png', 
-			cluster: true,
-			clusterOptions: {distance: 30, animate: true},
-			clusterIcon: 'img/firms/' + layer + '_cluster.png'
-		}
-	}
-	
-	//popup (with test content handler)
-	pars.popup = {
-		resourceHandler : function(feature) {
-			return '/figis/moniker.html/firmsviewerpopup/'+ feature.get('DOMAIN') + '/' + feature.get('FIGIS_ID') + '/' + feature.get('LANG');
-		},
-		contentHandler : function(feature, request) {
-			var content = document.createElement("div");
-			content.appendChild(request.responseXML.children[0]);
-			return content.innerHTML;
-		}
-	}
 	FV.myMap = FigisMap.draw( pars );
 };
 
@@ -111,13 +122,9 @@ FV.addViewer = function(extent, zoom, projection, layer){
 *       mapProjection -> The map projection (optional).
 **/
 FV.setViewer = function(extent, zoom, projection){
-	
 	if ( ! projection ) projection = FV.currentProjection(4326);
-	
-	if(!zoom || zoom == 0) zoom = 1;
-	var layer = FV.currentLayer();
-	
-	FV.addViewer(extent, zoom, projection,layer);
+	if (!zoom || zoom == 0) zoom = 1;
+	FV.addViewer(extent, zoom, projection,FV.currentLayer());
 };
 
 FV.currentProjection = function( p ) {
@@ -151,8 +158,7 @@ FV.currentLayer = function( l ) {
 		}
 	}
 	return l;
-}
-
+};
 FV.setLayerStatus = function( l, mode ) {
 	with ( document.getElementById('resourceSwitcher-' + l ) ) {
 		checked = mode;
@@ -205,24 +211,21 @@ FV.setViewerPage = function() {
 * setFirmsViewerEmberLink function. Manage the expand/collapse of the Embed-Link div.
 */
 FV.setViewerEmbedLink = function(){
-	
 	if ( ! ( document.getElementById ) ) return void(0);
-	
-	var baseURL = location.href.replace(/#.*$/,'').replace(/\?.*$/,'');
-	
 	if ( ! FV.myMap ) FV.myMap = FigisMap.lastMap;
 	
 	//Building the request url containing the map status.
-	baseURL += "?layer=" + FV.currentLayer()
+	var url = location.href.replace(/#.*$/,'').replace(/\?.*$/,'')
+		+ "?layer=" + FV.currentLayer()
 		+ "&extent=" + FV.myMap.getView().calculateExtent(FV.myMap.getSize()).join(',')
 		+ "&zoom=" + FV.myMap.getView().getZoom()
 		+ "&prj=" + FV.currentProjection();
+	var urle = url + '&embed=y';
 	
 	//Setting the input fields of the embed-link div
-	document.getElementById('firms-link').value = baseURL;
-	baseURL += '&embed=y';
-	document.getElementById('firms-html').value = '<iframe src ="' + baseURL + ' width="800" height="600" frameborder="0" marginheight="0"></iframe>';
-	document.getElementById('firms-embed').value = baseURL;
+	document.getElementById('firms-link').value = url;
+	document.getElementById('firms-html').value = '<iframe src ="' + urle + ' width="800" height="600" frameborder="0" marginheight="0"></iframe>';
+	document.getElementById('firms-embed').value = urle;
 };
 
 
@@ -233,10 +236,25 @@ FV.setViewerEmbedLink = function(){
  * @param {Integer}{String} FIGIS factsheet id, provided as integer or string 
  */
 FV.setViewerResource = function(id) {
+	
 	var feature = FigisMap.ol.getVectorLayerFeatureById(FV.myMap, 'FIGIS_ID', id);
+	
+	//testing spin animation for setCenter
+	/*var duration = 2000;
+	var start = +new Date();
+	var pan = ol.animation.pan({
+		duration: duration,
+		source: (FV.myMap.getView().getCenter()),
+		start: start
+	});
+	FV.myMap.beforeRender(pan);*/
+	
+	//setCenter
 	FV.myMap.getView().setCenter(feature.getGeometry().getCoordinates());
+	
+	//open popup
 	var popup = FigisMap.rnd.getPopupOverlay(FV.myMap);
 	FigisMap.rnd.showPopupForFeature(popup, feature);
-}
+};
 
 
