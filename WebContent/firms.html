@@ -24,9 +24,18 @@
 		};
 		function adjustHeight() {
 			var ise = !! ( document.body.className=='embed' );
-			var w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-			var h = parseInt( parseInt(w) / 1.8 );
-			document.getElementById('mapWrapper').style.maxHeight = h + 'px';
+			var w = parseInt(window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth);
+			var h = parseInt(window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight);
+			if ( !ise ) h = h - 100;
+			var dh = parseInt( parseInt(w) / 1.8 );
+			var mw = document.getElementById('mapWrapper');
+			if ( dh > h ) {
+				mw.style.height = h + 'px';
+				mw.style.bottom = '0px';
+			} else {
+				mw.style.height = dh + 'px';
+				mw.style.bottom = 'auto';
+			}
 		}
 		//-->
 	</script>
