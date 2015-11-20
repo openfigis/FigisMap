@@ -7,6 +7,7 @@
  */
 FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 
+	if( !layer.id ) alert("Missing vector layer 'id'");
 	if( !layer.source ) alert("Missing vector layer 'source'");
 	if( !layer.title ) alert("Missing vector layer 'title'");
 	if( !layer.icon ) alert("Missing vector layer 'icon'");
@@ -66,6 +67,9 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 				return style;
 			}
 		});
+
+		//adding layer.id to layer object
+		clusterLayer.id = layer.id;
 		
 		//adding layer.icon to layer object (for inheriting in layerswitcher)
 		clusterLayer.icon = layer.icon;

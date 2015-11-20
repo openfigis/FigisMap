@@ -2,9 +2,11 @@
  * OL3 css stylesheets imports
  */
 @import url("ol3.css");
+@import url("ol3-loadingpanel.css");
 @import url("ol3-layerswitcher.css");
 @import url("ol3-zoomtomaxextent.css");
 @import url("ol3-popup.css");
+@import url("ol3-tooltip.css");
 
 /**
  * Custom OpenLayers 3 CSS stylesheet for FigisMap

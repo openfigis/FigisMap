@@ -1957,11 +1957,13 @@ FigisMap.renderer = function(options) {
 			FigisMap.rnd.addVectorLayer(myMap, overlays, pars.vectorLayer);
 		}
 		
-		//Testing popup
+		//Testing popup & tooltip
 		if( pars.popup ) {
 			FigisMap.debug('FigisMap - popup', pars.popup);
-			FigisMap.rnd.configurePopup(myMap, pars.popup);
+			FigisMap.rnd.configurePopup(myMap, pars.vectorLayer.id, pars.popup);
+			FigisMap.rnd.configureTooltipPopup(myMap, pars.vectorLayer.id+'-tooltip', pars.popup);
 		}
+
 		
 		// BUILDING THE LEGEND
 		FigisMap.rnd.legend( layers, p );
