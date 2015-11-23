@@ -1,23 +1,4 @@
 /**
- * Copyright (c) 2015 Emmanuel Blondel
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
- * and associated documentation files (the "Software"), to deal in the Software without restriction, 
- * including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
- * subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in all copies or substantial 
- * portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
- * LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
- * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
- * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * /
-
-/**
  * @classdesc
  * A control to display a loader image (typically an animated GIF) when
  * the map tiles are loading, and hide the loader image when tiles are
@@ -28,9 +9,7 @@
  * @param {olx.control.LoadingPanelOptions} opt_options Options.
  * 
  * @author Emmanuel Blondel
- * @contributor Marco Balestra
- * 
- * @seeAlso https://github.com/eblondel/ol3-loading-panel
+ * @author Marco Balestra
  *
  */
 ol.control.LoadingPanel = function(opt_options) {
@@ -48,7 +27,7 @@ ol.control.LoadingPanel = function(opt_options) {
 	if(options.progressMode) if(['tile','layer'].indexOf(options.progressMode) == -1) alert("invalid value for 'progressMode'");
 	this.loadProgressByTile_ = ( options.progressMode == 'layer')? false : true;
 	
-	this.showPanel = (typeof options.showpanel == 'boolean') ? options.showpanel : true;
+	this.showPanel = (typeof options.showPanel == 'boolean') ? options.showPanel : true;
 	
 	var className = options.className ? options.className : 'ol-loading-panel';
 	var element = document.createElement('span');

@@ -24,7 +24,7 @@ FV.init = function() {
 };
 
 FV.loadingPanelOptions = {
-	showpanel	: false,
+	showPanel	: false,
 	onstart		: function()
 		{
 			var d = this.getMap().getTargetElement().ownerDocument;
@@ -66,6 +66,7 @@ FV.baseMapParams = function() {
 		title: "Oceans basemap",
 		type: "base"
 	};
+// 	this.associated = [ FigisMap.fifao.rfb ];
 	this.popup = {
 		resourceHandler : function(feature) {
 			return '/figis/moniker.html/firmsviewerpopup/'
