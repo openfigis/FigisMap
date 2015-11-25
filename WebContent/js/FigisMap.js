@@ -1807,7 +1807,7 @@ FigisMap.renderer = function(options) {
 				extent: boundsBox,
 				zoom : 1,
 				minZoom: 1,
-				zoomFactor: (projection == 4326)? 3 : 2,
+				zoomFactor: (projection == 4326 && !p.isFIGIS)? 3 : 2,
 				maxResolution : mapMaxRes
 			}),
 			controls: [],
