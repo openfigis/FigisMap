@@ -15,3 +15,8 @@
 	-moz-border-radius: 16px;
 	border-radius: 16px;
 }
+
+.ol-zoom-max-extent img{
+	width:inherit;
+	height:inherit;
+}
