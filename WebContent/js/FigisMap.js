@@ -1623,7 +1623,7 @@ FigisMap.getStyleRuleDescription = function(STYLE, pars) {
 						if contains 'T' legend items will be in table(s)
 						if contains 'P' (plain) no legend sections will be used
 			countriesLegend	: (String or HTML node) the id of the legend DIV or a reference to the DIV (optional).
-			watermark	: (Object) to set the map watermark (optional, defaults to FAO legend).
+			watermark	: (Object) to set the map watermark (optional, defaults to FAO logo).
 			landMask	: (boolean) true if the layer must be covered by the mask. Optional, defaults true.
 			global		: (boolean) true to apply a global extent. Optional, defaults false.
 			basicsLayers	: (boolean) true to add the FAO basic layers in the map. Optional, defaults false.
@@ -1822,7 +1822,7 @@ FigisMap.renderer = function(options) {
 		//default controls (explicitly added for information and possible customization with options)
 		if ( ! pars.options.skipLoadingPanel ) myMap.addControl( new ol.control.LoadingPanel( pars.options.loadingPanelOptions ? pars.options.loadingPanelOptions : null ) );
 		myMap.addControl( new ol.control.Zoom() );
-		myMap.addControl( new ol.control.ZoomToMaxExtent({ extent: boundsBox, zoom: myMap.getView().getZoom()}) );
+		myMap.addControl( new ol.control.ZoomToMaxExtent({ extent: boundsBox, zoom: ((p.isFIGIS)? 0 : myMap.getView().getZoom())}) );
 		myMap.addControl( new ol.control.Rotate() );
 		myMap.addControl( new ol.control.Attribution({collapsible : false, className : 'ol-attribution-baselayer'}) );
 		
