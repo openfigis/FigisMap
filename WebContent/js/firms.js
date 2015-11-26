@@ -144,10 +144,9 @@ FV.baseMapParams.prototype.setLayer = function( l ) {
 			id: l,
 			source: FigisMap.rnd.vars.wfs + 'firms:' + l + '_all_points',
 			title: l == 'resource' ? "Marine resources" : "Fisheries",
-			icon: 'img/firms/' + l + '.png', 
+			icon: 'img/firms/' + l + '_cluster.png', 
 			cluster: true,
-			clusterOptions: { distance: 30, animate: true },
-			clusterIcon: 'img/firms/' + l + '_cluster.png'
+			clusterOptions: { distance: 30, animate: true, singlecount: true }
 		}
 	}
 };
@@ -345,6 +344,40 @@ FV.mapResource = function( fid, ac, t ) {
 	FV.onDrawEnd = function() { setTimeout('FV.setViewerResource('+fid+')',10) };
 	FV.draw( pars );
 };
+FV.mapFishery = function( fid, fpars ) {
+	if ( typeof fpars == 'string' ) eval( ' fpars = ' + fpars );
+	FV.lastExtent = false;
+	var pars = new FV.baseMapParams();
+	pars.setZoom( 1 );
+	pars.setLayer( FV.currentLayer() );
+	if ( fpars.distribution ) {
+		if ( ! pars.distribution ) pars.distribution = [];
+		if ( !( pars.distribution.constructor === Array ) ) pars.distribution = [ pars.distribution ];
+		if ( !( fpars.distribution.constructor === Array ) ) fpars.distribution = [ fpars.distribution ];
+		for ( var i = 0; i < fpars.distribution.length; i++ ) {
+			pars.distribution.push( fpars.distribution[i] );
+		}
+	}
+	if ( fpars.intersecting ) {
+		if ( ! pars.intersecting ) pars.intersecting = [];
+		if ( !( pars.intersecting.constructor === Array ) ) pars.intersecting = [ pars.intersecting ];
+		if ( !( fpars.intersecting.constructor === Array ) ) fpars.intersecting = [ fpars.intersecting ];
+		for ( var i = 0; i < fpars.intersecting.length; i++ ) {
+			pars.intersecting.push( fpars.intersecting[i] );
+		}
+	}
+	if ( fpars.associated ) {
+		if ( ! pars.associated ) pars.associated = [];
+		if ( !( pars.associated.constructor === Array ) ) pars.associated = [ pars.associated ];
+		if ( !( fpars.associated.constructor === Array ) ) fpars.associated = [ fpars.associated ];
+		for ( var i = 0; i < fpars.associated.length; i++ ) {
+			pars.associated.push( fpars.associated[i] );
+		}
+	}
+	FV.onDrawEnd = function() { setTimeout('FV.setViewerResource('+fid+')',10) };
+	FV.draw( pars );
+};
+
 /*
 * Full Text Search - FV.fts object
 */

@@ -20,19 +20,9 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 
 	if( !!layer.cluster ) {
 	
-		if( !layer.clusterOptions ) {
-			layer.clusterOptions = {
-				distance: 0,
-				animate: false
-			}
-		}
 		
-		var useClusterIcon = true;
-		if( !layer.clusterIcon) {
-			layer.clusterIcon = layer.icon;
-			useClusterIcon = false;
-		}
-		
+		if (!layer.clusterOptions.hasOwnProperty('singlecount')) layer.clusterOptions.singlecount = true;
+
 		// configure the cluster source
 		var clusterFeatures = new ol.source.Cluster({
 			distance : layer.clusterOptions.distance ? layer.clusterOptions.distance : 0,
@@ -53,9 +43,9 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 						anchorXUnits : 'fraction',
 						anchorYUnits : 'pixels',
 						opacity : 0.75,
-						src : (size == 1 && useClusterIcon) ? layer.icon : layer.clusterIcon
+						src : (layer.clusterOptions.hasOwnProperty('icon'))? layer.clusterOptions.icon : layer.icon
 					})),
-					text : size == 1 ? null : new ol.style.Text({
+					text : (!layer.clusterOptions.singlecount && size == 1)? null : new ol.style.Text({
 						text : size.toString(),
 						offsetY : -20,
 						scale : 1.2,
