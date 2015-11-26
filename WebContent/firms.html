@@ -28,6 +28,7 @@
 			var h = parseInt(window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight);
 			if ( !ise ) h = h - 100;
 			var dh = parseInt( parseInt(w) / 1.8 );
+			if ( dh > 768 ) dh = 768;
 			var mw = document.getElementById('mapWrapper');
 			if ( dh > h ) {
 				mw.style.height = h + 'px';
@@ -35,6 +36,30 @@
 			} else {
 				mw.style.height = dh + 'px';
 				mw.style.bottom = 'auto';
+			}
+		}
+		function openSearch() {
+			var s = document.getElementById('ftsContainer');
+			if ( s.className == 'closed' ) {
+				var l = document.getElementById('resourceSwitcher-'+FV.currentLayer()).nextSibling;
+				if ( l.nodeName != 'label' ) l = l.nextSibling;
+				var t = document.getElementById('ftsTitle');
+				t.innerHTML = '';
+				s.className = 'open';
+				s.setAttribute('class','open');
+				t.innerHTML = 'Search: <span>' + l.innerHTML + '</span>';
+				with ( document.getElementById('ftsText') ) {
+					focus();
+					select();
+				};
+			}
+		}
+		function closeSearch() {
+			var s = document.getElementById('ftsContainer');
+			if ( s.className == 'open' ) {
+				document.getElementById('ftsText').blur();
+				setTimeout("document.getElementById('ftsContainer').className='closed'",10);
+				setTimeout("document.getElementById('ftsContainer').setAttribute('class','closed')",10);
 			}
 		}
 		//-->
@@ -75,14 +100,27 @@
 				<div id="map" class="map"></div>
 				<div id="resourceSwitcher">
 					<div id="resourceSwitcherPanelResource">
-						<img src="img/firms/smallsearch.png" border="0" class="iconsearch" alt="" />
 						<input type="radio" name="SelectLayer" onchange="FV.switchLayer(this.value)" value="resource" id="resourceSwitcher-resource" />
 						<label for="resourceSwitcher-resource">Marine Resources</label>
 					</div>
 					<div id="resourceSwitcherPanelFishery">
-						<img src="img/firms/smallsearch.png" border="0" class="iconsearch" alt="" />
 						<input type="radio" name="SelectLayer" onchange="FV.switchLayer(this.value)" value="fishery" id="resourceSwitcher-fishery" />
-						<label for="resourceSwitcher-fishery">Fishery</label>
+						<label for="resourceSwitcher-fishery">Fisheries</label>
+					</div>
+				</div>
+				<div id="ftsContainer" class="closed" onclick="openSearch();">
+					<img src="img/firms/search.png" class="iconSearch" alt="" />
+					<div id="ftsBox">
+						<div id="ftsTitle"></div>
+						<div id="ftsCloser" onclick="closeSearch();">✖</div>
+						<input type="search" name="filterSearch" id="ftsText" value=""
+							placeholder="Text to search for" autosave="FIRMSviewer" results="10"
+							onmouseover="this.focus();this.select();"
+							onkeyup="FV.fts.filter(false)"
+							onclick="FV.fts.filter(true)"
+							onchange="FV.fts.filter(true)"
+						/>
+						<div id="ftsResult"></div>
 					</div>
 				</div>
 				<div id="projectionPanel" class="sidePanel">

@@ -166,6 +166,7 @@ FV.addViewer = function(extent, zoom, projection, layer){
 	FV.draw( pars );
 };
 FV.draw = function( pars ) {
+	closeSearch();
 	FV.myMap = FigisMap.draw( pars );
 	FV.lastExtent = null;
 	FV.lastZoom = null;
@@ -337,3 +338,55 @@ FV.mapResource = function( fid, ac, t ) {
 	FV.onDrawEnd = function() { setTimeout('FV.setViewerResource('+fid+')',10) };
 	FV.draw( pars );
 };
+/*
+* Full Text Search - FV.fts object
+*/
+FV.fts = {
+	timeout : false,
+	lastValue: '',
+	inputField: document.getElementById('ftsText'),
+	showResult: document.getElementById('ftsResult'),
+	progress: false
+};
+
+FV.fts.filter = function(force) {
+	if (FV.fts.timeout) clearTimeout( FV.fts.timeout );
+	if (force) {
+		FV.fts.execute();
+	} else {
+		FV.fts.timeout = setTimeout('FV.fts.execute()', 500);
+	}
+}
+
+FV.fts.execute = function() {
+	FV.fts.timeout = false;
+	var text = FV.fts.inputField.value;
+	if ( text == '') {
+		FV.fts.showResult.innerHTML = '';
+		FV.fts.lastValue = '';
+		if ( FV.fts.progress ) FV.fts.progress.style.visibility = 'hidden';
+	} if ( text.length < 3 ) {
+		// do nothing
+	} else if ( text != FV.fts.lastValue) {
+		FV.fts.lastValue = text;
+		if ( FV.fts.progress ) FV.fts.progress.style.visibility = 'visible';
+		var xmlHttp = FigisMap.getXMLHttpRequest();
+		var url = FigisMap.currentSiteURI + "/figis/solr/firmsviewer?search=" + escape(text);
+		if ( xmlHttp ) {
+			xmlHttp.onreadystatechange = function() {
+				if ( xmlHttp.readyState != 4 ) return void(0);
+				FV.fts.delivery( xmlHttp );
+			};
+			xmlHttp.open('GET', url, true);
+			xmlHttp.send('');
+		}
+	}
+}
+
+FV.fts.delivery = function(doc) {
+	if ( FV.fts.inputField.value != FV.fts.lastValue) return;
+	var root = doc.documentElement;
+	FV.fts.showResult.innerHTML = root.getAttribute('result');
+	if ( FV.fts.progress ) FV.fts.progress.style.visibility = 'hidden';
+}
+
