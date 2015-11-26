@@ -144,9 +144,9 @@ FV.baseMapParams.prototype.setLayer = function( l ) {
 			id: l,
 			source: FigisMap.rnd.vars.wfs + 'firms:' + l + '_all_points',
 			title: l == 'resource' ? "Marine resources" : "Fisheries",
-			icon: 'img/firms/' + l + '_cluster.png', 
+			icon: 'img/firms/' + l + '.png', 
 			cluster: true,
-			clusterOptions: { distance: 30, animate: true, singlecount: true }
+			clusterOptions: { distance: 30, animate: true, singlecount: false, icon: 'img/firms/' + l + '_cluster.png' }
 		}
 	}
 };

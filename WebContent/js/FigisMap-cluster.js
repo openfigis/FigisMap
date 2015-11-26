@@ -38,13 +38,13 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 			style : function(feature, resolution) {
 				var size = feature.get('features').length;
 				var style = [ new ol.style.Style({
-					image : new ol.style.Icon(({
+					image : new ol.style.Icon({
 						anchor : [ 0.5, 36 ],
 						anchorXUnits : 'fraction',
 						anchorYUnits : 'pixels',
 						opacity : 0.75,
-						src : (layer.clusterOptions.hasOwnProperty('icon'))? layer.clusterOptions.icon : layer.icon
-					})),
+						src : (layer.clusterOptions.hasOwnProperty('icon') & size > 1)? layer.clusterOptions.icon : layer.icon
+					}),
 					text : (!layer.clusterOptions.singlecount && size == 1)? null : new ol.style.Text({
 						text : size.toString(),
 						offsetY : -20,
@@ -70,6 +70,9 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 			map.addLayer(clusterLayer);
 		}
 	
+		console.log(layer.icon);
+		console.log(layer.clusterOptions.icon);
+
 		// Select interaction to spread cluster out and select features
 		var selectCluster = new ol.interaction.SelectCluster({ 
 			pointRadius : 15,
@@ -77,13 +80,13 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 			// Feature style when it springs apart
 			featureStyle : function() {
 				return [ new ol.style.Style({
-					image : new ol.style.Icon(({
-						anchor : [ 0.5, 25 ],
+					image : new ol.style.Icon({
+						anchor : [ 0.5, 36 ],
 						anchorXUnits : 'fraction',
 						anchorYUnits : 'pixels',
 						opacity : 0.75,
 						src : layer.icon
-					}))
+					})
 				}) ]
 			}
 		});
