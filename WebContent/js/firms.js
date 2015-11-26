@@ -52,6 +52,13 @@ FV.baseMapParams = function() {
 	this.target = 'map';
 	this.context = 'FAO-FIRMSViewer';
 	this.projection = FV.currentProjection();
+	this.watermark = {
+		src: FigisMap.httpBaseRoot + 'img/firms/watermark.png',
+		title : 'Powered by FIGIS',
+		width : 176,
+		height : 48,
+		wclass : 'ol-powered-by'
+	};
 	this.options = {
 		skipScale: true,
 		labels: true,
@@ -294,7 +301,7 @@ FV.setViewerEmbedLink = function(){
 	
 	//Setting the input fields of the embed-link div
 	document.getElementById('firms-link').value = url;
-	document.getElementById('firms-html').value = '<iframe src ="' + urle + ' width="800" height="600" frameborder="0" marginheight="0"></iframe>';
+	document.getElementById('firms-html').value = '<iframe src ="' + urle + '" width="800" height="600" frameborder="0" marginheight="0"></iframe>';
 	document.getElementById('firms-embed').value = urle;
 };
 

@@ -67,22 +67,12 @@
 /**
 * LayerSwitcher control
 */
-.layer-switcher {
-    position: absolute;
-    top: 8px;
-    right: 0.5em;
-    text-align: left;
-}
-
-.layer-switcher .panel {
-	font-size: 12px;
-    padding-right: 50px;
-    border: 1px solid #cccccc;
-    background-color: white;
-    margin: 0;
-    display: none;
-}
-
+.layer-switcher { position: absolute; top: 5px; right: 5px; text-align: left; background-color: transparent; }
+.layer-switcher .panel { font-size: 10px; padding: 0 18px 5px 0; border: 1px solid #829ec4; border-collapse: collapse; background-color: white; margin: 0; display: none; }
+.layer-switcher button { background-color: transparent; background-position: 50% 50%; height: 1.375em; width: 1.375em; }
+.layer-switcher button { background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAOJJREFUeNpibJp35D/DAAImhgEGow4YdcCoA4a2A4Id1A+CMCVmsFBiuZaiiD2Ue3DtgZv2dAsBJMsbQBjEJjckWCixvHn+0UaQWG2iNQNQrIGckGCi1HIQgLLJCgkmSi2n1BFM1LCcEkcQdICdgSwDMZZjcwRIL8UOOHThMcPB849AzAZgYqsnpB6qpgGkB6SXKlFArCNItZykREjIEeRYTnI2xOUIci0HAUZyGqWgxGVvKMcALQkZyLWc7LoAZhHQEWAHkGs5RZURsoXkWk6RAyi1eLRFNOqAUQcMGgcABBgATiaSvgias38AAAAASUVORK5CYII='); }
+.layer-switcher .panel ul { margin: 0; padding-left: 5px; }
+.layer-switcher input { margin: 0 5px 1px 0; }
 
 /**
 * Atrribution control

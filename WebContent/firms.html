@@ -114,11 +114,12 @@
 						<div id="ftsTitle"></div>
 						<div id="ftsCloser" onclick="closeSearch();">✖</div>
 						<input type="search" name="filterSearch" id="ftsText" value=""
-							placeholder="Text to search for" autosave="FIRMSviewer" results="10"
+							placeholder="Full text search isn't yet available" autosave="FIRMSviewer" results="10"
 							onmouseover="this.focus();this.select();"
 							onkeyup="FV.fts.filter(false)"
 							onclick="FV.fts.filter(true)"
 							onchange="FV.fts.filter(true)"
+							disabled="disabled"
 						/>
 						<div id="ftsResult"></div>
 					</div>
