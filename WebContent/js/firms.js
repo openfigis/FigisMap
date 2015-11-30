@@ -93,7 +93,7 @@ FV.baseMapParams = function() {
 			FV.currentFeatureID = false;
 		},
 		tooltipHandler : function(feature){
-			return feature.get('TITLE');
+			return ((feature.get('DOMAIN') == 'fishery')? (feature.get('GEOREF') + ' ') : '') + feature.get('TITLE');
 		}
 	};
 	return this;
