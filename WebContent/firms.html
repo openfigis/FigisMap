@@ -28,7 +28,12 @@
 			var h = parseInt(window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight);
 			if ( !ise ) h = h - 100;
 			var dh = parseInt( parseInt(w) / 1.8 );
-			if ( dh > 768 ) dh = 768;
+// 			var dh = parseInt( parseInt(w) / 2.2 );
+// 			if ( dh > 512 ) {
+// 				dh = ( dh > 1024 ) ? 1024 : 512;
+// 			} else {
+// 				dh = ( h > 512 ) ? 512 : h;
+// 			}
 			var mw = document.getElementById('mapWrapper');
 			if ( dh > h ) {
 				mw.style.height = h + 'px';
@@ -36,11 +41,17 @@
 			} else {
 				mw.style.height = dh + 'px';
 				mw.style.bottom = 'auto';
+				h = dh;
+			}
+			with ( document.getElementById('map') ) {
+				style.width = w+'px';
+				style.height = h+'px';
 			}
 		}
 		function openSearch() {
 			var s = document.getElementById('ftsContainer');
 			if ( s.className == 'closed' ) {
+				FV.fts.init();
 				var l = document.getElementById('resourceSwitcher-'+FV.currentLayer()).nextSibling;
 				if ( l.nodeName != 'label' ) l = l.nextSibling;
 				var t = document.getElementById('ftsTitle');
@@ -52,12 +63,17 @@
 					focus();
 					select();
 				};
+				FV.fts.filter(true);
 			}
 		}
 		function closeSearch() {
 			var s = document.getElementById('ftsContainer');
 			if ( s.className == 'open' ) {
-				document.getElementById('ftsText').blur();
+				with (  document.getElementById('ftsText') ) {
+// 					value = '';
+					blur();
+				}
+				FV.fts.filter(true);
 				setTimeout("document.getElementById('ftsContainer').className='closed'",10);
 				setTimeout("document.getElementById('ftsContainer').setAttribute('class','closed')",10);
 			}
@@ -114,14 +130,13 @@
 						<div id="ftsTitle"></div>
 						<div id="ftsCloser" onclick="closeSearch();">✖</div>
 						<input type="search" name="filterSearch" id="ftsText" value=""
-							placeholder="Full text search isn't yet available" autosave="FIRMSviewer" results="10"
+							placeholder="Full text search" autosave="FIRMSviewer" results="10"
 							onmouseover="this.focus();this.select();"
 							onkeyup="FV.fts.filter(false)"
 							onclick="FV.fts.filter(true)"
 							onchange="FV.fts.filter(true)"
-							disabled="disabled"
 						/>
-						<div id="ftsResult"></div>
+						<div id="ftsResult" class="noResults"></div>
 					</div>
 				</div>
 				<div id="projectionPanel" class="sidePanel">
