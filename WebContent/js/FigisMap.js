@@ -1818,9 +1818,11 @@ FigisMap.renderer = function(options) {
 		//---------------------
 		//default controls (explicitly added for information and possible customization with options)
 		if ( ! pars.options.skipLoadingPanel ) myMap.addControl( new ol.control.LoadingPanel( pars.options.loadingPanelOptions ? pars.options.loadingPanelOptions : null ) );
-		myMap.addControl( new ol.control.Zoom() );
+		if ( ! pars.options.skipNavigation ) {
+			myMap.addControl( new ol.control.Zoom() );
+			myMap.addControl( new ol.control.ZoomToMaxExtent({ extent: boundsBox, zoom: 0 } ));
+		}
 // 		myMap.addControl( new ol.control.ZoomToMaxExtent({ extent: boundsBox, zoom: ((p.isFIGIS)? 0 : myMap.getView().getZoom())}) );
-		myMap.addControl( new ol.control.ZoomToMaxExtent({ extent: boundsBox, zoom: 0 } ));
 		myMap.addControl( new ol.control.Rotate() );
 		myMap.addControl( new ol.control.Attribution({collapsible : false, className : 'ol-attribution-baselayer'}) );
 		
