@@ -176,7 +176,7 @@ FigisMap.loadStaticMapData = function(md) {
 			FigisMap.rfbLayerDescriptors[n] = r.descriptor ? r.descriptor : new Object();
 			FigisMap.rfbLayerCountries[n] = ( r.members && r.members.country) ? r.members.country : [];
 		} catch(e) {
-			FigisMap.console( ['FigisMap.loadStaticMapData ERROR: ', e, r ] );
+			FigisMap.error( ['FigisMap.loadStaticMapData ERROR: ', e, r ] );
 		}
 	}
 	for ( var i = 0; i < md.statics['static'].length; i++ ) {
@@ -297,18 +297,16 @@ FigisMap.console = function( args, doAlert ) {
  */
 FigisMap.debug = function() {
 	if ( FigisMap.debugLevel ) {
-		var args = new Array(' --- debug information --- ');
-		for ( var i = 0; i < arguments.length; i++ ) args.push( arguments[i] );
-		FigisMap.console( args )
-	};
+		var args = [' --- debug information --- '].concat( Array.prototype.slice.call(arguments) );
+		FigisMap.console( args );
+	}
 }
 
 /**
  * FigisMap.error
  */
 FigisMap.error = function() {
-	var args = new Array(' --- error information --- ');
-	for ( var i = 0; i < arguments.length; i++ ) args.push( arguments[i] );
+	var args = [' --- ERROR information --- '].concat( Array.prototype.slice.call(arguments) );
 	FigisMap.console( args, (FigisMap.isTesting || FigisMap.isDeveloper) );
 }
 
@@ -1778,17 +1776,17 @@ FigisMap.renderer = function(options) {
 		})
 		//baselayer group
 		var baselayers = new ol.layer.Group({
-            'title': 'Base maps',
-            layers: [baselayer],
-        });
+			'title': 'Base Layer',
+			layers: [baselayer],
+		});
 		
 		//manage overlays
 		//---------------
 		//overlays group
 		var overlays = new ol.layer.Group({
-            'title': 'Overlays',
-            layers: [ ],
-        });
+			'title': 'Overlays',
+			layers: [ ],
+		});
 		
 		//Map widget
 		//----------
@@ -1807,13 +1805,12 @@ FigisMap.renderer = function(options) {
 				extent: boundsBox,
 				zoom : 1,
 				minZoom: 1,
-				zoomFactor: (projection == 4326 && !p.isFIGIS)? 3 : 2,
+				zoomFactor: 2, //(projection == 4326 && ! p.isFIGIS ) ? 3 : 2,
 				maxResolution : mapMaxRes
 			}),
 			controls: [],
 			logo: false
 		});
-		
 		if ( ! myMap.zoomToExtent ) myMap.zoomToExtent = function( boundsArray ) {  return FigisMap.ol.zoomToExtent( this, boundsArray) };
 		if ( ! myMap.zoomToMaxExtent ) myMap.zoomToMaxExtent = function() {  return FigisMap.ol.zoomToExtent( this, false ) };
 		
@@ -1822,7 +1819,8 @@ FigisMap.renderer = function(options) {
 		//default controls (explicitly added for information and possible customization with options)
 		if ( ! pars.options.skipLoadingPanel ) myMap.addControl( new ol.control.LoadingPanel( pars.options.loadingPanelOptions ? pars.options.loadingPanelOptions : null ) );
 		myMap.addControl( new ol.control.Zoom() );
-		myMap.addControl( new ol.control.ZoomToMaxExtent({ extent: boundsBox, zoom: ((p.isFIGIS)? 0 : myMap.getView().getZoom())}) );
+// 		myMap.addControl( new ol.control.ZoomToMaxExtent({ extent: boundsBox, zoom: ((p.isFIGIS)? 0 : myMap.getView().getZoom())}) );
+		myMap.addControl( new ol.control.ZoomToMaxExtent({ extent: boundsBox, zoom: 0 } ));
 		myMap.addControl( new ol.control.Rotate() );
 		myMap.addControl( new ol.control.Attribution({collapsible : false, className : 'ol-attribution-baselayer'}) );
 		
@@ -2048,6 +2046,10 @@ FigisMap.renderer = function(options) {
 	}
 	
 	function autoZoomEnd() {
+		if ( myMap.getSize()[0] == 0 ) {
+			var te = myMap.getTargetElement();
+			myMap.setSize( [ parseInt(te.style.width.replace(/[^0-9]/g,'') ),parseInt(te.style.height.replace(/[^0-9]/g,'') )] );
+		}
 		var bounds, gbounds = new Array();
 		for ( var i = 0; i < boundsArray.length; i++ ) if( boundsArray[i] ) gbounds.push( boundsArray[i] );
 		if ( gbounds.length != 0 ) {
@@ -2073,8 +2075,10 @@ FigisMap.renderer = function(options) {
 				var nbw = Math.abs( nb[0] - nb[2]);
 				if ( nbw > 35000000 ) {
 					nc = FigisMap.ol.reCenter( 4326, proj );
-					nc.lat = ( nb[3] + nb[1] )/2;
+					nc[1] = ( nb[3] + nb[1] )/2;
 				}
+// 			} else if ( proj == 4326 ) {
+// 				nc = [ parseInt((nb[2]+nb[0])/2), parseInt((nb[3]+nb[1])/2) ];
 			}
 			if ( nc ) myMap.getView().setCenter( nc );
 			FigisMap.debug( 'FigisMap.renderer autoZoom values:', { bounds: bounds, boundsSize: ol.extent.getSize(bounds), nb: nb, nc : nc, mapSize: myMap.getSize() } );
