@@ -135,6 +135,7 @@
 							onkeyup="FV.fts.filter(false)"
 							onclick="FV.fts.filter(true)"
 							onchange="FV.fts.filter(true)"
+							onsearch="FV.fts.filter(true)"
 						/>
 						<div id="ftsResult" class="noResults"></div>
 					</div>
@@ -143,11 +144,11 @@
 					<h4>Projection</h4>
 					<blockquote>
 						<div>
-							<input type="radio" name="SelectSRS" onchange="FV.switchProjection(this.value)" value="4326" checked="checked" id="SelectSRS4326" />
+							<input type="radio" name="SelectSRS" onchange="FV.switchProjection(this.value)" value="4326" id="SelectSRS4326" />
 							<label for="SelectSRS4326">WGS84 (4326)</label>
 						</div>
 						<div>
-							<input type="radio" name="SelectSRS" onchange="FV.switchProjection(this.value)" value="3349" id="SelectSRS3349" />
+							<input type="radio" name="SelectSRS" onchange="FV.switchProjection(this.value)" value="3349" checked="checked" id="SelectSRS3349" />
 							<label for="SelectSRS3349">Mercator (3857)</label>
 						</div>
 					<blockquote>

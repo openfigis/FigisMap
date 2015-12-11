@@ -424,7 +424,7 @@ FigisMap.ol.reBound = function( proj0, proj1, bounds ) {
 		var source = new ol.proj.Projection({ code: 'EPSG:'+proj0 });
 		var target = new ol.proj.Projection({ code: 'EPSG:'+proj1 });
 		var extentGeom = ol.geom.Polygon.fromExtent(bounds);
-		extentGeom.transform(source, target);		
+		extentGeom.transform(source, target);
 		ans = extentGeom.getExtent();
 	}
 	if ( proj1 == 4326 ) ans = FigisMap.ol.dateline( ans );
@@ -435,9 +435,10 @@ FigisMap.ol.reBound = function( proj0, proj1, bounds ) {
 /**
  * FigisMap.ol.dateline
  * @param b (a bounds array)
- * @return an object representing a geographic extent (with left/bottom/right/top properties)
+ * @return an object representing a geographic extent (a bounds array)
  */
-FigisMap.ol.dateline = function( b ) {
+FigisMap.ol.dateline = function( a ) {
+	var b = { left: a[0], top: a[1], right: a[2], bottom: a[3] };
 	if ( b.left < 0 && b.right > 0 && ( b.right - b.left ) < 300  ) {
 		// do nothing
 	} else {
@@ -454,7 +455,8 @@ FigisMap.ol.dateline = function( b ) {
 			}
 		}
 	}
-	return b;
+	//return b;
+	return [ b.left, b.top, b.right, b.bottom ];
 };
 
 /**
@@ -579,10 +581,26 @@ FigisMap.ol.gmlBbox = function( xmlDoc ) {
  */
 FigisMap.ol.zoomToExtent = function( myMap, bounds ) {
 	var v = myMap.getView();
-	if (( ! bounds ) || (typeof bounds == 'undefined') ) bounds = [-180,-90,180,90];
+	var maxExtent = v.getProjection().getExtent();
+	if (( ! bounds ) || (typeof bounds == 'undefined') || ! ( bounds.constructor === Array) ) {
+		bounds = maxExtent;
+	} else {
+		if ( maxExtent[0]>bounds[0] ) bounds[0] = maxExtent[0];
+		if ( maxExtent[1]>bounds[1] ) bounds[1] = maxExtent[1];
+		if ( maxExtent[2]<bounds[2] ) bounds[2] = maxExtent[2];
+		if ( maxExtent[3]<bounds[3] ) bounds[3] = maxExtent[3];
+		var hasExtent = false;
+		for ( var i = 0; i < bounds.length; i++ ) hasExtent = hasExtent || ( bounds[i] != maxExtent[i] );
+		if ( hasExtent ) hasExtent = FigisMap.ol.isValidExtent( bounds );
+		if ( ! hasExtent ) bounds = maxExtent;
+	}
 	v.fit( bounds, myMap.getSize() );
 };
-
+FigisMap.ol.isValidExtent = function( bounds ) {
+	if ( bounds[0] >= bounds[2] || bounds[1] >= bounds[3] ) return false;
+	for ( var i = 0; i < bounds.length; i++ ) if ( ( ! bounds[i] ) || ! isFinite( bounds[i] ) ) return false;
+	return true;
+};
 /**
  * --------------------------------------------------------------------------------------
  * FigisMap Parser functions
@@ -1803,8 +1821,8 @@ FigisMap.renderer = function(options) {
 				projection : viewProj,
 				center : ol.extent.getCenter(boundsBox),
 				extent: boundsBox,
-				zoom : 1,
-				minZoom: 1,
+				zoom : 0,
+				minZoom: 0,
 				zoomFactor: 2, //(projection == 4326 && ! p.isFIGIS ) ? 3 : 2,
 				maxResolution : mapMaxRes
 			}),
@@ -1927,13 +1945,13 @@ FigisMap.renderer = function(options) {
 			myMap.zoomToMaxExtent();
 			FigisMap.debug('Render for p.global');
 			//finalizeMap(); @eblondel moved to single call
-		} else if ( p.extent || p.center || p.zoom ) {
+		} else if ( p.extent ) {
+			myMap.zoomToExtent(FigisMap.ol.reBound(p.dataProj, projection, p.extent));
+		} else if ( p.center || p.zoom ) {
 			//!OL2 myMap.zoomToMaxExtent();
-			myMap.zoomToExtent( boundsBox );
+			//myMap.zoomToExtent( boundsBox );
+			myMap.zoomToMaxExtent();
 			FigisMap.debug('Render for Extent', p.extent, 'zoomLevel', p.zoom, 'Center', p.center );
-			
-			//!OL2 if ( p.extent ) myMap.zoomToExtent( FigisMap.ol.reBound( p.dataProj, projection, p.extent ), false);
-			if( p.extent ) myMap.zoomToExtent(FigisMap.ol.reBound(p.dataProj, projection, p.extent));
 			
 			if( p.zoom ) myMap.getView().setZoom(p.zoom);
 			

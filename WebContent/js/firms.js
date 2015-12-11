@@ -108,15 +108,22 @@ FV.baseMapParams.prototype.setProjection = function( p ) { if( p ) this.projecti
 */
 FV.baseMapParams.prototype.setExtent = function( e ) {
 	if ( e ) {
-		if ( e.constructor === Array ) e = e.join(',');
-		FV.lastExtent = e;
+		if ( e.constructor === Array ) FV.lastExtent = e;
 	}
 	if ( typeof FV.lastExtent == 'boolean' ) {
+		FV.lastExtent = null;
 		this.extent = null;
+		this.global = true;
 		return false;
 	}
-	if ( ! FV.lastExtent ) FV.lastExtent = FV.myMap ? FV.myMap.getView().calculateExtent(FV.myMap.getSize()).join(',') : null;
-	this.extent = FV.lastExtent ? FV.lastExtent.split(',') : null;
+	if ( ! FV.lastExtent ) {
+		if ( FV.myMap ) {
+			FV.lastExtent = FV.getExtent();
+		} else {
+			FV.lastExtent = null;
+		}
+	}
+	this.extent = FV.lastExtent ? FV.lastExtent : null;
 	return true;
 };
 /*
@@ -132,7 +139,7 @@ FV.baseMapParams.prototype.setZoom = function( z ) {
 		return true;
 	}
 	if ( typeof FV.lastZoom == 'boolean' ) {
-		this.zoom = 1;
+		this.zoom = FV.lastExtent ? FV.myMap.getView().getZoom() : 1;
 		return false;
 	}
 	FV.lastZoom = FV.myMap ? FV.myMap.getView().getZoom() : 1;
@@ -151,7 +158,9 @@ FV.baseMapParams.prototype.setLayer = function( l ) {
 		}
 	}
 };
-
+FV.getExtent = function() {
+	return ( FV.myMap ) ? FV.myMap.getView().calculateExtent(FV.myMap.getSize()) : null;
+};
 /**
 * FV.addViewer function.
 *       extent -> The extent to zoom after the layer is rendered (optional).
@@ -165,8 +174,8 @@ FV.addViewer = function(extent, zoom, projection, layer){
 	var pars = new FV.baseMapParams();
 	
 	pars.setProjection( projection );
-	pars.setZoom( zoom );
 	pars.setExtent( extent );
+	pars.setZoom( zoom );
 	if ( ! layer ) layer = FV.currentLayer();
 	pars.setLayer( layer );
 	
@@ -189,7 +198,7 @@ FV.onDrawEnd = false;
 **/
 FV.setViewer = function(extent, zoom, projection){
 	if ( ! projection ) projection = FV.currentProjection();
-	if (!zoom || zoom == 0) zoom = 1;
+	//if (! zoom || zoom == 0) zoom = 1;
 	FV.addViewer(extent, zoom, projection,FV.currentLayer());
 };
 
@@ -201,18 +210,23 @@ FV.currentProjection = function( p ) {
 		document.getElementById('SelectSRS4326').checked = true;
 		cp = '4326';
 	}
-	if ( ! p ) return cp;
+	FV.lastProjection = parseInt( cp );
+	if ( ! p ) return FV.lastProjection;
 	p = String( p )
 	if ( p != cp ) {
 		document.getElementById('SelectSRS4326').checked = ( p == '4326');
 		document.getElementById('SelectSRS3349').checked = ( p == '3349');
 	}
-	return p;
+	FV.lastProjection = parseInt( p );
+	return FV.lastProjection;
 };
 FV.switchProjection = function( p ) {
-	FV.lastExtent = false;
+	var op = FV.lastProjection;
+	p = FV.currentProjection( p );
+	var oe = FV.getExtent();
+	var ne = FigisMap.ol.reBound(op,p,oe);
+	FV.lastExtent = FigisMap.ol.isValidExtent(ne) ? ne : false;
 	FV.lastZoom = false;
-	FV.currentProjection( p );
 	FV.setViewer();
 };
 
@@ -373,13 +387,12 @@ FV.fsAutoMap = function( fid, ftitle, fpars ) {
 };
 
 /*
-* Full Text Search - FV.fts object
+* FirmsViewer Full Text Search - FV.fts object
 */
 FV.fts = {
 	timeout : false,
 	lastValue: '',
 	inputField: false,
-	prefix : 'fv_',
 	showResult: false,
 	progress: false,
 	minLength : 3
@@ -487,15 +500,16 @@ FV.fts.deliveryParseLine = function( node ) {
 	var ret = {};
 	var ns = node.children;
 	if ( ns.length == 0 ) return false;
+	var pfx = 'fts_';
 	for ( var j = 0; j < ns.length; j++ ) {
 		var n = ns[j];
-		ret[ FV.fts.prefix + n.getAttribute('name') ] = ( n.nodeName == 'arr' ) ? n.children[0].childNodes[0].nodeValue : n.childNodes[0].nodeValue;
+		ret[ pfx + n.getAttribute('name') ] = ( n.nodeName == 'arr' ) ? n.children[0].childNodes[0].nodeValue : n.childNodes[0].nodeValue;
 	}
 	var p = document.createElement('p');
-	var t = ret[ FV.fts.prefix + 'title' ];
-	if ( ret[ FV.fts.prefix + 'georeference' ] ) t = ret[ FV.fts.prefix + 'georeference' ] + ' ' + t;
-	if ( ret[ FV.fts.prefix + 'figisid' ] ) {
-		t = '<a href="javascript:FV.setViewerResource('+ret[ FV.fts.prefix + 'figisid' ] +')">' + t + '</a>';
+	var t = ret[ pfx + 'title' ];
+	if ( ret[ pfx + 'georeference' ] ) t = ret[ pfx + 'georeference' ] + ' ' + t;
+	if ( ret[ pfx + 'figisid' ] ) {
+		t = '<a href="javascript:FV.setViewerResource('+ret[ pfx + 'figisid' ] +')">' + t + '</a>';
 	}
 	p.innerHTML = t;
 	return p;
