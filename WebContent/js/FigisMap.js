@@ -1419,6 +1419,28 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 };
 
 /**
+ * FigisMap.rnd.addGraticule
+ * An function to configure a graticule (based on OpenLayers 3 API, which sligthly
+ * differs from OpenLayers 2, in the sense the graticule is not anymore a vecto layer,
+ * this means the graticule is drawn each time the map is recomposed, on top of all
+ * layers)
+ * 
+ * UNDER INVESTIGATION
+ *
+ * @param {ol.Map} the current map
+ */
+FigisMap.rnd.addGraticule = function(map) {
+	var graticule = new ol.Graticule({
+		strokeStyle: new ol.style.Stroke({
+			color: 'rgba(51,51,51,0.5)',
+			width: 1,
+			opacity: 0.5
+		})
+	});
+	graticule.setMap(map);
+};
+
+/**
  * FigisMap.rnd.sort4map
  * @param layers
  * @param p
@@ -1818,7 +1840,7 @@ FigisMap.renderer = function(options) {
 			target : p.target.id,
 			layers: [baselayers, overlays],
 			view : new ol.View({
-				projection : viewProj,
+				projection : viewProj.getCode(), //when specifying 'viewProj' only, graticule breaks map (OL3 bug)
 				center : ol.extent.getCenter(boundsBox),
 				extent: boundsBox,
 				zoom : 0,
@@ -1851,6 +1873,13 @@ FigisMap.renderer = function(options) {
 		if ( ! pars.options.skipScale ) if (projection != 3031) {
 			myMap.addControl( new ol.control.ScaleLine({className: 'ol-scale-line-metric', units: 'metric', maxWidth: 180}) );
 			myMap.addControl( new ol.control.ScaleLine({className: 'ol-scale-line-nautical', units: 'nautical', maxWidth: 180}) );
+		}
+		
+		//Managing graticule
+		//------------------
+		//!OL2 if ( projection == 4326 ) myMap.addControl( new OpenLayers.Control.Graticule({ visible: !! pars.isVME, layerName: FigisMap.label('Coordinates Grid', p) }) );	
+		if ( projection == 4326 && !!p.isVME ){
+			FigisMap.rnd.addGraticule(myMap);
 		}
 		
 		//Managing layers 
@@ -1928,16 +1957,6 @@ FigisMap.renderer = function(options) {
 			l.inMap = true;
 		}
 		FigisMap.debug( 'FigisMap.renderer layers array, after filling map:', layers );
-		
-		// GRATICULE
-		//!OL2 if ( projection == 4326 ) myMap.addControl( new OpenLayers.Control.Graticule({ visible: !! pars.isVME, layerName: FigisMap.label('Coordinates Grid', p) }) );
-		/* TODO OL3
-		if( projection == 4326 && !!pars.isVME ) {
-			var graticule = new ol.Graticule({
-			  map: myMap,
-			  intervals: [45, 30, 20, 10, 5, 2, 1]
-			});
-		}*/
 		
 		// handlig the zoom/center/extent
 		if ( p.global ) {
