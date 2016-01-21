@@ -421,8 +421,8 @@ FigisMap.ol.reBound = function( proj0, proj1, bounds ) {
 		return [-12400000,-12400000, 12400000,12400000];
 	}
 	if ( ! ans ) {
-		var source = new ol.proj.Projection({ code: 'EPSG:'+proj0 });
-		var target = new ol.proj.Projection({ code: 'EPSG:'+proj1 });
+		var source = new ol.proj.get('EPSG:'+proj0);
+		var target = new ol.proj.get('EPSG:'+proj1);
 		var extentGeom = ol.geom.Polygon.fromExtent(bounds);
 		extentGeom.transform(source, target);
 		ans = extentGeom.getExtent();
@@ -482,8 +482,8 @@ FigisMap.ol.reCenter = function( proj0, proj1, center ) {
 	if( proj1 == 3031 ) return [156250.0, 703256.0];
 	
 	var newCenter;
-	var source = new ol.proj.Projection({ code: 'EPSG:'+proj0 });
-	var dest = new ol.proj.Projection({ code: 'EPSG:'+proj1 });
+	var source = new ol.proj.get('EPSG:'+proj0);
+	var dest = new ol.proj.get('EPSG:'+proj1);
 	var centerPoint = new ol.geom.Point(center, 'XY');
 	centerPoint.transform(source, dest);
 	newCenter = centerPoint.getCoordinates();
@@ -1328,7 +1328,7 @@ FigisMap.rnd.mouseControl = function( map, pars ) {
 		coordinateFormat: function(coord){
 			return 'lon: '+coord[0].toFixed(2)+', lat: '+coord[1].toFixed(2);
 		},
-		projection: new ol.proj.Projection({ code: 'EPSG:4326' })
+		projection: new ol.proj.get('EPSG:4326')
 	});
 	map.addControl(mouseControl);
 };
@@ -1830,17 +1830,15 @@ FigisMap.renderer = function(options) {
 		
 		//Map widget
 		//----------
-		var viewProj = new ol.proj.Projection({
-			code : 'EPSG:' + projection,
-			global: projection != 3031 ? true : false, //required to properly wrap the date line (when wrapX is true)
-			extent: myBounds
-		});
+		var viewProj = new ol.proj.get('EPSG:' + projection);
+		if(projection != 3031) viewProj.setGlobal(true); //in case, to properly wrap the date line (when wrapX is true)
+		viewProj.setExtent(myBounds);
 		
 		myMap = new ol.Map({
 			target : p.target.id,
 			layers: [baselayers, overlays],
 			view : new ol.View({
-				projection : viewProj.getCode(), //when specifying 'viewProj' only, graticule breaks map (OL3 bug)
+				projection : viewProj,
 				center : ol.extent.getCenter(boundsBox),
 				extent: boundsBox,
 				zoom : 0,
