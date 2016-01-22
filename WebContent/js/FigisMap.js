@@ -2132,11 +2132,11 @@ FigisMap.renderer = function(options) {
 			
 			/* Fix for centering limitations to circularity in OL3 with 4326 */
 			if ( proj == 4326 ) {
-				while ( bounds[0]>360 ) {
+				while ( bounds[0]>180 ) {
 					bounds[0] -= 360;
 					bounds[2] -= 360;
 				}
-				while ( bounds[2]<0 ) {
+				while ( bounds[2]<-180 ) {
 					bounds[0] += 360;
 					bounds[2] += 360;
 				}
