@@ -1430,12 +1430,44 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
  * @param {ol.Map} the current map
  */
 FigisMap.rnd.addGraticule = function(map) {
+
+	var lonFormatter = function(lon) {
+		var formattedLon = Math.abs(Math.round(lon * 100) / 100);
+  		formattedLon += "°00'";
+  		formattedLon += (lon < 0) ? 'W' : ((lon > 0) ? 'E' : '');
+  	return formattedLon;
+	};
+
+	var latFormatter = function(lat) {
+  		var formattedLat = Math.abs(Math.round(lat * 100) / 100);
+  		formattedLat += "°00'";
+  		formattedLat += (lat < 0) ? 'S' : ((lat > 0) ? 'N' : '');
+  		return formattedLat;
+	};
+
 	var graticule = new ol.Graticule({
 		strokeStyle: new ol.style.Stroke({
 			color: 'rgba(51,51,51,0.5)',
 			width: 1,
 			opacity: 0.5
-		})
+		}),
+  		lonLabelStyle: new ol.style.Text({
+    			font: '10px Verdana',
+    			fill: new ol.style.Fill({
+      				color: 'rgba(0,0,0,1)'
+    			})
+  		}),
+  		latLabelStyle: new ol.style.Text({
+    			font: '10px Verdana',
+			offsetX: -2,
+    			textBaseline: 'bottom',
+    			fill: new ol.style.Fill({
+      				color: 'rgba(0,0,0,1)'
+    			})
+  		}),
+  		showLabels: true,
+  		lonLabelFormatter: lonFormatter,
+  		latLabelFormatter: latFormatter,
 	});
 	graticule.setMap(map);
 };
