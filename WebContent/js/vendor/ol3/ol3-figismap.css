@@ -30,7 +30,7 @@
 */
 .ol-scale-line-metric {
 	background:none;
-	bottom: 30px;
+	bottom: 31px;
 	left: 8px;
 	padding: 2px;
 	position: absolute
@@ -48,6 +48,7 @@
 	border: 2px solid #000;
 	border-top:none;
 	color: #000;
+	font-family: Verdana, Helvetica, sans-serif;
 	font-size: 10px;
 	text-align: center;
 	margin: 1px;
@@ -58,6 +59,7 @@
 	border: 2px solid #000;
 	border-bottom:none;
 	color: #000;
+	font-family: Verdana, Helvetica, sans-serif;
 	font-size: 10px;
 	text-align: center;
 	margin: 1px;
@@ -68,7 +70,8 @@
 * LayerSwitcher control
 */
 .layer-switcher { position: absolute; top: 5px; right: 5px; text-align: left; background-color: transparent; }
-.layer-switcher .panel { font-size: 10px; padding: 0 18px 5px 0; border: 1px solid #829ec4; border-collapse: collapse; background-color: white; margin: 0; display: none; }
+.layer-switcher .panel { background-color: white; border: 1px solid #829ec4; border-collapse: collapse; display: none; font-size: 11px; padding: 0 18px 5px 0; }
+.layer-switcher .panel { background-color: rgba(255,255,255,.7); border-radius: 4px; }
 .layer-switcher button { background-color: transparent; background-position: 50% 50%; height: 1.375em; width: 1.375em; }
 .layer-switcher button { background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAOJJREFUeNpibJp35D/DAAImhgEGow4YdcCoA4a2A4Id1A+CMCVmsFBiuZaiiD2Ue3DtgZv2dAsBJMsbQBjEJjckWCixvHn+0UaQWG2iNQNQrIGckGCi1HIQgLLJCgkmSi2n1BFM1LCcEkcQdICdgSwDMZZjcwRIL8UOOHThMcPB849AzAZgYqsnpB6qpgGkB6SXKlFArCNItZykREjIEeRYTnI2xOUIci0HAUZyGqWgxGVvKMcALQkZyLWc7LoAZhHQEWAHkGs5RZURsoXkWk6RAyi1eLRFNOqAUQcMGgcABBgATiaSvgias38AAAAASUVORK5CYII='); }
 .layer-switcher .panel ul { margin: 0; padding-left: 5px; }
@@ -173,18 +176,21 @@
 
 .ol-attribution-baselayer {
 	text-align:left;
-	top:.5em;
-	left:50px;
+	top:.3em;
+	left:45px;
 	max-width:calc(100% - 1.3em);
 	font-size:12px;
+	font-family: 'Liberation Sans', Arial, Helvetica, sans-serif;
 }
 .ol-attribution-baselayer ul {
 	margin:0;
-	padding:0 .5em;
+	padding:0;
 	color:#000;
 	text-shadow:0 0 2px #fff
 }
 .ol-attribution-baselayer li {
+	margin:0;
+	padding:0;
 	display:inline;
 	list-style:none;
 	line-height:inherit
@@ -221,8 +227,8 @@
 }
 	
 .ol-attribution-baselayer.ol-uncollapsible{
-	top:0.5em;
-	left:50px;
+	top:0.3em;
+	left:45px;
 	border-radius:4px 0 0;
 	height:1.1em;
 	line-height:1em

@@ -51,6 +51,7 @@ FV.loadingPanelOptions = {
 FV.baseMapParams = function() {
 	this.target = 'map';
 	this.context = 'FAO-FIRMSViewer';
+	this.mapSize = 'L';
 	this.projection = FV.currentProjection();
 	this.watermark = {
 		src: FigisMap.httpBaseRoot + 'img/firms/watermark.png',
@@ -76,7 +77,7 @@ FV.baseMapParams = function() {
 // 	this.associated = [ FigisMap.fifao.rfb ];
 	this.popup = {
 		resourceHandler : function(feature) {
-			return '/figis/moniker.html/firmsviewerpopup/'
+			return '/figis/moniker.html/firmspopup/'
 				+ feature.get('DOMAIN') + '/' + feature.get('FIGIS_ID')
 				+ '/' + feature.get('LANG')
 			;
@@ -93,7 +94,7 @@ FV.baseMapParams = function() {
 			FV.currentFeatureID = false;
 		},
 		tooltipHandler : function(feature){
-			return feature.get('TITLE');
+			return ((feature.get('DOMAIN') == 'fishery')? (feature.get('GEOREF') + ' ') : '') + feature.get('TITLE');
 		}
 	};
 	return this;
@@ -107,15 +108,22 @@ FV.baseMapParams.prototype.setProjection = function( p ) { if( p ) this.projecti
 */
 FV.baseMapParams.prototype.setExtent = function( e ) {
 	if ( e ) {
-		if ( e.constructor === Array ) e = e.join(',');
-		FV.lastExtent = e;
+		if ( e.constructor === Array ) FV.lastExtent = e;
 	}
 	if ( typeof FV.lastExtent == 'boolean' ) {
+		FV.lastExtent = null;
 		this.extent = null;
+		this.global = true;
 		return false;
 	}
-	if ( ! FV.lastExtent ) FV.lastExtent = FV.myMap ? FV.myMap.getView().calculateExtent(FV.myMap.getSize()).join(',') : null;
-	this.extent = FV.lastExtent ? FV.lastExtent.split(',') : null;
+	if ( ! FV.lastExtent ) {
+		if ( FV.myMap ) {
+			FV.lastExtent = FV.getExtent();
+		} else {
+			FV.lastExtent = null;
+		}
+	}
+	this.extent = FV.lastExtent ? FV.lastExtent : null;
 	return true;
 };
 /*
@@ -131,7 +139,7 @@ FV.baseMapParams.prototype.setZoom = function( z ) {
 		return true;
 	}
 	if ( typeof FV.lastZoom == 'boolean' ) {
-		this.zoom = 1;
+		this.zoom = FV.lastExtent ? FV.myMap.getView().getZoom() : 1;
 		return false;
 	}
 	FV.lastZoom = FV.myMap ? FV.myMap.getView().getZoom() : 1;
@@ -150,7 +158,9 @@ FV.baseMapParams.prototype.setLayer = function( l ) {
 		}
 	}
 };
-
+FV.getExtent = function() {
+	return ( FV.myMap ) ? FV.myMap.getView().calculateExtent(FV.myMap.getSize()) : null;
+};
 /**
 * FV.addViewer function.
 *       extent -> The extent to zoom after the layer is rendered (optional).
@@ -164,8 +174,8 @@ FV.addViewer = function(extent, zoom, projection, layer){
 	var pars = new FV.baseMapParams();
 	
 	pars.setProjection( projection );
-	pars.setZoom( zoom );
 	pars.setExtent( extent );
+	pars.setZoom( zoom );
 	if ( ! layer ) layer = FV.currentLayer();
 	pars.setLayer( layer );
 	
@@ -173,6 +183,7 @@ FV.addViewer = function(extent, zoom, projection, layer){
 };
 FV.draw = function( pars ) {
 	closeSearch();
+	if ( ! pars.distribution ) if ( ! pars.associated  ) if ( ! pars.intersecting ) if (! pars.extent) pars.global = true;
 	FV.myMap = FigisMap.draw( pars );
 	FV.lastExtent = null;
 	FV.lastZoom = null;
@@ -187,7 +198,7 @@ FV.onDrawEnd = false;
 **/
 FV.setViewer = function(extent, zoom, projection){
 	if ( ! projection ) projection = FV.currentProjection();
-	if (!zoom || zoom == 0) zoom = 1;
+	//if (! zoom || zoom == 0) zoom = 1;
 	FV.addViewer(extent, zoom, projection,FV.currentLayer());
 };
 
@@ -199,18 +210,23 @@ FV.currentProjection = function( p ) {
 		document.getElementById('SelectSRS4326').checked = true;
 		cp = '4326';
 	}
-	if ( ! p ) return cp;
+	FV.lastProjection = parseInt( cp );
+	if ( ! p ) return FV.lastProjection;
 	p = String( p )
 	if ( p != cp ) {
 		document.getElementById('SelectSRS4326').checked = ( p == '4326');
 		document.getElementById('SelectSRS3349').checked = ( p == '3349');
 	}
-	return p;
+	FV.lastProjection = parseInt( p );
+	return FV.lastProjection;
 };
 FV.switchProjection = function( p ) {
-	FV.lastExtent = false;
+	var op = FV.lastProjection;
+	p = FV.currentProjection( p );
+	var oe = FV.getExtent();
+	var ne = FigisMap.ol.reBound(op,p,oe);
+	FV.lastExtent = FigisMap.ol.isValidExtent(ne) ? ne : false;
 	FV.lastZoom = false;
-	FV.currentProjection( p );
 	FV.setViewer();
 };
 
@@ -333,23 +349,13 @@ FV.setViewerResource = function(id) {
 	FigisMap.rnd.showPopupForCoordinates(popup, feature, feature.getGeometry().getCoordinates());
 };
 
-
-FV.mapResource = function( fid, ac, t ) {
-	FV.lastExtent = false;
-	var pars = new FV.baseMapParams();
-	pars.setZoom( 1 );
-	pars.setLayer( FV.currentLayer() );
-	if ( ! pars.distribution ) pars.distribution = [];
-	pars.distribution.push({ layer:FigisMap.fifao.spd, filter:"ALPHACODE='" + ac +"'", title: t, style:"species_style_852D36", autoZoom : true });
-	FV.onDrawEnd = function() { setTimeout('FV.setViewerResource('+fid+')',10) };
-	FV.draw( pars );
-};
-FV.mapFishery = function( fid, fpars ) {
+FV.fsAutoMap = function( fid, ftitle, fpars ) {
 	if ( typeof fpars == 'string' ) eval( ' fpars = ' + fpars );
 	FV.lastExtent = false;
 	var pars = new FV.baseMapParams();
 	pars.setZoom( 1 );
 	pars.setLayer( FV.currentLayer() );
+	pars.zoom = null;
 	if ( fpars.distribution ) {
 		if ( ! pars.distribution ) pars.distribution = [];
 		if ( !( pars.distribution.constructor === Array ) ) pars.distribution = [ pars.distribution ];
@@ -374,44 +380,50 @@ FV.mapFishery = function( fid, fpars ) {
 			pars.associated.push( fpars.associated[i] );
 		}
 	}
-	FV.onDrawEnd = function() { setTimeout('FV.setViewerResource('+fid+')',10) };
+	if ( ftitle ) pars.attribution = '<a href="javascript:FV.addViewer()">✕</a> <a href="javascript:FV.setViewerResource('+fid+')" title="Show popup">'+ftitle+'</a>';
+	//FV.onDrawEnd = function() { setTimeout('FV.setViewerResource('+fid+')',10) };
 	FV.draw( pars );
+	setTimeout('FV.currentFeatureID = '+fid,10);
 };
 
 /*
-* Full Text Search - FV.fts object
+* FirmsViewer Full Text Search - FV.fts object
 */
 FV.fts = {
 	timeout : false,
 	lastValue: '',
-	inputField: document.getElementById('ftsText'),
-	showResult: document.getElementById('ftsResult'),
-	progress: false
+	inputField: false,
+	showResult: false,
+	progress: false,
+	minLength : 3
 };
+
+FV.fts.init = function(){
+	FV.fts.inputField = document.getElementById('ftsText');
+	FV.fts.showResult = document.getElementById('ftsResult');
+}
 
 FV.fts.filter = function(force) {
 	if (FV.fts.timeout) clearTimeout( FV.fts.timeout );
-	if (force) {
+	if ( force ) {
 		FV.fts.execute();
 	} else {
-		FV.fts.timeout = setTimeout('FV.fts.execute()', 500);
+		var text = String( FV.fts.inputField.value );
+		if ( text == FV.fts.lastValue ) return void(0);
+		FV.fts.lastValue = text;
+		FV.fts.timeout = setTimeout( FV.fts.execute, 500);
 	}
 }
 
 FV.fts.execute = function() {
 	FV.fts.timeout = false;
 	var text = FV.fts.inputField.value;
-	if ( text == '') {
-		FV.fts.showResult.innerHTML = '';
-		FV.fts.lastValue = '';
-		if ( FV.fts.progress ) FV.fts.progress.style.visibility = 'hidden';
-	} if ( text.length < 3 ) {
-		// do nothing
-	} else if ( text != FV.fts.lastValue) {
-		FV.fts.lastValue = text;
+	if ( text.length < FV.fts.minLength ) {
+		FV.fts.deliveryClose( 'Enter at least '+ FV.fts.minLength +' characters');
+	} else {
 		if ( FV.fts.progress ) FV.fts.progress.style.visibility = 'visible';
 		var xmlHttp = FigisMap.getXMLHttpRequest();
-		var url = FigisMap.currentSiteURI + "/figis/solr/firmsviewer?search=" + escape(text);
+		var url = FigisMap.currentSiteURI + "/figis/firmsviewersearch/" + FV.currentLayer() + '/'+ escape(text);
 		if ( xmlHttp ) {
 			xmlHttp.onreadystatechange = function() {
 				if ( xmlHttp.readyState != 4 ) return void(0);
@@ -421,12 +433,84 @@ FV.fts.execute = function() {
 			xmlHttp.send('');
 		}
 	}
-}
+};
 
-FV.fts.delivery = function(doc) {
+FV.fts.delivery = function( xmlHttp ) {
 	if ( FV.fts.inputField.value != FV.fts.lastValue) return;
-	var root = doc.documentElement;
-	FV.fts.showResult.innerHTML = root.getAttribute('result');
 	if ( FV.fts.progress ) FV.fts.progress.style.visibility = 'hidden';
-}
+	var doc = xmlHttp.responseXML;
+	if ( ! doc ) return void(0);
+	if ( ! doc.documentElement ) return void(0);
+	var resultnodes = doc.documentElement.getElementsByTagName('result');
+	var results = [];
+	var hasResult = ( resultnodes && resultnodes.length && resultnodes.length > 0 );
+	if ( hasResult ) results = resultnodes[0].getElementsByTagName('doc');
+	var hasResults = ( results.length > 0 );
+	FV.fts.deliveryClean();
+	if ( hasResults ) {
+		FV.fts.showResult.className = 'haveResults';
+		var dom = FV.currentLayer();
+		var found = 0;
+		for ( var i = 0; i < results.length; i++ ) {
+			var p = FV.fts.deliveryParseLine( results[i] );
+			if ( p ) {
+				FV.fts.deliveryAppend( p );
+				found++;
+			}
+		}
+		var tot = parseInt(resultnodes[0].getAttribute('numFound'));
+		if ( ! isNaN(tot) ) {
+			var c = '';
+			if ( tot == found ) {
+				c = tot == 1 ? 'One result found.' : 'All '+tot+' matching results are listed.';
+			} else {
+				c = '' + found + ' out of ' + tot + ' total results are listed.';
+			}
+			FV.fts.deliveryComment( c );
+		}
+	} else {
+		FV.fts.showResult.className = 'haveResults';
+		FV.fts.deliveryComment( 'No matching results' );
+	}
+};
 
+FV.fts.deliveryClose = function( comment ) {
+	FV.fts.deliveryClean();
+	FV.fts.showResult.className = 'noResults';
+	if ( FV.fts.progress ) FV.fts.progress.style.visibility = 'hidden';
+	if ( comment ) FV.fts.deliveryComment( comment );
+};
+
+FV.fts.deliveryAppend = function( node ) { FV.fts.showResult.appendChild( node ) };
+
+FV.fts.deliveryComment = function( c ) {
+	var p = document.createElement('p');
+	p.setAttribute('class','ftsComment');
+	p.innerHTML = c;
+	FV.fts.deliveryAppend( p );
+};
+
+FV.fts.deliveryClean = function() {
+	while ( FV.fts.showResult.firstChild ) {
+		FV.fts.showResult.removeChild( FV.fts.showResult.firstChild );
+	}
+};
+
+FV.fts.deliveryParseLine = function( node ) {
+	var ret = {};
+	var ns = node.children;
+	if ( ns.length == 0 ) return false;
+	var pfx = 'fts_';
+	for ( var j = 0; j < ns.length; j++ ) {
+		var n = ns[j];
+		ret[ pfx + n.getAttribute('name') ] = ( n.nodeName == 'arr' ) ? n.children[0].childNodes[0].nodeValue : n.childNodes[0].nodeValue;
+	}
+	var p = document.createElement('p');
+	var t = ret[ pfx + 'title' ];
+	if ( ret[ pfx + 'georeference' ] ) t = ret[ pfx + 'georeference' ] + ' ' + t;
+	if ( ret[ pfx + 'figisid' ] ) {
+		t = '<a href="javascript:FV.setViewerResource('+ret[ pfx + 'figisid' ] +')">' + t + '</a>';
+	}
+	p.innerHTML = t;
+	return p;
+};
