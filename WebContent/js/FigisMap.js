@@ -2130,6 +2130,18 @@ FigisMap.renderer = function(options) {
 		if ( bounds ) {
 			var proj = parseInt( myMap.getView().getProjection().getCode().replace(/^EPSG:/,'') );
 			
+			/* Fix for centering limitations to circularity in OL3 with 4326 */
+			if ( proj == 4326 ) {
+				while ( bounds[0]>360 ) {
+					bounds[0] -= 360;
+					bounds[2] -= 360;
+				}
+				while ( bounds[2]<0 ) {
+					bounds[0] += 360;
+					bounds[2] += 360;
+				}
+			}
+			
 			var nb = FigisMap.ol.reBound( p.dataProj, proj, bounds );
 			
 			//!OL2 myMap.zoomToExtent( nb, false );
