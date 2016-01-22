@@ -1,8 +1,8 @@
-/**
+﻿/**
 *	FigisMap API
 *	Description: Generalized map call facility for the FIGIS application and factsheet maps
 *	Authors: M. Balestra, E. Blondel, A. Gentile, A. Fabiani, T. Di Pisa.
-*	UFT-8 glyph: 
+*	UFT-8 glyph: ?
 */
 
 
@@ -176,7 +176,7 @@ FigisMap.loadStaticMapData = function(md) {
 			FigisMap.rfbLayerDescriptors[n] = r.descriptor ? r.descriptor : new Object();
 			FigisMap.rfbLayerCountries[n] = ( r.members && r.members.country) ? r.members.country : [];
 		} catch(e) {
-			FigisMap.console( ['FigisMap.loadStaticMapData ERROR: ', e, r ] );
+			FigisMap.error( ['FigisMap.loadStaticMapData ERROR: ', e, r ] );
 		}
 	}
 	for ( var i = 0; i < md.statics['static'].length; i++ ) {
@@ -297,18 +297,16 @@ FigisMap.console = function( args, doAlert ) {
  */
 FigisMap.debug = function() {
 	if ( FigisMap.debugLevel ) {
-		var args = new Array(' --- debug information --- ');
-		for ( var i = 0; i < arguments.length; i++ ) args.push( arguments[i] );
-		FigisMap.console( args )
-	};
+		var args = [' --- debug information --- '].concat( Array.prototype.slice.call(arguments) );
+		FigisMap.console( args );
+	}
 }
 
 /**
  * FigisMap.error
  */
 FigisMap.error = function() {
-	var args = new Array(' --- error information --- ');
-	for ( var i = 0; i < arguments.length; i++ ) args.push( arguments[i] );
+	var args = [' --- ERROR information --- '].concat( Array.prototype.slice.call(arguments) );
 	FigisMap.console( args, (FigisMap.isTesting || FigisMap.isDeveloper) );
 }
 
@@ -423,10 +421,10 @@ FigisMap.ol.reBound = function( proj0, proj1, bounds ) {
 		return [-12400000,-12400000, 12400000,12400000];
 	}
 	if ( ! ans ) {
-		var source = new ol.proj.Projection({ code: 'EPSG:'+proj0 });
-		var target = new ol.proj.Projection({ code: 'EPSG:'+proj1 });
+		var source = new ol.proj.get('EPSG:'+proj0);
+		var target = new ol.proj.get('EPSG:'+proj1);
 		var extentGeom = ol.geom.Polygon.fromExtent(bounds);
-		extentGeom.transform(source, target);		
+		extentGeom.transform(source, target);
 		ans = extentGeom.getExtent();
 	}
 	if ( proj1 == 4326 ) ans = FigisMap.ol.dateline( ans );
@@ -437,9 +435,10 @@ FigisMap.ol.reBound = function( proj0, proj1, bounds ) {
 /**
  * FigisMap.ol.dateline
  * @param b (a bounds array)
- * @return an object representing a geographic extent (with left/bottom/right/top properties)
+ * @return an object representing a geographic extent (a bounds array)
  */
-FigisMap.ol.dateline = function( b ) {
+FigisMap.ol.dateline = function( a ) {
+	var b = { left: a[0], top: a[1], right: a[2], bottom: a[3] };
 	if ( b.left < 0 && b.right > 0 && ( b.right - b.left ) < 300  ) {
 		// do nothing
 	} else {
@@ -456,7 +455,8 @@ FigisMap.ol.dateline = function( b ) {
 			}
 		}
 	}
-	return b;
+	//return b;
+	return [ b.left, b.top, b.right, b.bottom ];
 };
 
 /**
@@ -482,8 +482,8 @@ FigisMap.ol.reCenter = function( proj0, proj1, center ) {
 	if( proj1 == 3031 ) return [156250.0, 703256.0];
 	
 	var newCenter;
-	var source = new ol.proj.Projection({ code: 'EPSG:'+proj0 });
-	var dest = new ol.proj.Projection({ code: 'EPSG:'+proj1 });
+	var source = new ol.proj.get('EPSG:'+proj0);
+	var dest = new ol.proj.get('EPSG:'+proj1);
 	var centerPoint = new ol.geom.Point(center, 'XY');
 	centerPoint.transform(source, dest);
 	newCenter = centerPoint.getCoordinates();
@@ -581,10 +581,26 @@ FigisMap.ol.gmlBbox = function( xmlDoc ) {
  */
 FigisMap.ol.zoomToExtent = function( myMap, bounds ) {
 	var v = myMap.getView();
-	if (( ! bounds ) || (typeof bounds == 'undefined') ) bounds = [-180,-90,180,90];
+	var maxExtent = v.getProjection().getExtent();
+	if (( ! bounds ) || (typeof bounds == 'undefined') || ! ( bounds.constructor === Array) ) {
+		bounds = maxExtent;
+	} else {
+		if ( maxExtent[0]>bounds[0] ) bounds[0] = maxExtent[0];
+		if ( maxExtent[1]>bounds[1] ) bounds[1] = maxExtent[1];
+		if ( maxExtent[2]<bounds[2] ) bounds[2] = maxExtent[2];
+		if ( maxExtent[3]<bounds[3] ) bounds[3] = maxExtent[3];
+		var hasExtent = false;
+		for ( var i = 0; i < bounds.length; i++ ) hasExtent = hasExtent || ( bounds[i] != maxExtent[i] );
+		if ( hasExtent ) hasExtent = FigisMap.ol.isValidExtent( bounds );
+		if ( ! hasExtent ) bounds = maxExtent;
+	}
 	v.fit( bounds, myMap.getSize() );
 };
-
+FigisMap.ol.isValidExtent = function( bounds ) {
+	if ( bounds[0] >= bounds[2] || bounds[1] >= bounds[3] ) return false;
+	for ( var i = 0; i < bounds.length; i++ ) if ( ( ! bounds[i] ) || ! isFinite( bounds[i] ) ) return false;
+	return true;
+};
 /**
  * --------------------------------------------------------------------------------------
  * FigisMap Parser functions
@@ -1216,10 +1232,10 @@ FigisMap.rnd.maxResolution = function( proj, pars ) {
 	proj = parseInt( proj );
 	var size = String(pars.mapSize).toUpperCase();
 	switch ( size ) {
-		case 'XS': break; // width ≤ 280
-		case 'S' : break; // width ≤ 400
-		case 'M' : break; // width ≤ 640
-		case 'L' : break; // width ≤ 810
+		case 'XS': break; // width = 280
+		case 'S' : break; // width = 400
+		case 'M' : break; // width = 640
+		case 'L' : break; // width = 810
 		default  : size = FigisMap.defaults.mapSize;
 	}
 	var base, offset;
@@ -1312,7 +1328,7 @@ FigisMap.rnd.mouseControl = function( map, pars ) {
 		coordinateFormat: function(coord){
 			return 'lon: '+coord[0].toFixed(2)+', lat: '+coord[1].toFixed(2);
 		},
-		projection: new ol.proj.Projection({ code: 'EPSG:4326' })
+		projection: new ol.proj.get('EPSG:4326')
 	});
 	map.addControl(mouseControl);
 };
@@ -1400,6 +1416,60 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 		} );
 	}
 	return layers;
+};
+
+/**
+ * FigisMap.rnd.addGraticule
+ * An function to configure a graticule (based on OpenLayers 3 API, which sligthly
+ * differs from OpenLayers 2, in the sense the graticule is not anymore a vecto layer,
+ * this means the graticule is drawn each time the map is recomposed, on top of all
+ * layers)
+ * 
+ * UNDER INVESTIGATION
+ *
+ * @param {ol.Map} the current map
+ */
+FigisMap.rnd.addGraticule = function(map) {
+
+	var lonFormatter = function(lon) {
+		var formattedLon = Math.abs(Math.round(lon * 100) / 100);
+  		formattedLon += "°00'";
+  		formattedLon += (lon < 0) ? 'W' : ((lon > 0) ? 'E' : '');
+  	return formattedLon;
+	};
+
+	var latFormatter = function(lat) {
+  		var formattedLat = Math.abs(Math.round(lat * 100) / 100);
+  		formattedLat += "°00'";
+  		formattedLat += (lat < 0) ? 'S' : ((lat > 0) ? 'N' : '');
+  		return formattedLat;
+	};
+
+	var graticule = new ol.Graticule({
+		strokeStyle: new ol.style.Stroke({
+			color: 'rgba(51,51,51,0.5)',
+			width: 1,
+			opacity: 0.5
+		}),
+  		lonLabelStyle: new ol.style.Text({
+    			font: '10px Verdana',
+    			fill: new ol.style.Fill({
+      				color: 'rgba(0,0,0,1)'
+    			})
+  		}),
+  		latLabelStyle: new ol.style.Text({
+    			font: '10px Verdana',
+			offsetX: -2,
+    			textBaseline: 'bottom',
+    			fill: new ol.style.Fill({
+      				color: 'rgba(0,0,0,1)'
+    			})
+  		}),
+  		showLabels: true,
+  		lonLabelFormatter: lonFormatter,
+  		latLabelFormatter: latFormatter,
+	});
+	graticule.setMap(map);
 };
 
 /**
@@ -1778,25 +1848,23 @@ FigisMap.renderer = function(options) {
 		})
 		//baselayer group
 		var baselayers = new ol.layer.Group({
-            'title': 'Base maps',
-            layers: [baselayer],
-        });
+			'title': 'Base Layer',
+			layers: [baselayer],
+		});
 		
 		//manage overlays
 		//---------------
 		//overlays group
 		var overlays = new ol.layer.Group({
-            'title': 'Overlays',
-            layers: [ ],
-        });
+			'title': 'Overlays',
+			layers: [ ],
+		});
 		
 		//Map widget
 		//----------
-		var viewProj = new ol.proj.Projection({
-			code : 'EPSG:' + projection,
-			global: projection != 3031 ? true : false, //required to properly wrap the date line (when wrapX is true)
-			extent: myBounds
-		});
+		var viewProj = new ol.proj.get('EPSG:' + projection);
+		if(projection != 3031) viewProj.setGlobal(true); //in case, to properly wrap the date line (when wrapX is true)
+		viewProj.setExtent(myBounds);
 		
 		myMap = new ol.Map({
 			target : p.target.id,
@@ -1805,15 +1873,14 @@ FigisMap.renderer = function(options) {
 				projection : viewProj,
 				center : ol.extent.getCenter(boundsBox),
 				extent: boundsBox,
-				zoom : 1,
-				minZoom: 1,
-				zoomFactor: (projection == 4326 && !p.isFIGIS)? 3 : 2,
+				zoom : 0,
+				minZoom: 0,
+				zoomFactor: 2, //(projection == 4326 && ! p.isFIGIS ) ? 3 : 2,
 				maxResolution : mapMaxRes
 			}),
 			controls: [],
 			logo: false
 		});
-		
 		if ( ! myMap.zoomToExtent ) myMap.zoomToExtent = function( boundsArray ) {  return FigisMap.ol.zoomToExtent( this, boundsArray) };
 		if ( ! myMap.zoomToMaxExtent ) myMap.zoomToMaxExtent = function() {  return FigisMap.ol.zoomToExtent( this, false ) };
 		
@@ -1821,8 +1888,11 @@ FigisMap.renderer = function(options) {
 		//---------------------
 		//default controls (explicitly added for information and possible customization with options)
 		if ( ! pars.options.skipLoadingPanel ) myMap.addControl( new ol.control.LoadingPanel( pars.options.loadingPanelOptions ? pars.options.loadingPanelOptions : null ) );
-		myMap.addControl( new ol.control.Zoom() );
-		myMap.addControl( new ol.control.ZoomToMaxExtent({ extent: boundsBox, zoom: ((p.isFIGIS)? 0 : myMap.getView().getZoom())}) );
+		if ( ! pars.options.skipNavigation ) {
+			myMap.addControl( new ol.control.Zoom() );
+			myMap.addControl( new ol.control.ZoomToMaxExtent({ extent: boundsBox, zoom: 0 } ));
+		}
+// 		myMap.addControl( new ol.control.ZoomToMaxExtent({ extent: boundsBox, zoom: ((p.isFIGIS)? 0 : myMap.getView().getZoom())}) );
 		myMap.addControl( new ol.control.Rotate() );
 		myMap.addControl( new ol.control.Attribution({collapsible : false, className : 'ol-attribution-baselayer'}) );
 		
@@ -1833,6 +1903,13 @@ FigisMap.renderer = function(options) {
 		if ( ! pars.options.skipScale ) if (projection != 3031) {
 			myMap.addControl( new ol.control.ScaleLine({className: 'ol-scale-line-metric', units: 'metric', maxWidth: 180}) );
 			myMap.addControl( new ol.control.ScaleLine({className: 'ol-scale-line-nautical', units: 'nautical', maxWidth: 180}) );
+		}
+		
+		//Managing graticule
+		//------------------
+		//!OL2 if ( projection == 4326 ) myMap.addControl( new OpenLayers.Control.Graticule({ visible: !! pars.isVME, layerName: FigisMap.label('Coordinates Grid', p) }) );	
+		if ( projection == 4326 && !!p.isVME ){
+			FigisMap.rnd.addGraticule(myMap);
 		}
 		
 		//Managing layers 
@@ -1911,29 +1988,19 @@ FigisMap.renderer = function(options) {
 		}
 		FigisMap.debug( 'FigisMap.renderer layers array, after filling map:', layers );
 		
-		// GRATICULE
-		//!OL2 if ( projection == 4326 ) myMap.addControl( new OpenLayers.Control.Graticule({ visible: !! pars.isVME, layerName: FigisMap.label('Coordinates Grid', p) }) );
-		/* TODO OL3
-		if( projection == 4326 && !!pars.isVME ) {
-			var graticule = new ol.Graticule({
-			  map: myMap,
-			  intervals: [45, 30, 20, 10, 5, 2, 1]
-			});
-		}*/
-		
 		// handlig the zoom/center/extent
 		if ( p.global ) {
 			//!OL2 myMap.zoomToMaxExtent();
 			myMap.zoomToMaxExtent();
 			FigisMap.debug('Render for p.global');
 			//finalizeMap(); @eblondel moved to single call
-		} else if ( p.extent || p.center || p.zoom ) {
+		} else if ( p.extent ) {
+			myMap.zoomToExtent(FigisMap.ol.reBound(p.dataProj, projection, p.extent));
+		} else if ( p.center || p.zoom ) {
 			//!OL2 myMap.zoomToMaxExtent();
-			myMap.zoomToExtent( boundsBox );
+			//myMap.zoomToExtent( boundsBox );
+			myMap.zoomToMaxExtent();
 			FigisMap.debug('Render for Extent', p.extent, 'zoomLevel', p.zoom, 'Center', p.center );
-			
-			//!OL2 if ( p.extent ) myMap.zoomToExtent( FigisMap.ol.reBound( p.dataProj, projection, p.extent ), false);
-			if( p.extent ) myMap.zoomToExtent(FigisMap.ol.reBound(p.dataProj, projection, p.extent));
 			
 			if( p.zoom ) myMap.getView().setZoom(p.zoom);
 			
@@ -2048,6 +2115,10 @@ FigisMap.renderer = function(options) {
 	}
 	
 	function autoZoomEnd() {
+		if ( myMap.getSize()[0] == 0 ) {
+			var te = myMap.getTargetElement();
+			myMap.setSize( [ parseInt(te.style.width.replace(/[^0-9]/g,'') ),parseInt(te.style.height.replace(/[^0-9]/g,'') )] );
+		}
 		var bounds, gbounds = new Array();
 		for ( var i = 0; i < boundsArray.length; i++ ) if( boundsArray[i] ) gbounds.push( boundsArray[i] );
 		if ( gbounds.length != 0 ) {
@@ -2073,8 +2144,10 @@ FigisMap.renderer = function(options) {
 				var nbw = Math.abs( nb[0] - nb[2]);
 				if ( nbw > 35000000 ) {
 					nc = FigisMap.ol.reCenter( 4326, proj );
-					nc.lat = ( nb[3] + nb[1] )/2;
+					nc[1] = ( nb[3] + nb[1] )/2;
 				}
+// 			} else if ( proj == 4326 ) {
+// 				nc = [ parseInt((nb[2]+nb[0])/2), parseInt((nb[3]+nb[1])/2) ];
 			}
 			if ( nc ) myMap.getView().setCenter( nc );
 			FigisMap.debug( 'FigisMap.renderer autoZoom values:', { bounds: bounds, boundsSize: ol.extent.getSize(bounds), nb: nb, nc : nc, mapSize: myMap.getSize() } );
