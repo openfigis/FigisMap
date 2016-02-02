@@ -573,29 +573,50 @@ FigisMap.ol.gmlBbox = function( xmlDoc ) {
 	}
 };
 
+
+/**
+ * Convenience method to refit an extent that might not be valid
+ * @param bounds
+ * @param the new bounds
+ * 
+ */
+FigisMap.ol.reFit = function(myMap, bounds) {
+	
+	var v = myMap.getView();
+	var maxExtent = v.getProjection().getExtent();
+
+	if ( maxExtent[0]>bounds[0] ) bounds[0] = maxExtent[0];
+	if ( maxExtent[1]>bounds[1] ) bounds[1] = maxExtent[1];
+	if ( maxExtent[2]<bounds[2] ) bounds[2] = maxExtent[2];
+	if ( maxExtent[3]<bounds[3] ) bounds[3] = maxExtent[3];
+	var hasExtent = false;
+	for ( var i = 0; i < bounds.length; i++ ) hasExtent = hasExtent || ( bounds[i] != maxExtent[i] );
+	if ( hasExtent ) hasExtent = FigisMap.ol.isValidExtent( bounds );
+	if ( ! hasExtent ) bounds = maxExtent;
+
+	return bounds;
+}
+
+
 /**
  * Convenience method to zoom to a given extent
  * @param map
  * @param bounds
+ * @param validateExtent
  * 
  */
-FigisMap.ol.zoomToExtent = function( myMap, bounds ) {
+FigisMap.ol.zoomToExtent = function( myMap, bounds, validateExtent ) {
 	var v = myMap.getView();
 	var maxExtent = v.getProjection().getExtent();
 	if (( ! bounds ) || (typeof bounds == 'undefined') || ! ( bounds.constructor === Array) ) {
 		bounds = maxExtent;
-	} else {
-		if ( maxExtent[0]>bounds[0] ) bounds[0] = maxExtent[0];
-		if ( maxExtent[1]>bounds[1] ) bounds[1] = maxExtent[1];
-		if ( maxExtent[2]<bounds[2] ) bounds[2] = maxExtent[2];
-		if ( maxExtent[3]<bounds[3] ) bounds[3] = maxExtent[3];
-		var hasExtent = false;
-		for ( var i = 0; i < bounds.length; i++ ) hasExtent = hasExtent || ( bounds[i] != maxExtent[i] );
-		if ( hasExtent ) hasExtent = FigisMap.ol.isValidExtent( bounds );
-		if ( ! hasExtent ) bounds = maxExtent;
 	}
+
+	if (validateExtent) bounds = FigisMap.ol.reFit(myMap, bounds);
+	
 	v.fit( bounds, myMap.getSize() );
 };
+
 FigisMap.ol.isValidExtent = function( bounds ) {
 	if ( bounds[0] >= bounds[2] || bounds[1] >= bounds[3] ) return false;
 	for ( var i = 0; i < bounds.length; i++ ) if ( ( ! bounds[i] ) || ! isFinite( bounds[i] ) ) return false;
@@ -1881,8 +1902,8 @@ FigisMap.renderer = function(options) {
 			controls: [],
 			logo: false
 		});
-		if ( ! myMap.zoomToExtent ) myMap.zoomToExtent = function( boundsArray ) {  return FigisMap.ol.zoomToExtent( this, boundsArray) };
-		if ( ! myMap.zoomToMaxExtent ) myMap.zoomToMaxExtent = function() {  return FigisMap.ol.zoomToExtent( this, false ) };
+		if ( ! myMap.zoomToExtent ) myMap.zoomToExtent = function( boundsArray, validateExtent ) {  return FigisMap.ol.zoomToExtent( this, boundsArray, validateExtent) };
+		if ( ! myMap.zoomToMaxExtent ) myMap.zoomToMaxExtent = function() {  return FigisMap.ol.zoomToExtent( this, false, true ) };
 		
 		// Managing OL controls
 		//---------------------
@@ -1995,10 +2016,8 @@ FigisMap.renderer = function(options) {
 			FigisMap.debug('Render for p.global');
 			//finalizeMap(); @eblondel moved to single call
 		} else if ( p.extent ) {
-			myMap.zoomToExtent(FigisMap.ol.reBound(p.dataProj, projection, p.extent));
+			myMap.zoomToExtent(FigisMap.ol.reBound(p.dataProj, projection, p.extent), true);
 		} else if ( p.center || p.zoom ) {
-			//!OL2 myMap.zoomToMaxExtent();
-			//myMap.zoomToExtent( boundsBox );
 			myMap.zoomToMaxExtent();
 			FigisMap.debug('Render for Extent', p.extent, 'zoomLevel', p.zoom, 'Center', p.center );
 			
@@ -2130,10 +2149,33 @@ FigisMap.renderer = function(options) {
 		if ( bounds ) {
 			var proj = parseInt( myMap.getView().getProjection().getCode().replace(/^EPSG:/,'') );
 			
-			var nb = FigisMap.ol.reBound( p.dataProj, proj, bounds );
+			/* Fix for centering limitations to circularity in OL3 with 4326 */
+			if ( proj == 4326 ) {
+				while ( bounds[0]>180 ) {
+					bounds[0] -= 360;
+					bounds[2] -= 360;
+				}
+				while ( bounds[2]<-180 ) {
+					bounds[0] += 360;
+					bounds[2] += 360;
+				}
+			}
 			
+			var nb = FigisMap.ol.reBound( p.dataProj, proj, bounds );
+
+			// 02/02/2016 - @eblondel - reconfigure ZoomToMaxExtent control?
+			// in principle, not to be applied (zoomToMaxExtent is different from reset)
+			/*var controls = myMap.getControls().getArray();
+			for(var i=0; i< controls.length; i++) {
+				var control = controls[i];
+				if(control instanceof ol.control.ZoomToMaxExtent) {
+					myMap.getControls().getArray()[i].setExtent(nb);
+				}
+			}*/
+
+			//zoom to extent
 			//!OL2 myMap.zoomToExtent( nb, false );
-			myMap.zoomToExtent( nb );
+			myMap.zoomToExtent( nb, false );
 			
 			var nc = false;
 			if ( proj == 3031 ) {

@@ -58,6 +58,43 @@ ol.inherits(ol.control.ZoomToMaxExtent, ol.control.Control);
 
 
 /**
+ * Sets the extent
+ * @param {array} extent
+ *
+ */
+ol.control.ZoomToMaxExtent.prototype.setExtent = function(extent) {
+	this.extent_ = extent;
+}
+
+/**
+ * Gets the extent
+ * @return the extent
+ */
+ol.control.ZoomToMaxExtent.prototype.getExtent = function() {
+	return this.extent_;
+}
+
+
+/**
+ * Sets the zoom
+ * @param {integer} zoom 
+ *
+ */
+ol.control.ZoomToMaxExtent.prototype.setZoom = function(zoom) {
+	this.zoom_ = zoom;
+}
+
+
+/**
+ * Gets the zoom
+ * @return the zoom
+ */
+ol.control.ZoomToMaxExtent.prototype.getZoom = function() {
+	return this.zoom_;
+}
+
+
+/**
  * @param {goog.events.BrowserEvent} event The event to handle
  * @private
  */
