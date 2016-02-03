@@ -270,8 +270,11 @@ function setSpeciesPage(elinkDiv, urlLink, htmlLink){
 			}
 		}
 		if(extent != null && extent != undefined && extent != ""){
-			var bbox = extent.split(",");
 			//OL2 mapExtent = new OpenLayers.Bounds(bbox[0], bbox[1], bbox[2], bbox[3]);
+			var bbox = extent.split(",");
+			for (var i=0; i<bbox.length; i++) {
+    				bbox[i] = parseFloat(bbox[i]);
+			}
 			mapExtent = [bbox[0], bbox[1], bbox[2], bbox[3]]
 		}  
 		if(zoom != null && zoom != undefined && zoom != ""){

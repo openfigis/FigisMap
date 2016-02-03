@@ -283,6 +283,13 @@ FV.setViewerPage = function() {
 		
 		if ( layer && layer != "" ) FV.currentLayer( layer );
 		if ( extent == "" ) extent = null;
+		if ( extent != null ) {
+			var extent = extent.split(",");
+			for (var i=0; i<extent.length; i++) {
+    				extent[i] = parseFloat(extent[i]);
+			}
+		}
+
 		if ( zoom == '' ) zoom = null;
 		if ( zoom != null ) zoom = parseInt( zoom );
 		if ( prj == '' ) prj = null;
