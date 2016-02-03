@@ -141,8 +141,8 @@ function setRFBPage(elinkDiv, urlLink, htmlLink) {
 		
 		if ( extent == "" ) extent = null;
 		if ( extent != null ) {
-			var bbox = extent.split(",");
 			//!OL2 extent = new OpenLayers.Bounds(bbox[0], bbox[1], bbox[2], bbox[3]);
+			bbox = extent.split(",").map(Number);
 			extent = bbox;
 		}
 		
