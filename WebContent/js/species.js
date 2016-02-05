@@ -110,9 +110,10 @@ function getStyle(count){ return 'species_style_' + getColor(count); }
 /**
 * function addSpecies
 *       extent -> The extent to zoom after the layer is rendered (optional).
+*	center -> The center to zoom on after the layer is rendered (optional).
 *       zoom -> The zoom level of the map (optional).
 **/
-function addSpecies(extent, zoom, elinkDiv, urlLink, htmlLink){
+function addSpecies(extent, center, zoom, elinkDiv, urlLink, htmlLink){
 		
 	if (RS.prop.qtFields == 0) {
 		loadme();
@@ -212,7 +213,14 @@ function addSpecies(extent, zoom, elinkDiv, urlLink, htmlLink){
 	}
 	
 	/**
-	* 2. Special map zoom
+	* 2. center
+	**/
+	if(center != null || center != undefined || center != ""){
+		pars.center = center;
+	}
+
+	/**
+	* 3. Special map zoom
 	**/
 	if(zoom != null || zoom != undefined || zoom != ""){
 		pars.zoom = zoom;
@@ -243,8 +251,7 @@ function addSpecies(extent, zoom, elinkDiv, urlLink, htmlLink){
 */
 function setSpeciesPage(elinkDiv, urlLink, htmlLink){
 
-	var mapExtent = null;
-	var mapZoom = null;
+	var mapExtent, mapCenter, mapZoom;
 	
 	if(location.search.indexOf("?") != -1 && (location.search.indexOf("species") != -1 
 		|| location.search.indexOf("extent") != -1 || location.search.indexOf("zoom") != -1 || location.search.indexOf("prj") != -1)){
@@ -259,6 +266,7 @@ function setSpeciesPage(elinkDiv, urlLink, htmlLink){
 			switch ( param[0] ) {
 				case "species"	: layers = param[1]; break;
 				case "extent"	: extent = param[1]; break;
+				case "center"	: center = param[1]; break;
 				case "zoom"	: zoom = param[1]; break;
 				case "prj"	: prj = param[1]; break;
 			}
@@ -276,7 +284,12 @@ function setSpeciesPage(elinkDiv, urlLink, htmlLink){
     				bbox[i] = parseFloat(bbox[i]);
 			}
 			mapExtent = [bbox[0], bbox[1], bbox[2], bbox[3]]
-		}  
+		} 
+		if(center != null && center != undefined && center != ""){
+			mapCenter = center.split(",");
+			mapCenter[0] = parseFloat(mapCenter[0]);
+			mapCenter[1] = parseFloat(mapCenter[1]); 
+		}
 		if(zoom != null && zoom != undefined && zoom != ""){
 			mapZoom = zoom;
 		}
@@ -284,7 +297,7 @@ function setSpeciesPage(elinkDiv, urlLink, htmlLink){
 			document.getElementById("SelectSRS").value = prj;
 		}
 		/* Load the Species using the request parameters. */
-		addSpecies(mapExtent, mapZoom, elinkDiv, urlLink, htmlLink);
+		addSpecies(mapExtent, mapCenter, mapZoom, elinkDiv, urlLink, htmlLink);
 	} else {
 		/* Initializing the basis species page (map and properties and options) */ 
 		loadme(elinkDiv, urlLink, htmlLink);
@@ -318,6 +331,7 @@ function setSpeciesEmbedLink(targetId, specLinkId, specHtmlId){
 		baseURL += "?species=" + species.join(',');
 		//!OL2 baseURL += "&extent=" + myMap.getExtent().toBBOX();
 		baseURL += "&extent=" + myMap.getView().calculateExtent(myMap.getSize()).join(',');
+		baseURL += "&center=" + myMap.getView().getCenter().join(',');
 		//!OL2 baseURL += "&zoom=" + myMap.getZoom();
 		baseURL += "&zoom=" + myMap.getView().getZoom();
 		baseURL += "&prj=" + prj;

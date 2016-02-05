@@ -52,7 +52,7 @@
 			<a href="#speciesSelectorPanel">Select species</a>
 			    
 			<label id="lblSRS" for="SelectSRS">Select Projection:</label>
-			<select id="SelectSRS" onchange="addSpecies(null,null,'e-link', 'url-link', 'html-link')">
+			<select id="SelectSRS" onchange="addSpecies(null, null, null, 'e-link', 'url-link', 'html-link')">
 				<option value='4326' default>WGS84 (4326)</option>
 				<option value='3349'>Mercator (3857)</option>
 				<option value='3031'>South Polar (3031)</option>
@@ -83,7 +83,7 @@
 		<!--div id="FigisMapN10086-legend" class="FigisMapLegend"></div-->
 		<div id="disclaimer">
 			<a name="speciesSelectorPanel"></a>
-			<form name="SearchForm" action="javascript:addSpecies(null,null,'e-link', 'url-link', 'html-link')" id="refSearchRealForm">
+			<form name="SearchForm" action="javascript:addSpecies(null, null, null,'e-link', 'url-link', 'html-link')" id="refSearchRealForm">
 				<input type="hidden" name="dslist[0]" value="resource" />
 				<input type="hidden" name="refxml" value="false" />
 				<input type="hidden" name="octrl" value="Status_and_trends:reload" />
