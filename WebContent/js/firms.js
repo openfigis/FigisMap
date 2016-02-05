@@ -100,6 +100,8 @@ FV.baseMapParams = function() {
 	return this;
 };
 FV.baseMapParams.prototype.setProjection = function( p ) { if( p ) this.projection = p; };
+
+
 /*
 	FV.baseMapParams.prototype.setExtent
 	@param e: extent, as array or string
@@ -126,6 +128,35 @@ FV.baseMapParams.prototype.setExtent = function( e ) {
 	this.extent = FV.lastExtent ? FV.lastExtent : null;
 	return true;
 };
+
+/*
+	FV.baseMapParams.prototype.setCenter
+	@param c: center, as array
+	Uses and sets FV.lastCenter
+	In case FV.lastCenter is boolean (false) doesn't set any center.
+*/
+FV.baseMapParams.prototype.setCenter = function( c ) {
+	if ( c ) {
+		if ( c.constructor === Array ) FV.lastCenter = c;
+	}
+	if ( typeof FV.lastCenter == 'boolean' ) {
+		FV.lastCenter = null;
+		this.center = null;
+		return false;
+	}
+	if ( ! FV.lastCenter ) {
+		if ( FV.myMap ) {
+			FV.lastCenter = FV.getExtent();
+		} else {
+			FV.lastCenter = null;
+		}
+	}
+	this.center = FV.lastCenter ? FV.lastCenter : null;
+	return true;
+};
+
+
+
 /*
 	FV.baseMapParams.prototype.setZoom
 	@param z: zoom, integer
@@ -158,23 +189,31 @@ FV.baseMapParams.prototype.setLayer = function( l ) {
 		}
 	}
 };
+
 FV.getExtent = function() {
 	return ( FV.myMap ) ? FV.myMap.getView().calculateExtent(FV.myMap.getSize()) : null;
 };
+
+FV.getCenter = function() {
+	return ( FV.myMap ) ? FV.myMap.getView().getCenter() : null;
+};
+
 /**
 * FV.addViewer function.
 *       extent -> The extent to zoom after the layer is rendered (optional).
+* 	center -> The center to zoom on after the layer is rendered (optional).
 *       zoom -> The zoom level of the map (optional).
 *       mapProjection -> The map projection (optional).
 *       layer -> the FIRMS layer to use as cluster layer
 **/
-FV.addViewer = function(extent, zoom, projection, layer){
+FV.addViewer = function(extent, center, zoom, projection, layer){
 
 	//parameters
 	var pars = new FV.baseMapParams();
 	
 	pars.setProjection( projection );
 	pars.setExtent( extent );
+	pars.setCenter( center );
 	pars.setZoom( zoom );
 	if ( ! layer ) layer = FV.currentLayer();
 	pars.setLayer( layer );
@@ -186,6 +225,7 @@ FV.draw = function( pars ) {
 	if ( ! pars.distribution ) if ( ! pars.associated  ) if ( ! pars.intersecting ) if (! pars.extent) pars.global = true;
 	FV.myMap = FigisMap.draw( pars );
 	FV.lastExtent = null;
+	FV.lastCenter = null;
 	FV.lastZoom = null;
 	FV.currentFeatureID = false;
 };
@@ -193,13 +233,14 @@ FV.onDrawEnd = false;
 /**
 * FV.setViewer function.
 *       extent -> The extent to zoom after the layer is rendered (optional).
+* 	center -> The center to zoom on after the layer is rendered (optional).
 *       zoom -> The zoom level of the map (optional).
 *       mapProjection -> The map projection (optional).
 **/
-FV.setViewer = function(extent, zoom, projection){
+FV.setViewer = function(extent, center, zoom, projection){
 	if ( ! projection ) projection = FV.currentProjection();
 	//if (! zoom || zoom == 0) zoom = 1;
-	FV.addViewer(extent, zoom, projection,FV.currentLayer());
+	FV.addViewer(extent, center, zoom, projection,FV.currentLayer());
 };
 
 FV.currentProjection = function( p ) {
@@ -263,7 +304,7 @@ FV.switchLayer = function( l ) {
 */
 FV.setViewerPage = function() {
 	
-	var layer, extent, zoom, prj, featureid;
+	var layer, extent, center, zoom, prj, featureid;
 	
 	if ( location.search.indexOf("layer=") != -1 ){
 		
@@ -275,6 +316,7 @@ FV.setViewerPage = function() {
 			switch ( param[0] ) {
 				case "layer"	: layer = param[1]; break;
 				case "extent"	: extent = param[1]; break;
+				case "center"	: center = param[1]; break;
 				case "zoom"	: zoom = parseInt(param[1]); break;
 				case "prj"	: prj = param[1]; break;
 				case "feat"	: featureid = param[1]; break;
@@ -284,10 +326,17 @@ FV.setViewerPage = function() {
 		if ( layer && layer != "" ) FV.currentLayer( layer );
 		if ( extent == "" ) extent = null;
 		if ( extent != null ) {
-			var extent = extent.split(",");
+			extent = extent.split(",");
 			for (var i=0; i<extent.length; i++) {
     				extent[i] = parseFloat(extent[i]);
 			}
+		}
+
+		if( center == "") center = null;
+		if( center != null) {
+			center = center.split(",");
+			center[0] = parseFloat(center[0]);
+			center[1] = parseFloat(center[1]);
 		}
 
 		if ( zoom == '' ) zoom = null;
@@ -302,7 +351,7 @@ FV.setViewerPage = function() {
 	}
 	
 	//Load the Viewer using the request parameters
-	FV.addViewer( extent, zoom, prj, layer);
+	FV.addViewer( extent, center, zoom, prj, layer);
 };
 
 /**
@@ -316,6 +365,7 @@ FV.setViewerEmbedLink = function(){
 	var url = location.href.replace(/#.*$/,'').replace(/\?.*$/,'')
 		+ "?layer=" + FV.currentLayer()
 		+ "&extent=" + FV.myMap.getView().calculateExtent(FV.myMap.getSize()).join(',')
+		+ "&center=" + FV.myMap.getView().getCenter().join(',')
 		+ "&zoom=" + FV.myMap.getView().getZoom()
 		+ "&prj=" + FV.currentProjection();
 	if ( FV.currentFeatureID ) url += '&feat=' + FV.currentFeatureID;
@@ -359,6 +409,7 @@ FV.setViewerResource = function(id) {
 FV.fsAutoMap = function( fid, ftitle, fpars ) {
 	if ( typeof fpars == 'string' ) eval( ' fpars = ' + fpars );
 	FV.lastExtent = false;
+	FV.lastCenter = false;
 	var pars = new FV.baseMapParams();
 	pars.setZoom( 1 );
 	pars.setLayer( FV.currentLayer() );
