@@ -7,29 +7,31 @@ function RFBinit() {
 /**
 * function setRFB
 *       extent -> The extent to zoom after the layer is rendered (optional).
+*	center -> The center to zoom on after the layer is rendered (optional).
 *       zoom -> The zoom level of the map (optional).
 *       mapProjection -> The map projection (optional).
 *       elinkDiv -> The embed-link id  (optional if not using the embed link div).
 *       urlLink -> The id of the url input field of the embed-link (optional if not using the embed link div).
 *       htmlLink -> The id of the html input field of the embed-link (optional if not using the embed link div).
 **/
-function setRFB( extent, zoom, mapProjection, elinkDiv, urlLink, htmlLink) {
+function setRFB( extent, center, zoom, mapProjection, elinkDiv, urlLink, htmlLink) {
 	if ( ! mapProjection ) {
 		var settings = FigisMap.rfb.getSettings( document.getElementById("SelectRFB").value );
 		document.getElementById("SelectSRS").value = settings && settings.srs ? settings.srs : '4326';
 	}
-	addRFB( extent, zoom, mapProjection, elinkDiv, urlLink, htmlLink );
+	addRFB( extent, center, zoom, mapProjection, elinkDiv, urlLink, htmlLink );
 }
 
 /**
 * function addRFB
 *       extent -> The extent to zoom after the layer is rendered (optional).
+* 	center -> The center to zoom on after the layer is rendered (optional).
 *       zoom -> The zoom level of the map (optional).
 *       elinkDiv -> The embed-link id  (optional if not using the embed link div).
 *       urlLink -> The id of the url input field of the embed-link (optional if not using the embed link div).
 *       htmlLink -> The id of the html input field of the embed-link (optional if not using the embed link div).
 **/
-function addRFB(extent, zoom, projection, elinkDiv, urlLink, htmlLink, layerName) {
+function addRFB(extent, center, zoom, projection, elinkDiv, urlLink, htmlLink, layerName) {
 	
 	var pars = {
 		rfb		: layerName ? layerName : document.getElementById("SelectRFB").value,
@@ -42,6 +44,7 @@ function addRFB(extent, zoom, projection, elinkDiv, urlLink, htmlLink, layerName
 	};
 	if ( zoom != null ) pars.zoom = zoom;
 	if ( extent != null ) pars.extent = extent;
+	if ( center != null ) pars.center = center;
 	
 	if ( document.getElementById(elinkDiv) ) document.getElementById(elinkDiv).style.display = "none";
 	
@@ -119,7 +122,7 @@ function populateRfbOptions() {
 function setRFBPage(elinkDiv, urlLink, htmlLink) {
 	populateRfbOptions();
 	
-	var layer, extent, zoom, prj;
+	var layer, extent, center, zoom, prj;
 	
 	if ( location.search.indexOf("rfb=") != -1 ){
 		
@@ -132,6 +135,7 @@ function setRFBPage(elinkDiv, urlLink, htmlLink) {
 			switch ( param[0] ) {
 				case "rfb"	: layer = param[1]; break;
 				case "extent"	: extent = param[1]; break;
+				case "center"	: center = param[1]; break;
 				case "zoom"	: zoom = parseInt(param[1]); break;
 				case "prj"	: prj = param[1]; break;
 			}
@@ -148,6 +152,13 @@ function setRFBPage(elinkDiv, urlLink, htmlLink) {
 			}
 			extent = bbox;
 		}
+
+		if ( center == "" ) center = null;
+		if ( center != null ) {
+			center = center.split(",");
+			center[0] = parseFloat(center[0]);
+			center[1] = parseFloat(center[1]);
+		}
 		
 		if ( zoom == '' ) zoom = null;
 		if ( zoom != null ) zoom = parseInt( zoom );
@@ -158,7 +169,7 @@ function setRFBPage(elinkDiv, urlLink, htmlLink) {
 	/*
 	* Load the RFB using the request parameters.
 	*/
-	addRFB( extent, zoom, prj, elinkDiv, urlLink, htmlLink, layer );
+	addRFB( extent, center, zoom, prj, elinkDiv, urlLink, htmlLink, layer );
 }
 
 /*
@@ -187,6 +198,7 @@ function setRFBEmbedLink(targetId, rfbsLinkId, rfbsHtmlId) {
 		baseURL += "?rfb=" + document.getElementById("SelectRFB").value
 			//!OL2+ "&extent=" + myMap.getExtent().toBBOX()
 			+ "&extent=" + myMap.getView().calculateExtent(myMap.getSize()).join(',')
+			+ "&center=" + myMap.getView().getCenter().join(',')
 			//!OL2+ "&zoom=" + myMap.getZoom()
 			+ "&zoom=" + myMap.getView().getZoom()
 			+ "&prj=" + document.getElementById("SelectSRS").value;
