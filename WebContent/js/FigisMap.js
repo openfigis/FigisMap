@@ -124,7 +124,7 @@ FigisMap.httpBaseRoot = FigisMap.isRemoteDeveloper ? '' : FigisMap.geoServerBase
 FigisMap.rnd.vars = {
 	geoserverURL		: FigisMap.geoServerBase + FigisMap.localPathForGeoserver,
 	geowebcacheURL		: FigisMap.geoServerBase + FigisMap.localPathForGeoserver + "/gwc/service",
-	logoURL			: FigisMap.httpBaseRoot + "img/FAO_blue_20_transp.gif",
+	logoURL			: FigisMap.httpBaseRoot + "img/FAOwatermarkSmall.png",
 	logoURLFirms		: FigisMap.httpBaseRoot + "img/logoFirms60.gif",
 	FAO_fishing_legendURL	: FigisMap.httpBaseRoot + "img/FAO_fishing_legend.png",
 	EEZ_legendURL		: FigisMap.httpBaseRoot + "img/EEZ_legend.png",
@@ -808,10 +808,14 @@ FigisMap.parser.watermark = function( p ) {
 	var w = {
 		src : FigisMap.rnd.vars.logoURL,
 		title : FigisMap.label('Powered by FIGIS', p),
-		width : 60,
-		height : 60,
+		width : 176,
+		height : 48,
 		wclass : 'ol-powered-by'
 	};
+	if ( p && p.mapSize && p.mapSize.indexOf('S') >= 0 ) {
+		w.width = 88;
+		w.height = 24;
+	}
 	if ( p && p.context.indexOf('FIRMS') == 0 ) {
 		w.src = FigisMap.rnd.vars.logoURLFirms;
 		w.width = 60;
