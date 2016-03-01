@@ -72,7 +72,7 @@ FigisMap.rnd.getPopupOverlay = function(map, id) {
 FigisMap.rnd.showPopupForCoordinates = function(popup, feature, coords) {
 
 	var async = !!popup.config.resourceHandler;
-	
+
 	if( async ) {
 		
 		var xmlHttp = FigisMap.getXMLHttpRequest();
@@ -84,6 +84,7 @@ FigisMap.rnd.showPopupForCoordinates = function(popup, feature, coords) {
 				if( popup.config.onopen) popup.config.onopen(feature);
 			}
 		};
+		
 		xmlHttp.open('GET', popup.config.resourceHandler(feature), true);
 		xmlHttp.send('');
 	} else {

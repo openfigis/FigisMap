@@ -84,7 +84,7 @@ FV.baseMapParams = function() {
 		},
 		contentHandler : function(feature, request) {
 			var content = document.createElement("div");
-			content.appendChild(request.responseXML.children[0]);
+			content.appendChild(request.responseXML.documentElement);
 			return content.innerHTML;
 		},
 		onopen: function( feature ){

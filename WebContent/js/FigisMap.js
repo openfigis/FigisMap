@@ -324,21 +324,32 @@ FigisMap.error = function() {
  */
 FigisMap.getXMLHttpRequest = function() {
 	var e, req = false;
-	try {
-		req = new ActiveXObject("Msxml2.XMLHTTP");
-	} catch(e) {
+
+	if (window.XMLHttpRequest) {
 		try {
-			req = new ActiveXObject("Microsoft.XMLHTTP");
-		} catch(e) {
-			try {
-				req = new XMLHttpRequest()
-			} catch(e) {
-				FigisMap.error('FigisMap.getXMLHttpRequest failure', e);
-				return false;
+			req = new XMLHttpRequest();
+		}catch(e){
+			FigisMap.error('FigisMap.getXMLHttpRequest failure', e);
+			return false;
+		}
+	} else {
+  		if (window.ActiveXObject) {
+    			try {
+ 				xmlHttp = new ActiveXObject('MSXML2.XMLHTTP.3.0');
+			}catch(e){
+				try {
+					req = new ActiveXObject("Microsoft.XMLHTTP");
+				}catch(e) {
+					FigisMap.error('FigisMap.getXMLHttpRequest failure', e);
+					return false;
+	
+				}
 			}
 		}
-	}
-	try { req.overrideMimeType("text/xml") } catch(e) { };
+  	}
+
+	try { req.overrideMimeType("text/xml"); } catch(e) { };
+	try { xhr.responseType = "msxml-document"; } catch(e) { };
 	return req;
 };
 
