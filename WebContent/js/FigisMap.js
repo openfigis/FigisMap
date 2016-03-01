@@ -317,6 +317,18 @@ FigisMap.error = function() {
  */
 
 /**
+ * PolyFill - browser compatibility utils
+ */
+
+if (!('remove' in Element.prototype)) {
+    Element.prototype.remove = function() {
+        if (this.parentNode) {
+            this.parentNode.removeChild(this);
+        }
+    };
+}
+
+/**
  * FigisMap.getXMLHttpRequest
  * Configures an XMLHttpRequest
  * @return the request
