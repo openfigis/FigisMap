@@ -10,7 +10,7 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 	if( !layer.id ) alert("Missing vector layer 'id'");
 	if( !layer.source ) alert("Missing vector layer 'source'");
 	if( !layer.title ) alert("Missing vector layer 'title'");
-	if( !layer.icon ) alert("Missing vector layer 'icon'");
+	if( !layer.iconHandler ) alert("Missing vector layer 'iconHandler'");
 	
 	//data access
 	var sourceFeatures = new ol.source.Vector({
@@ -28,33 +28,49 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 			distance : layer.clusterOptions.distance ? layer.clusterOptions.distance : 0,
 			source : sourceFeatures
 		});
-	
+
+		if(!layer.hasOwnProperty('iconHandler')) layer.iconHandler = function(feature){return layer.icon;};
+		
+
 		// Animated cluster layer
 		var clusterLayer = new ol.layer.AnimatedCluster({
 			title : layer.title,
 			source : clusterFeatures,
 			animationDuration : 0,
-			// Cluster style
-			style : function(feature, resolution) {
-				var size = feature.get('features').length;
-				var style = [ new ol.style.Style({
-					image : new ol.style.Icon({
-						anchor : [ 0.5, 36 ],
-						anchorXUnits : 'fraction',
-						anchorYUnits : 'pixels',
-						opacity : 0.75,
-						src : (layer.clusterOptions.hasOwnProperty('icon') & size > 1)? layer.clusterOptions.icon : layer.icon
-					}),
-					text : (!layer.clusterOptions.singlecount && size == 1)? null : new ol.style.Text({
-						text : size.toString(),
-						offsetY : -20,
-						scale : 1.2,
-						fill : new ol.style.Fill({
-							color : '#fff'
-						})
-					})
-				}) ];
-				return style;
+			style : function(feature, resolution){
+
+				var features = feature.get('features');
+				var size = features.length;
+
+				var styles = new Array();
+				var icons = new Array();
+
+				for(var i=0;i<features.length;i++){
+					var feature = features[i];
+					var featureIcon = (layer.clusterOptions.hasOwnProperty('icon') & size > 1)? layer.clusterOptions.icon : layer.iconHandler(feature);
+					if(icons.indexOf(featureIcon) == -1){
+						icons.push( featureIcon );
+						styles.push( new ol.style.Style({
+							image : new ol.style.Icon({
+								anchor : [ 0.5, 36 ],
+								anchorXUnits : 'fraction',
+								anchorYUnits : 'pixels',
+								opacity : 0.75,
+								src : featureIcon
+							}),
+							text : (!layer.clusterOptions.singlecount && size == 1)? null : new ol.style.Text({
+								text : size.toString(),
+								offsetY : -20,
+								scale : 1.2,
+								fill : new ol.style.Fill({
+									color : '#fff'
+								})
+							})
+						}) );
+					}
+				}
+
+				return styles;
 			}
 		});
 
@@ -69,26 +85,59 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 		} else {
 			map.addLayer(clusterLayer);
 		}
-	
-		console.log(layer.icon);
-		console.log(layer.clusterOptions.icon);
 
 		// Select interaction to spread cluster out and select features
 		var selectCluster = new ol.interaction.SelectCluster({ 
 			pointRadius : 15,
 			animate : layer.clusterOptions.animate ? layer.clusterOptions.animate : false,
 			// Feature style when it springs apart
-			featureStyle : function() {
-				return [ new ol.style.Style({
-					image : new ol.style.Icon({
-						anchor : [ 0.5, 36 ],
-						anchorXUnits : 'fraction',
-						anchorYUnits : 'pixels',
-						opacity : 0.75,
-						src : layer.icon
+			featureStyle : function(feature, resolution){
+
+				var features = feature.get('features');
+				var feat = undefined;
+				if(features) feat = features[0];
+
+				var fill = new ol.style.Fill({
+					color: 'rgba(255,255,255,0.4)'
+ 				});
+				var stroke = new ol.style.Stroke({
+					color: '#3399CC',
+					width: 1.6
+				});
+
+				//use directly image
+				var iconImg = new Image();
+				iconImg.setAttribute("src", layer.iconHandler(feat));				
+			
+				var styles = [
+   					new ol.style.Style({
+     						image : new ol.style.Icon({
+							anchor : [ 0.5, 32 ],
+							anchorXUnits : 'fraction',
+							anchorYUnits : 'pixels',
+							opacity : 0.75,
+							img: iconImg,
+							imgSize: [32, 32]
+						}),
+     						fill: fill,
+     						stroke: stroke
+   					})
+ 				];
+
+				/*var styles = [new ol.style.Style({
+						image : new ol.style.Icon({
+							anchor : [ 0.5, 36 ],
+							anchorXUnits : 'fraction',
+							anchorYUnits : 'pixels',
+							opacity : 0.75,
+							src : layer.iconHandler(feature)
+						})
 					})
-				}) ]
+				];*/
+				return styles;
 			}
+
+
 		});
 		map.addInteraction(selectCluster);
 		

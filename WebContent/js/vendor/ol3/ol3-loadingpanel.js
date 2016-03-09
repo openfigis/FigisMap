@@ -1,4 +1,23 @@
 /**
+ * Copyright (c) 2015 Emmanuel Blondel
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
+ * and associated documentation files (the "Software"), to deal in the Software without restriction, 
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+ * and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+ * subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all copies or substantial 
+ * portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+ * LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+ * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * /
+
+/**
  * @classdesc
  * A control to display a loader image (typically an animated GIF) when
  * the map tiles are loading, and hide the loader image when tiles are
@@ -9,7 +28,6 @@
  * @param {olx.control.LoadingPanelOptions} opt_options Options.
  * 
  * @author Emmanuel Blondel
- * @author Marco Balestra
  *
  */
 ol.control.LoadingPanel = function(opt_options) {
@@ -23,18 +41,36 @@ ol.control.LoadingPanel = function(opt_options) {
 	this.loadStatus_ = false;
 
 	this.loadProgress_ = [0,1];
+	
+	//widget type
+	if(options.widget) if(['animatedgif', 'progressbar'].indexOf(options.widget) == -1) alert("invalid value for 'widget'");
+	this.widget = (options.widget)? options.widget : 'animatedgif';
 
+	//progress mode
 	if(options.progressMode) if(['tile','layer'].indexOf(options.progressMode) == -1) alert("invalid value for 'progressMode'");
 	this.loadProgressByTile_ = ( options.progressMode == 'layer')? false : true;
 	
+	//other options
 	this.showPanel = (typeof options.showPanel == 'boolean') ? options.showPanel : true;
 	
+	//class name
 	var className = options.className ? options.className : 'ol-loading-panel';
-	var element = document.createElement('span');
+	
+	//element
+	var elementDom = (this.widget == 'animatedgif')? 'span' : 'progress';
+	var element = document.createElement(elementDom);
 	element.className = className + ' ' + 'ol-unselectable';
+	if(this.widget == 'progressbar') {
+		//element progress bar for old browsers
+		var div = document.createElement('div');
+		div.className = 'ol-progress-bar';
+		var span = document.createElement('span');
+		div.appendChild(span);
+	}
 
+	//events
 	this.oncustomstart = (options.onstart)? options.onstart : false;
-	this.oncustomprogress = (options.onprogress)? options.onprogress : function(i,j){ console.log( "Load: "+i+' out of '+j); };
+	this.oncustomprogress = (options.onprogress)? options.onprogress : false;
 	this.oncustomend = (options.onend)? options.onend : false;
 
 	ol.control.Control.call(this, {
@@ -51,13 +87,13 @@ ol.inherits(ol.control.LoadingPanel, ol.control.Control);
 ol.control.LoadingPanel.prototype.setup = function() {
 	var size = this.getMap().getSize();
 	this.element.style.left = String( Math.round( size[0]/2 ) ) + 'px';
-    	this.element.style.bottom = String( Math.round( size[1]/2 ) ) + 'px';
+    this.element.style.bottom = String( Math.round( size[1]/2 ) ) + 'px';
 	
 	var this_ = this;
 
 	this.mapListeners.push(this.getMap().on('pointerdown', function() {
-            	this_.hide();
-        }));
+		this_.hide();
+	}));
 
 	//display loading panel before render
 	this.mapListeners.push(this.getMap().beforeRender(function(map,framestate){
@@ -99,6 +135,10 @@ ol.control.LoadingPanel.prototype.registerLayerLoadEvents_ = function(layer) {
 		if( this_.loadStatus_ ) {
 			this_.loadStatus_ = false;
 			this_.loadProgress_ = [0,1];
+			if(this_.widget == 'progressbar') {
+				this_.element.value = this_.loadProgress_[0];
+				this_.element.max = this_.loadProgress_[1];
+			}
 			this_.show();
 			if(this_.oncustomstart) this_.oncustomstart.apply(this_,[]);
 		}
@@ -106,6 +146,11 @@ ol.control.LoadingPanel.prototype.registerLayerLoadEvents_ = function(layer) {
 		this.isLoaded = this_.updateSourceLoadStatus_(this);
 		if( this_.loadProgressByTile_) {
 			this_.loadProgress_[1] += 1;
+			if(this_.widget == 'progressbar'){
+				this_.element.max = this_.loadProgress_[1];
+				var progressBarDiv = this_.element.getElementsByClassName('ol-progress-bar');
+				if( progressBarDiv.length > 0 ) progressBarDiv[0].children()[0].width = String(parseInt(100 * this_.progress()))+'%';
+			}
 		}
 	});
 	layer.getSource().on("tileloadend", function(e) {
@@ -113,6 +158,11 @@ ol.control.LoadingPanel.prototype.registerLayerLoadEvents_ = function(layer) {
 		this.isLoaded = this_.updateSourceLoadStatus_(this);
 		if( this_.loadProgressByTile_) {
 			this_.loadProgress_[0] += 1;
+			if(this_.widget == 'progressbar'){
+				this_.element.value = this_.loadProgress_[0];
+				var progressBarDiv = this_.element.getElementsByClassName('ol-progress-bar');
+				if( progressBarDiv.length > 0 ) progressBarDiv[0].children()[0].width = String(parseInt(100 * this_.progress()))+'%';
+			}
 			if(this_.oncustomprogress) this_.oncustomprogress.apply(this_,this_.loadProgress_);
 		}
 
@@ -135,8 +185,10 @@ ol.control.LoadingPanel.prototype.registerLayersLoadEvents_ = function() {
 					this.tileListeners.push( this.registerLayerLoadEvents_(l) );
 				}
 			}
-		} else {
-			this.tileListeners.push( this.registerLayerLoadEvents_(layer) );	
+		} else if (layer instanceof ol.layer.Layer) {
+			if( !(layer instanceof ol.layer.Vector) ) {
+				this.tileListeners.push( this.registerLayerLoadEvents_(layer) );
+			}
 		}
 	}
 }
@@ -179,6 +231,10 @@ ol.control.LoadingPanel.prototype.updateLoadStatus_ = function() {
 		//progress events
 		if( loaded > this.loadProgress_[0]){
 			this.loadProgress_ = [loaded,loadStatusArray.length];
+			if(this_.widget == 'progressbar') {
+				this_.element.max = this_.loadProgress_[1];
+				this_.element.value = this_.loadProgress_[0];
+			}
 			if(this.oncustomprogress) this.oncustomprogress.apply(this,this.loadProgress_);
 		}
 	}

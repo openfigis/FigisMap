@@ -183,7 +183,13 @@ FV.baseMapParams.prototype.setLayer = function( l ) {
 			id: l,
 			source: FigisMap.rnd.vars.wfs + 'firms:' + l + '_all_points',
 			title: l == 'resource' ? "Marine resources" : "Fisheries",
-			icon: 'img/firms/' + l + '.png', 
+			icon: 'img/firms/' + l + '.png',
+			iconHandler: function(feature) {
+				var imgRef = l;
+				var specialCases = ["472","473","474"];
+				if(feature) if(specialCases.indexOf(feature.get('FIGIS_ID')) != -1) imgRef = 'fishery_production_system';			
+				return 'img/firms/' + imgRef + '.png';
+			}, 
 			cluster: true,
 			clusterOptions: { distance: 30, animate: true, singlecount: false, icon: 'img/firms/' + l + '_cluster.png' }
 		}

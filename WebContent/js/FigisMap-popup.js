@@ -117,8 +117,8 @@ FigisMap.rnd.configureTooltipPopup = function(map, id, config) {
 	
 		//display popup on click
 		map.on('pointermove', function(evt) {
-	  	var feature = map.forEachFeatureAtPixel(evt.pixel,
-		  function(feature, layer) {
+	  	  var feature = map.forEachFeatureAtPixel(evt.pixel,
+		    function(feature, layer) {
 			var features = feature.get('features');
 			if( !!features ) {
 				var size = features.length;
@@ -129,10 +129,15 @@ FigisMap.rnd.configureTooltipPopup = function(map, id, config) {
 				}
 			}
 			return feature;
-		  });
+		    }
+		  );
 	  
 	  	  if (feature) {
-			popup.show(evt.coordinate, config.tooltipHandler(feature));
+			if(!feature.get('selectclusterlink')){
+				popup.show(evt.coordinate, config.tooltipHandler(feature));
+			}else{
+				popup.hide();
+			}
 	  	  } else {
 			popup.hide();
 	 	  }	  
