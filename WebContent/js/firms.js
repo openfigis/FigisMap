@@ -146,7 +146,7 @@ FV.baseMapParams.prototype.setCenter = function( c ) {
 	}
 	if ( ! FV.lastCenter ) {
 		if ( FV.myMap ) {
-			FV.lastCenter = FV.getExtent();
+			FV.lastCenter = FV.getCenter();
 		} else {
 			FV.lastCenter = null;
 		}
@@ -364,6 +364,7 @@ FV.setViewerPage = function() {
 * setFirmsViewerEmberLink function. Manage the expand/collapse of the Embed-Link div.
 */
 FV.setViewerEmbedLink = function(){
+
 	if ( ! ( document.getElementById ) ) return void(0);
 	if ( ! FV.myMap ) FV.myMap = FigisMap.lastMap;
 	
