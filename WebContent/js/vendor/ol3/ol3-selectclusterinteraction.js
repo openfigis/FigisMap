@@ -33,6 +33,7 @@ ol.interaction.SelectCluster = function(options)
 {	options = options || {};
 
 	this.pointRadius = options.pointRadius || 12;
+	this.radiusFactor = options.radiusFactor || 1;
 	this.circleMaxObjects = options.circleMaxObjects || 10;
 	this.maxObjects = options.maxObjects || 60;
 	this.spiral = (options.spiral !== false);
@@ -151,7 +152,7 @@ ol.interaction.SelectCluster.prototype.selectCluster = function (e)
 	var center = feature.getGeometry().getCoordinates();
 	// Pixel size in map unit
 	var pix = this.map_.getView().getResolution();
-	var r = pix * this.pointRadius * (0.5 + cluster.length / 4);
+	var r = pix * this.radiusFactor * this.pointRadius * (0.5 + cluster.length / 4);
 	// Draw on a circle
 	if (!this.spiral || cluster.length <= this.circleMaxObjects)
 	{	var max = Math.min(cluster.length, this.circleMaxObjects);
@@ -171,14 +172,14 @@ ol.interaction.SelectCluster.prototype.selectCluster = function (e)
 	{	// Start angle
 		var a = 0;
 		var r;
-		var d = 2*this.pointRadius;
+		var d = 2 * this.pointRadius;
 		var features = new Array();
 		var links = new Array();
 		var max = Math.min (this.maxObjects, cluster.length);
 		// Feature on a spiral
 		for (i=0; i<max; i++)
 		{	// New radius => increase d in one turn
-			r = d/2 + d*a/(2*Math.PI);
+			r = (d/2 + d*a/(2*Math.PI)) * this.radiusFactor;
 			// Angle
 			a = a + (d+0.1)/r;
 			var dx = pix*r*Math.sin(a)
@@ -191,7 +192,7 @@ ol.interaction.SelectCluster.prototype.selectCluster = function (e)
 			source.addFeature(lk);
 		}
 	}
-
+	console.log(source);
 	if (this.animate) this.animateCluster_(center);
 }
 
@@ -223,6 +224,7 @@ ol.interaction.SelectCluster.prototype.animateCluster_ = function(center)
 		var ratio = event.frameState.pixelRatio;
 		var res = event.target.getView().getResolution();
 		var e = ol.easing.easeOut((event.frameState.time - start) / duration);
+
 		for (var i=0, feature; feature = features[i]; i++) if (feature.get('features'))
 		{	var pt = feature.getGeometry().getCoordinates();
 			pt[0] = center[0] + e * (pt[0]-center[0]);
