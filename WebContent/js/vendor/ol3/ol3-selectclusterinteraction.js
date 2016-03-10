@@ -17,6 +17,7 @@
  * - 'featureStyle' {ol.style} option is used to style the revealed features 
  *    as the 'style' option is used by the Select interaction.
  * - 'PointRadius' {Number} option is used to calculate distance between the features
+ * - 'radiusFactor' {Number} option is used to increase the radius factor
  * - 'spiral' {bool} option mean you want the feature to be placed on a spiral (or a circle)
  * - 'circleMaxObject' {Number} option is the number of object that can be place on a circle
  * - 'maxObjects' {Number} option is the number of object that can be drawn, other are hidden

@@ -87,9 +87,11 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 		}
 
 		// Select interaction to spread cluster out and select features
-		var selectCluster = new ol.interaction.SelectCluster({ 
+		var selectCluster = new ol.interaction.SelectCluster({
 			pointRadius : 15,
 			radiusFactor: 1.3,
+			spiral : true,
+			circleMaxObjects : 10,
 			animate : layer.clusterOptions.animate ? layer.clusterOptions.animate : false,
 			// Feature style when it springs apart
 			featureStyle : function(feature, resolution){
