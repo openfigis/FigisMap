@@ -49,6 +49,7 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 					var feature = features[i];
 					var featureIcon = (layer.clusterOptions.hasOwnProperty('icon') & size > 1)? layer.clusterOptions.icon : layer.iconHandler(feature);
 					if(icons.indexOf(featureIcon) == -1){
+
 						icons.push( featureIcon );
 						styles.push( new ol.style.Style({
 							image : new ol.style.Icon({
@@ -67,12 +68,40 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 								})
 							})
 						}) );
+						
 					}
 				}
 
 				return styles;
 			}
 		});
+
+		//manage icon image caches
+		var cachedIcons = new Array();
+		var listenerKey = sourceFeatures.on('change', function(e) {
+  			if (sourceFeatures.getState() == 'ready') {
+
+				var features = sourceFeatures.getFeatures();
+				for(var i=0;i<features.length;i++){
+					var icon = layer.iconHandler(features[i]);
+					var isCached = false;
+					for(var j=0;j<cachedIcons.length;j++){
+						if(cachedIcons[j].src.endsWith(icon)){
+							isCached = true;
+							break;
+						}
+					}
+					if(!isCached){
+						var iconImage = new Image();
+						iconImage.src = icon;
+						cachedIcons.push(iconImage);
+					}
+				}
+
+    				ol.Observable.unByKey(listenerKey);
+     			}
+		});
+
 
 		//adding layer.id to layer object
 		clusterLayer.id = layer.id;
@@ -108,9 +137,14 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 					width: 1.6
 				});
 
-				//use directly image
-				var iconImg = new Image();
-				iconImg.setAttribute("src", layer.iconHandler(feat));				
+				//use directly cached image
+				var iconImg = null;
+				for(var i=0;i<cachedIcons.length;i++){
+					if(cachedIcons[i].src.endsWith(layer.iconHandler(feat))){
+						iconImg = cachedIcons[i];
+						break;				
+					}				
+				}
 			
 				var styles = [
    					new ol.style.Style({
@@ -120,7 +154,7 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 							anchorYUnits : 'fraction',
 							opacity : 0.75,
 							img: iconImg,
-							imgSize: [32, 32]
+							imgSize: [iconImg.width, iconImg.height]
 						}),
      						fill: fill,
      						stroke: stroke
