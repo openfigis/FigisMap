@@ -75,6 +75,7 @@ FV.baseMapParams = function() {
 		type: "base"
 	};
 // 	this.associated = [ FigisMap.fifao.rfb ];
+	this.vectorLayer = {};
 	this.popup = {
 		resourceHandler : function(feature) {
 			return '/figis/moniker.html/firmspopup/'
@@ -97,6 +98,7 @@ FV.baseMapParams = function() {
 			return ((feature.get('DOMAIN') == 'fishery')? (feature.get('GEOREF') + ' ') : '') + feature.get('TITLE');
 		}
 	};
+
 	return this;
 };
 FV.baseMapParams.prototype.setProjection = function( p ) { if( p ) this.projection = p; };
@@ -177,11 +179,30 @@ FV.baseMapParams.prototype.setZoom = function( z ) {
 	this.zoom = FV.lastZoom;
 	return true;
 };
+
+
+/*
+	FV.baseMapParams.prototype.getLayerUrl
+	@param l: layer, string
+	Gets layer Url
+*/
+FV.baseMapParams.prototype.getLayerUrl = function( l ) {
+	return FigisMap.rnd.vars.wfs + 'firms:' + l + '_all_points';
+}
+
+/*
+	FV.baseMapParams.prototype.setLayer
+	@param l: layer, string
+	Uses and sets layer
+*/
 FV.baseMapParams.prototype.setLayer = function( l ) {
 	if(l && l != "") {
+
+		var sourceUrl = FV.baseMapParams.prototype.getLayerUrl( l );
+
 		this.vectorLayer = {
 			id: l,
-			source: FigisMap.rnd.vars.wfs + 'firms:' + l + '_all_points',
+			source: FigisMap.rnd.configureVectorSource(sourceUrl, null),
 			title: l == 'resource' ? "Marine resources" : "Fisheries",
 			icon: 'img/firms/' + l + '.png',
 			iconHandler: function(feature) {
@@ -193,8 +214,27 @@ FV.baseMapParams.prototype.setLayer = function( l ) {
 			cluster: true,
 			clusterOptions: { distance: 30, animate: true, singlecount: false, icon: 'img/firms/' + l + '_cluster.png' }
 		}
+
 	}
 };
+
+/*
+	FV.baseMapParams.prototype.updateLayerSource
+	@param l: layer, string
+	Updates the layer source
+*/
+FV.baseMapParams.prototype.updateLayerSource = function( l , filter) {
+	if(l && l != "") {
+
+		var sourceUrl = FV.baseMapParams.prototype.getLayerUrl( l );
+
+		this.vectorLayer.source = FigisMap.rnd.configureVectorSource(sourceUrl, filter);
+
+		FigisMap.rnd.updateVectorLayer(FV.myMap, this.vectorLayer);
+		
+	}
+}
+
 
 FV.getExtent = function() {
 	return ( FV.myMap ) ? FV.myMap.getView().calculateExtent(FV.myMap.getSize()) : null;
@@ -230,6 +270,7 @@ FV.draw = function( pars ) {
 	closeSearch();
 	if ( ! pars.distribution ) if ( ! pars.associated  ) if ( ! pars.intersecting ) if (! pars.extent) pars.global = true;
 	FV.myMap = FigisMap.draw( pars );
+	FV.lastPars = pars;
 	FV.lastExtent = null;
 	FV.lastCenter = null;
 	FV.lastZoom = null;

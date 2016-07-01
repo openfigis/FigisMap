@@ -1,5 +1,33 @@
 /**
- * FigisMap.rnd.configureVectorLayer
+ * FigisMap.rnd.configureVectorSource
+ * An experimental function to configure a vector source
+ * @param sourceUrl
+ * @param cqlfilter
+ * @return an object of class {ol.source.Vector}
+ */
+FigisMap.rnd.configureVectorSource = function(sourceUrl, cqlfilter) {
+	return new ol.source.Vector({
+		format : new ol.format.GeoJSON(),
+		url : sourceUrl + ((!!cqlfilter)? ('&cql_filter='+cqlfilter) : '')  + '&outputFormat=json'
+	});
+}
+
+/**
+ * FigisMap.rnd.configureClusterSource
+ * An experimental function to configure a cluster source
+ * @param layer
+ * @param source
+ * @return an object of class {ol.source.Vector}
+ */
+FigisMap.rnd.configureClusterSource = function(layer, source) {
+	return new ol.source.Cluster({
+		distance : layer.clusterOptions.distance ? layer.clusterOptions.distance : 0,
+		source : source
+	});
+}
+
+/**
+ * FigisMap.rnd.addVectorLayer
  * An experimental function to configure a vector layer, clustered or not
  * @param map
  * @param overlays
@@ -11,12 +39,9 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 	if( !layer.source ) alert("Missing vector layer 'source'");
 	if( !layer.title ) alert("Missing vector layer 'title'");
 	if( !layer.iconHandler ) alert("Missing vector layer 'iconHandler'");
-	
+
 	//data access
-	var sourceFeatures = new ol.source.Vector({
-		format : new ol.format.GeoJSON(),
-		url : layer.source + '&outputFormat=json'
-	});
+	var sourceFeatures = layer.source;
 
 	if( !!layer.cluster ) {
 	
@@ -24,16 +49,14 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 		if (!layer.clusterOptions.hasOwnProperty('singlecount')) layer.clusterOptions.singlecount = true;
 
 		// configure the cluster source
-		var clusterFeatures = new ol.source.Cluster({
-			distance : layer.clusterOptions.distance ? layer.clusterOptions.distance : 0,
-			source : sourceFeatures
-		});
+		var clusterFeatures = FigisMap.rnd.configureClusterSource(layer, sourceFeatures);
 
 		if(!layer.hasOwnProperty('iconHandler')) layer.iconHandler = function(feature){return layer.icon;};
 		
 
 		// Animated cluster layer
 		var clusterLayer = new ol.layer.AnimatedCluster({
+			id : layer.id,
 			title : layer.title,
 			source : clusterFeatures,
 			animationDuration : 0,
@@ -172,6 +195,39 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 		alert("Only Cluster vector layers are currently supported by FigisMap");
 	}
 }
+
+
+/**
+ * FigisMap.rnd.updateVectorLayer
+ * An experimental function to configure a vector layer, clustered or not
+ * @param map
+ * @param layer
+ */
+FigisMap.rnd.updateVectorLayer = function(map, layer) {
+
+	var source = layer.source;
+	if( layer.cluster ) {
+		source = FigisMap.rnd.configureClusterSource(layer, source);
+	}	
+
+
+	var layers = map.getLayers().getArray();
+	if( layers.length > 0 ) {
+		if(layers[0] instanceof ol.layer.Group)	{
+			layers = map.getLayerGroup().getLayersArray();
+		}
+		for(var i=0;i<layers.length;i++){
+			if(layers[i].id){
+				if(layers[i].id === layer.id) {
+					map.getLayerGroup().getLayersArray()[i].setSource(source);
+					//map.getLayerGroup().getLayersArray()[i].getSource().changed();
+					break;
+				}
+			}
+		}
+	}
+}
+
 
 /**
  * FigisMap.rnd.addVectorLayerLegend
