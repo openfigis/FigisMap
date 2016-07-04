@@ -1,0 +1,245 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	
+	<meta name="description" content="Map application to display areas of Vulnerable Marine Ecosystems." />
+	<meta name="author-corporate" content="FAO of the UN" />
+	<meta name="copyright" content="http://www.fao.org/corp/copyright/en/" />
+	<meta name="keywords" content="RFB, Regional Fishery Body, Map, FAO" />
+	<title>Vulnerable Marine Ecosystems Database</title>
+	
+	<link rel="stylesheet" type="text/css" href="lib/OpenLayers/theme/default/style.css" />
+	<link rel="stylesheet" href="theme/css/style.css" type="text/css" />
+	<link rel="stylesheet" href="theme/css/vme.css" type="text/css" />
+    <link rel="stylesheet" href="theme/css/vmefonts.css" type="text/css" />
+	
+	<script type="text/javascript" src="lib/extjs/adapter/ext/ext-base.js"></script>
+	<script type="text/javascript" src="lib/extjs/ext-all.js"></script>
+	<link rel="stylesheet" type="text/css" href="lib/extjs/resources/css/ext-all.css" />
+	<link rel="stylesheet" type="text/css" href="lib/extjs/resources/css/xtheme-gray.css" />
+	<link rel="stylesheet" type="text/css" href="lib/GeoExt/resources/css/geoext-all.css" />
+	
+	<script type="text/javascript" src="lib/OpenLayers/OpenLayers.js"></script>
+	<script type="text/javascript" src="lib/proj4js/lib/proj4js-compressed.js"></script>
+	<script type="text/javascript" src="lib/OpenLayers/openlayers-ext/LoadingPanel.js"></script>
+	<script type="text/javascript" src="lib/GeoExt/script/GeoExt.js"></script>
+    <script type="text/javascript" src="lib/OpenLayers/openlayers-ext/GlassyPanZoom.js" defer="defer"></script>
+    <script type="text/javascript" src="lib/OpenLayers/openlayers-ext/FigisLayerSwitcher.js" defer="defer"></script>
+
+	<script type="text/javascript" src="src/figis-data.js"></script>
+	<script type="text/javascript" src="src/georeferences.js"></script>
+	<!--script type="text/javascript" src="src/login.js"></script-->	
+    <script type="text/javascript" src="src/factsheet.js"></script>
+    <script type="text/javascript" src="src/infoSourcesLayer.js"></script>    
+	
+	<script type="text/javascript" src="src/FigisMap.js"></script>
+    <!-- proxy overriding configuration: allows to use a proxy for test purpose -->
+    <!-- script type="text/javascript" src="src/proxy-ovr.js" defer="defer"></script-->
+	<script type="text/javascript" src="src/vmeData.js" ></script>
+	<script type="text/javascript" src="src/popups.js"></script>
+	<script type="text/javascript" src="src/sidePanel.js" defer></script>
+	<script type="text/javascript" src="src/vme.js"></script>
+
+	<script type="text/javascript" src="lib/OpenLayers/openlayers-ext/Watermark.js" defer="defer"></script>
+    
+    <style type="text/css">
+          	
+          table.featureInfo, table.featureInfo td, table.featureInfo th {
+                  border:1px solid #15428B; 
+                  margin:0; 
+                  padding:0; 
+                  font-size: 12px;
+                  white-space: nowrap; 
+                  /*padding:.1em .1em; */
+          }
+          
+          table.featureInfo th{
+                  padding:.2em .2em; 
+                  /*text-transform:lowercase;*/
+                  color:#fff; 
+                  font-weight:bold; 
+                  font-size: 12px; 
+                  background:#15428B; 
+          }
+          
+          table.featureInfo td{
+                  background:#fff; 
+                  font-size: 12px;
+                  white-space: nowrap; 
+          }
+          
+          table.featureInfo tr.odd td{
+                  background:#CEDFF5; 
+                  font-size: 12px;
+                  white-space: nowrap; 
+          }
+          
+          table.featureInfo caption{
+                  text-align:left; 
+                  font-size:100%; 
+                  font-weight:bold; 
+                  text-transform:lowercase;
+                  padding:.2em .2em; 
+          }
+			
+    </style>
+ 
+    <!--[if lt IE 9]>
+    <link rel="stylesheet" href="theme/css/oldie.css" type="text/css" />
+    <![endif]-->
+	<style type="text/css">
+        img{
+            max-width: 100%;
+        }
+	</style>
+	
+	<script type="text/javascript">
+		//Workaround for IE7 IE8 http://trac.osgeo.org/openlayers/ticket/2304
+		document.namespaces;
+	</script>
+</head>
+
+<body>
+
+	<div id="page_e">
+		<div id="wrapper_e">
+		    <div  id="header">
+				<div id="logo"></div>
+			</div>
+		
+			<div  style="display:none" id="topBar">			
+				<label id="lblFilRFB" style="visibility:hidden">Zoom to:</label>
+			    <select  style="visibility:hidden" id="FilterRFB" onchange="setZoom()"></select>
+				<label style="visibility:hidden" id="lblRFB">Filter by:</label>
+				<select style="visibility:hidden" id="SelectRFB" onchange="setVME(null, null, null, 'e-link','rfbs-link', 'rfbs-html')"></select>  
+				
+				<input id="txtCql" type="hidden" />
+				<input id="command" type="hidden" />
+				<input id="opt" type="hidden" />				
+			</div> 
+			
+			<div style="position:relative" id="main_e">
+				<div id="map_e"></div>
+                
+                <div id="bottomLeftPanel">
+
+                    <div id="selectionYears" onclick="toggleYearsPanel();">
+                        Year selection
+                    </div> 
+                    <div  id="yearsContent">
+                     <div  id="bottomRightPanel">
+                        <div id="yearLess" onClick="FigisMap.ol.decrementYear(); setVMEEmbedLink('embed-url', 'embed-iframe');" unselectable="on"></div>               
+                        <div id="yearCurrent">
+                        2014
+                        </div>
+                        <div id="yearMore" onClick="FigisMap.ol.incrementYear(); setVMEEmbedLink('embed-url', 'embed-iframe');" unselectable="on"></div>
+                        <!--div id="yearsLabel">
+                        Year Selection
+                        </div-->   
+                        </div>  
+                    </div>
+                
+                    <div id="selectionRFB" onclick="toggleRfbPanel();">
+                        Management Body/Authority (ies)
+                    </div> 
+                    <div id="RFBCombo_">
+                    </div> 
+
+                </div>		
+				<div id="lblVME" class="lblVME figisButtonToggleVME" style="" onclick="toggleStyle(this, true)">VME Closures</div>
+                <div id="lblVMEOther" class="lblVMEOther figisButtonOTHER" style="" onclick="toggleStyle(this, true)">Other access regulated areas</div>
+				
+				<div id="lblFootprints" class="lblFootprints figisButtonBOTTOM" style="" onclick="toggleStyle(this, true)">Bottom fishing areas</div>			
+				
+				<div id="lblReset" class="lblReset figisButton" style="" onclick="resetVME()">Reset</div>
+
+				<div id="sidebar">
+					<div id="leftTopPan">
+						<div id="searchtextwrapper"><input type="text" id="searchtext" name="searchtext" onkeydown="if (event.keyCode == 13) { Vme.search(false);sidePanel.layout.setActiveItem('searchPanel');sidePanel.expand();Vme.form.panels.SearchPanel.layout.setActiveItem('resultPanel');}"/><div onclick=" Vme.search(false);sidePanel.layout.setActiveItem('searchPanel');sidePanel.expand();Vme.form.panels.SearchPanel.layout.setActiveItem('resultPanel');" id="simpleSearchButton"></div></div>
+						<div id="leftTopLinks"> 
+							<a onclick="sidePanel.layout.setActiveItem('searchPanel');sidePanel.expand();Vme.form.panels.SearchPanel.layout.setActiveItem('searchForm');Vme.form.panels.SearchPanel.doLayout()">Advanced Search</a> |
+							<a onclick="sidePanel.layout.setActiveItem('legendPanel');sidePanel.expand();">Legend</a> <div class="xbutton-closepanels" onclick="sidePanel.collapse();" >  </div>
+							
+						</div>
+					</div>
+					
+					<div id="sidebarP"></div></div>
+				<div id="bottomBar1_e">
+					<a title="FAO Copyright" target="_blank" href="http://www.fao.org/contact-us/terms/en/">
+						&copy;&nbsp;FAO, <span id="copyYear">2011</span>&nbsp;
+					</a>
+                               </div>
+			</div>	
+		</div>
+	</div>
+
+	<div id ="disclaimer_e"></div>
+	
+	<script type="text/javascript">
+		// <![CDATA[
+			Ext.onReady(function(){
+				sidePanel.render(document.getElementById('sidebarP'));
+                //selectRFB.render(document.getElementById('RFBCombo_'));
+
+				setVMEPage('embed-link','embed-url', 'embed-iframe');
+				
+				Ext.QuickTips.init();
+
+				//FigisMap.ol.setSelectedYear(new Date().getFullYear());  // moved in setVMEPage to manage embed link
+				
+				if(Ext.isIE7 || Ext.isIE8 || Ext.isIE9){
+					Ext.get('yearCurrent').addClass('ie');
+                }
+				
+                Proj4js.defs["EPSG:3031"] = "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs";                    
+			});
+			
+			function updateCopyYear() {
+				var uy = new Date();
+				uy = parseInt(uy.getFullYear() ? uy.getFullYear() : uy.getYear());
+				
+				// Update the year value for the FAO copyright
+				var py = parseInt( document.getElementById('copyYear').innerHTML );
+				if ( isNaN(uy) || isNaN(py) ) return void(0);
+				if ( uy > py ) document.getElementById('copyYear').innerHTML = String( uy );
+				
+				// Update the year value for the time slider
+				var py = parseInt( document.getElementById('yearCurrent').innerHTML );
+				if ( isNaN(uy) || isNaN(py) ) return void(0);
+				if ( uy > py ) document.getElementById('yearCurrent').innerHTML = String( uy );
+			
+				return void(0);
+			}
+			updateCopyYear();
+			
+			document.getElementById('disclaimer_e').innerHTML = FigisMap.label('DISCLAIMER', '<p></p>');
+		// ]]>
+	</script>
+	<!--img src="theme/img/new_watermark.png" width="176" height="48" class="olPoweredBy" style="position: fixed; bottom: 310px; right: 390px;z-index: 1000;" /-->
+	<script type="text/javascript">
+		var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+		document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+	</script>
+	<script type="text/javascript">
+		var pageTracker = _gat._getTracker("UA-1866725-1");
+		pageTracker._trackPageview();
+	</script>
+	<script type="text/javascript">
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','_gaTracker');
+		_gaTracker('create', 'UA-13090563-5', 'fao.org');
+		_gaTracker('send', 'pageview');
+		_gaTracker('create', 'UA-16796074-1', {'name':'allTracker'});
+		_gaTracker('allTracker.send', 'pageview');
+		_gaTracker('create', 'UA-16957552-1', {'name':'allSites'});
+		_gaTracker('allSites.send', 'pageview');
+	</script>
+</body>
+</html>
+

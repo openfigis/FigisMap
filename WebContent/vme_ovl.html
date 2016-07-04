@@ -1,0 +1,112 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en"">
+
+<head>    
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="description" content="Map application to display areas of Vulnerable Marine Ecosystems." />
+	<meta name="author-corporate" content="FAO of the UN" />
+	<meta name="copyright" content="http://www.fao.org/corp/copyright/en/" />
+	<meta name="keywords" content="RFB, Regional Fishery Body, Map, FAO" />
+	<title>Vulnerable Marine Ecosystems Database</title>
+    
+	<link rel="stylesheet" type="text/css" href="lib/OpenLayers/theme/default/style.css" />
+	<link rel="stylesheet" href="theme/css/style.css" type="text/css" />
+	<link rel="stylesheet" href="theme/css/vme.css" type="text/css" />
+    <link rel="stylesheet" href="theme/css/vmefonts.css" type="text/css" />    
+	
+    <!-- header style -->
+    <style type="text/css">
+			.body_ovl{
+				font : normal  12px;
+				font-family : Verdana, Helvetica, sans-serif;
+				text-align : left;
+			}
+			
+			#page_ovl {
+				z-index: 1;
+				width: 960px;
+				height: 830px;
+				background-image: none;
+				border-width: 1px;
+				border-style: solid;
+				border-color: #000000;
+				background-color: #FFFFFF;
+				padding-bottom: 0px;
+				margin-left: auto;
+				margin-top:20px;
+				margin-bottom:20px;
+				margin-right: auto;
+			}
+	</style>
+
+</head>
+
+<body bgcolor="#0071bc" class="body_ovl" style="padding-top: 0px; padding-bottom: 0px;">
+	<div id="page_ovl">
+		<div id="wrapper" style="margin: 0 auto;">
+			
+			<div style="position:relative; font-size:13px;" id="main">
+				<ul style="padding-left:10px; padding-right:10px;">
+                	<p style="font-weight: bold;">
+                    	Sources of information for the map layers
+                    </p>
+                    <hr />
+					<li style="font-weight: bold;">RFB Competence Areas:</li>
+					<p style="line-height: 100%;">
+						FAO. Areas of competence of Regional Fishery Bodies. 
+						More information at <a href="http://www.fao.org/fishery/rfb/en">http://www.fao.org/fishery/rfb/en</a>
+					</p>
+					<li style="font-weight: bold;">Hydrotermal vents:</li>
+					<p style="line-height: 100%;">
+						Location of Hydrotermal vents from the Interridge database:
+						Beaulieu, S.E., 2013, InterRidge Global Database of Active Submarine Hydrothermal Vent Fields: prepared for InterRidge, Version 3.1. 
+						World Wide Web electronic publication. Version 3.2 accessed 2014-10-21, <a href="http://vents-data.interridge.org">http://vents-data.interridge.org</a>
+					</p>
+					<li style="font-weight: bold;">GEBCO Isobath 2000:</li>
+					<p style="line-height: 5%;">
+						2000 meters depth bathymetry isoline, and 
+					</p>
+                    <p style="line-height: 5%;">
+                  		&nbsp;
+                    </p>
+					<p style="font-weight: bold; line-height: 5%;">GEBCO undersea features:</p>
+					<p style="line-height: 100%;">
+						Undersea features locations and names extracted from the
+						GEBCO Digital Atlas (GDA): IOC, IHO and BODC, 2003. Centenary Edition of the GEBCO Digital Atlas, published on CD-ROM on behalf of the 
+						Intergovernmental Oceanographic Commission and the International Hydrographic Organization as part of the 
+						General Bathymetric Chart of the Oceans, British Oceanographic Data Centre, Liverpool, U.K. 
+						More information at <a href="http://www.gebco.net/data_and_products/gebco_digital_atlas/">http://www.gebco.net/data_and_products/gebco_digital_atlas/</a>
+					</p>
+					<li style="font-weight: bold;">Ocean and Sea names:</li>
+					<p style="line-height: 100%;">
+						ESRI, DeLorme, HERE, GEBCO, NOAA, National Geographic, Geonames.org, and other contributors
+						More information at <a href="http://www.arcgis.com/home/item.html?id=0fd0c5b7a647404d8934516aa997e6d9">http://www.arcgis.com/home/item.html?id=0fd0c5b7a647404d8934516aa997e6d9</a>
+					</p>
+					<li style="font-weight: bold;">200 nautical miles arcs:</li>
+					<p style="line-height: 100%;">
+						Lines located at a distance of 200 nautical miles arcs from the baseline, extracted from the VLIZ MarBound database:
+						Claus S., N. De Hauwere, B. Vanhoorne, F. Souza Dias, F. Hernandez, and J. Mees (Flanders Marine Institute) (2014). 
+						MarineRegions.org. Accessed at <a href="http://www.marineregions.org on 2014-10-23">http://www.marineregions.org on 2014-10-23</a>. 
+					</p>
+					<p style="font-style: italic; line-height: 90%;">
+						(The layer displayed in the VME database is derived from the original dataset and hides specific arcs for the following 
+						areas: (a) Bouvet Island - Atlantic Ocean, (b) Antarctica - Southern Ocean and (c) South Georgia and the Sandwich Islands - Atlantic Ocean)
+					</p>
+					<li style="font-weight: bold;">FAO Fishing areas:</li>
+					<p style="line-height: 100%;">
+						FAO Major Fishing Areas for statistical purposes. 
+						More information at <a href="http://www.fao.org/fishery/cwp/handbook/h/en">http://www.fao.org/fishery/cwp/handbook/h/en</a>. 
+					</p>
+					<li style="font-weight: bold;">Oceans imagery:</li>
+					<p style="line-height: 100%;">
+						Made with Natural Earth. Blended depth colors and relief shading of the ocean bottom derived from CleanTOPO2 data. 
+						More information at <a href="http://www.naturalearthdata.com/downloads/50m-ocean-bottom/50m-ocean-bottom/">http://www.naturalearthdata.com/downloads/50m-ocean-bottom/50m-ocean-bottom/</a>.
+					</p>
+				</ul>
+				<br/>
+			</div>
+		</div>
+	</div>
+	</body>
+</html>

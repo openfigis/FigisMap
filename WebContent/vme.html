@@ -1,0 +1,385 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	
+	<meta name="description" content="Map application to display areas of Vulnerable Marine Ecosystems." />
+	<meta name="author-corporate" content="FAO of the UN" />
+	<meta name="copyright" content="http://www.fao.org/corp/copyright/en/" />
+	<meta name="keywords" content="RFB, Regional Fishery Body, Map, FAO" />
+	<title>Vulnerable Marine Ecosystems Database</title>
+	
+	
+	<!-- FigisMap -->
+	<link rel="stylesheet" type="text/css" href="js/figis/FigisMap/FigisMap.css"></link>
+	<script type="text/javascript" src="js/figis/FigisMap/FigisMap.js"></script>
+	<script type="text/javascript" src="js/figis/FigisMap/FigisMap-time.js"></script>
+	
+	<!-- Extra dependencies -->
+	<!-- TODO support of extjs / GeoEXT -->
+	<link rel="stylesheet" type="text/css" href="vmelib/extjs/resources/css/ext-all.css" />
+	<link rel="stylesheet" type="text/css" href="vmelib/extjs/resources/css/xtheme-gray.css" />
+	<link rel="stylesheet" type="text/css" href="vmelib/GeoExt/resources/css/geoext-all.css" />
+	<script type="text/javascript" src="vmelib/extjs/adapter/ext/ext-base.js"></script>
+	<script type="text/javascript" src="vmelib/extjs/ext-all.js"></script>
+	<!--<script type="text/javascript" src="vmelib/GeoExt/script/GeoExt.js"></script>-->
+	
+	<!-- VME viewer -->
+	<link rel="stylesheet" href="assets/figis/vme/css/style.css" type="text/css" />
+	<link rel="stylesheet" href="assets/figis/vme/css/html.css" type="text/css" />
+	<link rel="stylesheet" href="assets/figis/vme/css/vme.css" type="text/css" />
+    <link rel="stylesheet" href="assets/figis/vme/css/vmefonts.css" type="text/css" />
+	
+	
+	<script type="text/javascript" src="js/figis/vme/figis-data.js"></script>
+	<script type="text/javascript" src="js/figis/vme/georeferences.js"></script>
+	<!--script type="text/javascript" src="js/figis/vme/login.js"></script-->	
+	<script type="text/javascript" src="js/figis/vme/factsheet.js"></script> 
+    <script type="text/javascript" src="js/figis/vme/infoSourcesLayer.js"></script> 
+    <!-- proxy overriding configuration: allows to use a proxy for test purpose -->
+    <script type="text/javascript" src="js/figis/vme/proxy-ovr.js" defer="defer"></script>
+	
+	<script type="text/javascript" src="js/figis/vme/vmeData.js" ></script>
+	<script type="text/javascript" src="js/figis/vme/popups.js"></script>
+	<script type="text/javascript" src="js/figis/vme/sidePanel.js" defer></script>
+	<script type="text/javascript" src="js/figis/vme/vme.js"></script>
+
+    
+    <style type="text/css">
+          	
+          table.featureInfo, table.featureInfo td, table.featureInfo th {
+                  border:1px solid #15428B; 
+                  margin:0; 
+                  padding:0; 
+                  font-size: 12px;
+                  white-space: nowrap; 
+                  /*padding:.1em .1em; */
+          }
+          
+          table.featureInfo th{
+                  padding:.2em .2em; 
+                  /*text-transform:lowercase;*/
+                  color:#fff; 
+                  font-weight:bold; 
+                  font-size: 12px; 
+                  background:#15428B; 
+          }
+          
+          table.featureInfo td{
+                  background:#fff; 
+                  font-size: 12px;
+                  white-space: nowrap; 
+          }
+          
+          table.featureInfo tr.odd td{
+                  background:#CEDFF5; 
+                  font-size: 12px;
+                  white-space: nowrap; 
+          }
+          
+          table.featureInfo caption{
+                  text-align:left; 
+                  font-size:100%; 
+                  font-weight:bold; 
+                  text-transform:lowercase;
+                  padding:.2em .2em; 
+          }
+			
+    </style>
+    <!-- header style -->
+    <style type="text/css">
+        #header {
+            /*width: 920px;*/
+			width: 100%;
+            position: relative;
+            background-image: url(assets/figis/vme/img/new-vme-banner.jpeg);
+            background-repeat: no-repeat;
+            background-position: left top;
+            height: 156px;
+        }
+        #header #logo {
+            width: 400px;
+        }
+        #header .info {
+            width: 360px;
+            position: absolute;
+            right: 20px;
+            top: 40px;
+            color: #fff;
+            font-family: Verdana, Helvetica, Arial, sans-serif;
+            font-style: normal;
+            font-weight: normal;
+            font-size: 12px;
+            line-height: 16px;
+            text-align: left;
+            text-shadow: 1px 1px 2px #000;
+        }
+        img{
+            max-width: 100%;
+        }
+</style>
+<!--[if lt IE 9]>
+    <link rel="stylesheet" href="theme/css/oldie.css" type="text/css" />
+
+    <![endif]-->
+<script type="text/javascript">
+//Workaround for IE7 IE8 http://trac.osgeo.org/openlayers/ticket/2304
+document.namespaces;
+</script>
+</head>
+
+<!-- body onload="setVMEPage('e-link','rfbs-link', 'rfbs-html')" -->
+<body>
+
+<div id="page">
+	<div id="wrapper">
+    <!--
+		<div id="top">
+
+			<table width="100%" cellpadding="0" cellspacing="0" border="0">
+				<tr>
+					<td align="left">
+						<a href="http://www.fao.org" target="_blank"><img border=0 style="vertical-align: middle;" src="theme/img/FIGIS_banner-logo.gif" alt="FOOD AND AGRICULTURE ORGANIZATION OF THE UNITED NATIONS" title="Food and Agriculture Organization of the United Nations"/></a>
+					</td>
+					<td align="right">
+						<a href="http://www.fao.org/fishery" target="_blank"><img border=0 style="vertical-align: middle;" src="theme/img/FIGIS_banner-text.gif" alt="FAO Fisheries and Aquaculture Department" title="FAO Fisheries and Aquaculture Department"/></a>
+					</td>
+				</tr>
+
+				<tr>
+					<td>
+						<h1 id="title">Vulnerable Marine Ecosystems Map Viewer</h1>
+					</td>
+				</tr>			
+			</table>
+			
+		</div> -->
+        <!--div>
+            <div class="ribbon" style="position:absolute;right:0px;top:0px;z-index:5000">
+               <img src="theme/img/beta-ribbon.png" alt="Beta"/>
+            </div> 
+        </div-->
+
+        <!--div  id="header">
+            <div id="logo"></div>
+        </div-->
+
+		<iframe id="banner" src="banner/" width="100%" height="75" border="0" frameborder="0" scrolling="no"></iframe>
+		
+		<div style="display: none;" id="topBar">			
+			<label id="lblFilRFB" style="visibility:hidden">Zoom to:</label>
+			<select  style="visibility:hidden;" id="FilterRFB" onchange="setZoom()"></select>
+			<label style="visibility:hidden;" id="lblRFB">Filter by:</label>
+			<select style="visibility:hidden;" id="SelectRFB" onchange="setVME(null, null, null, 'e-link','rfbs-link', 'rfbs-html')"></select>    
+
+			<!--a href="javascript:embedLink();" id="EmbedLink" title="Link or embed this RFB map"><span>Link</span></a-->
+			<input id="txtCql" type="hidden" />
+			<input id="command" type="hidden" />
+			<input id="opt" type="hidden" />
+			
+            <!--div id="selectionRFB" onClick="setVMEEmbedLink('embed-url', 'embed-iframe');"></div-->
+            
+			<!-- li>
+				<label id="lblCQL">Provide CQL Query</label>
+				<input id="txtCql" type="text" />
+				<input id="btnUpdate" type="button" value="UPDATE" onClick="addRFBCQL()"/>
+			</li>
+			<li>
+				<label id="lblCQL">Enter Command</label>
+				<input id="command" type="text" />
+				<input id="cmdbtn" type="button" value="UPDATE" onClick="Command()"/>
+			</li>
+			<li>
+				<label id="lblCQL">Optional Arguments</label>
+				<input id="opt" type="text" />
+			</li -->					
+		</div> 
+		
+		<div style="position: absolute;" id="main">
+			<div id="map" class="map"></div>
+            
+            <!--div  id="bottomRightPanel">
+                <div id="yearLess" onClick="FigisMap.time.decrementYear(); setVMEEmbedLink('embed-url', 'embed-iframe');" unselectable="on"></div>               
+                <div id="yearCurrent">
+                2014
+                </div>
+                <div id="yearMore" onClick="FigisMap.time.incrementYear(); setVMEEmbedLink('embed-url', 'embed-iframe');" unselectable="on"></div>
+                <div id="yearsLabel">
+                Year Selection
+                </div>                
+            </div-->      
+            
+            <div id="bottomLeftPanel">            
+                <div id="selectionYears" onclick="toggleYearsPanel();">
+                    Year selection
+                </div> 
+                <div  id="yearsContent">
+                 <div  id="bottomRightPanel">
+                    <div id="yearLess" onClick="FigisMap.time.decrementYear(); setVMEEmbedLink('embed-url', 'embed-iframe');" unselectable="on"></div>               
+                    <div id="yearCurrent">
+                    2014
+                    </div>
+                    <div id="yearMore" onClick="FigisMap.time.incrementYear(); setVMEEmbedLink('embed-url', 'embed-iframe');" unselectable="on"></div>
+                    <!--div id="yearsLabel">
+                    Year Selection
+                    </div-->   
+                    </div>  
+                </div> 
+                
+                <div id="selectionRFB" onclick="toggleRfbPanel();">
+                    Management Body/Authority (ies)
+                </div> 
+                <div id="RFBCombo_">
+                </div> 
+                
+                <div id="lblSRS" onclick="toggleProjectionPanel();">
+                    Change projection
+                </div>
+                <div id="SelectSRS">
+                   <div> 
+                        <p>
+                            <input id="mercatorRadio" type="radio" onclick="radioClick(this)" onchange="setVME(null, null, this.value, 'embed-link','embed-url', 'embed-iframe', null,  true)" name="srs" value='3349' checked="checked"/>
+                            <label>Mercator</label>
+                        </p>
+
+                        <p>
+                            <input id="WGS84Radio" type="radio" onclick="radioClick(this)" onchange="setVME(null, null, this.value, 'embed-link','embed-url', 'embed-iframe', null,  true)" name="srs" value='4326' />
+                            <label>WGS84</label>
+                        </p>
+                   </div>
+                   <div> 
+                        <p>
+                            <input type="radio" onclick="radioClick(this)" onchange="setVME(null, null, this.value, 'embed-link','embed-url', 'embed-iframe', null,  true)" name="srs" value='3031' />
+                            <label>South Polar</label>
+                        </p>
+                        <!-- missing proj4js eck4.js file -->
+                        <!-- <option value='54012'>EckertIV (54012)</option> -->
+                        <p>
+                            <input type="radio" onclick="radioClick(this)" onchange="setVME(null, null, this.value, 'embed-link','embed-url', 'embed-iframe', null,  true)" name="srs" value='54009' />
+                            <label>Mollweide</label>
+                        </p>
+                   </div> 
+                </div>                
+            </div>
+
+            <div id="loginContainer">		
+				<div id="lblVME" class="lblVME figisButtonToggleVME" style="" onclick="toggleStyle(this, true)">VME closed areas</div>
+				
+				<div id="lblVMEOther" class="lblVMEOther figisButtonToggleOTHER" style="" onclick="toggleStyle(this, true)">Other access regulated areas</div>
+				
+				<div id="lblFootprints" class="lblFootprints figisButtonToggleBOTTOM" style="" onclick="toggleStyle(this, true)">Bottom fishing areas</div>			
+				
+				<div id="lblReset" class="lblReset figisButton" style="" onclick="resetVME()">Reset</div>
+			</div>
+            <div id="sidebar">
+                <div id="leftTopPan">
+                    <div id="searchtextwrapper"><input type="text" id="searchtext" name="searchtext" onkeydown="if (event.keyCode == 13) { Vme.search(false);sidePanel.layout.setActiveItem('searchPanel');sidePanel.expand();Vme.form.panels.SearchPanel.layout.setActiveItem('resultPanel');}"/><div onclick=" Vme.search(false);sidePanel.layout.setActiveItem('searchPanel');sidePanel.expand();Vme.form.panels.SearchPanel.layout.setActiveItem('resultPanel');" id="simpleSearchButton"></div></div>
+                    <div id="leftTopLinks"> 
+                        <a onclick="sidePanel.layout.setActiveItem('searchPanel');sidePanel.expand();Vme.form.panels.SearchPanel.layout.setActiveItem('searchForm');Vme.form.panels.SearchPanel.doLayout()">Advanced Search</a> |
+                        <a onclick="sidePanel.layout.setActiveItem('legendPanel');sidePanel.expand();">Legend</a> <div class="xbutton-closepanels" onclick="sidePanel.collapse();" >  </div> |
+						<a onclick="sidePanel.layout.setActiveItem('embed-link');sidePanel.expand();setVMEEmbedLink('embed-url', 'embed-iframe');">EmbedLink</a> <div class="xbutton-closepanels" onclick="sidePanel.collapse();" >  </div>
+                    </div>
+                </div>
+				
+                <div id="sidebarP"></div></div>
+		
+				<!--div id="e-link">
+					<div>
+						<label for="rfbs-link">Paste the link in email or chat</label>
+						<input id="rfbs-link" type="text" readonly="readonly" value="" onclick="this.focus();this.select();"/>
+					</div>
+					<div>
+						<label for="rfbs-html">Paste the HTML in a web site</label>
+						<input id="rfbs-html" type="text" readonly="readonly" value="" onclick="this.focus();this.select();"/>
+					</div>
+
+				</div-->
+				<!-- <div class="legend legendTitle" id="legendLegendTitle">Legend</div>
+				<div id="legend" class="legend"></div> -->
+				<!--div class="legend legendTitle" id="legendMembersTitle">List of Members</div>
+				<div id="MemberCountries" class="legend"></div-->
+		</div>	
+     
+	</div>
+   
+</div>
+
+	<!--div id ="disclaimer"></div-->
+	<div id="bottomBar1">
+		<a title="FAO Copyright" target="_blank" href="http://www.fao.org/contact-us/terms/en/">
+			&copy;&nbsp;FAO,
+			<span id="copyYear">2011</span>
+			&nbsp;
+		</a>
+	</div>
+	<script type="text/javascript">
+	// <![CDATA[
+		Ext.onReady(function(){
+			sidePanel.render(document.getElementById('sidebarP'));
+            
+            //selectRFB.render(document.getElementById('RFBCombo_'));
+
+			setVMEPage('embed-link','embed-url', 'embed-iframe');
+			
+            Ext.QuickTips.init();
+			
+    		if(Ext.isIE7 || Ext.isIE8 || Ext.isIE9)
+                Ext.get('yearCurrent').addClass('ie');
+                
+		});
+		
+		function updateCopyYear() {
+			var uy = new Date();
+			uy = parseInt(uy.getFullYear() ? uy.getFullYear() : uy.getYear());
+			
+			// Update the year value for the FAO copyright
+			var py = parseInt( document.getElementById('copyYear').innerHTML );
+			if ( isNaN(uy) || isNaN(py) ) return void(0);
+			if ( uy > py ) document.getElementById('copyYear').innerHTML = String( uy );
+			
+			// Update the year value for the time slider
+			var py = parseInt( document.getElementById('yearCurrent').innerHTML );
+			if ( isNaN(uy) || isNaN(py) ) return void(0);
+			if ( uy > py ) document.getElementById('yearCurrent').innerHTML = String( uy );
+			
+			return void(0);
+		}
+		
+		updateCopyYear();
+		/*document.getElementById('disclaimer').innerHTML = FigisMap.label('DISCLAIMER', '<p></p>');*/
+		
+		var subTitle = document.getElementById('subTitle');
+		if(subTitle){
+			subTitle.innerHTML = FigisMap.label('SUB_TITLE');
+		}		
+	// ]]>
+	</script>
+	<!--<input type="button" id="addlayer" value="Show RFB" onclick="addLayer()"/>
+	<input type="button" id="addlayer" value="Show zoom" onclick="SLD()"/>-->
+	
+	<script type="text/javascript">
+		var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+		document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+	</script>
+	<script type="text/javascript">
+		var pageTracker = _gat._getTracker("UA-1866725-1");
+		pageTracker._trackPageview();
+	</script>
+	<script type="text/javascript">
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','_gaTracker');
+		_gaTracker('create', 'UA-13090563-5', 'fao.org');
+		_gaTracker('send', 'pageview');
+		_gaTracker('create', 'UA-16796074-1', {'name':'allTracker'});
+		_gaTracker('allTracker.send', 'pageview');
+		_gaTracker('create', 'UA-16957552-1', {'name':'allSites'});
+		_gaTracker('allSites.send', 'pageview');
+	</script>
+	</body>
+</html>
+
