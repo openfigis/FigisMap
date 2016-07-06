@@ -107,8 +107,8 @@ FigisMap.defaults = {
 	baseLayerC : { layer: FigisMap.fifao.SEA, cached: true, label: 'Continents', label: 'Continents', filter:'*' },
 	defaultBaseLayer	: { layer: FigisMap.fifao.cnt, cached: true, remote:false, label : "Continents" },
 	baseLayers	: [
-		{ layer: FigisMap.fifao.obl, cached: true, remote:false, label : "Oceans imagery",format: "image/jpeg"},
-		{ layer: FigisMap.fifao.cnt, cached: true, remote:false, label : "Continents"}],
+		{ layer: FigisMap.fifao.obl, cached: true, label : "Oceans imagery",format: "image/jpeg"},
+		{ layer: FigisMap.fifao.cnt, cached: true, label : "Continents"}],
 	basicsLayers	: true,
 	context		: 'default',
 	drawDataRect	: false,
@@ -142,7 +142,7 @@ FigisMap.assetsRoot = "assets/figis/";
 FigisMap.rnd.vars = {
 	geoserverURL		: FigisMap.geoServerBase + FigisMap.localPathForGeoserver,
 	geowebcacheURL		: FigisMap.geoServerBase + FigisMap.localPathForGeoserver + "/gwc/service",
-	logoURL			: FigisMap.assetsRoot + "common/img/FAOWatermarkSmall.png",
+	logoURL			: FigisMap.assetsRoot + "common/img/FAOwatermarkSmall.png",
 	logoURLFirms		: FigisMap.assetsRoot + "firms/img/logoFirms60.gif",
 	FAO_fishing_legendURL	: FigisMap.assetsRoot + "common/img/FAO_fishing_legend.png",
 	EEZ_legendURL		: FigisMap.assetsRoot + "common/img/EEZ_legend.png",
@@ -151,7 +151,7 @@ FigisMap.rnd.vars = {
 	RFB_legendURL		: FigisMap.assetsRoot + "vme/img/RFB_legend.png",
 	wms			: FigisMap.geoServerBase + FigisMap.localPathForGeoserver + "/wms",
 	gwc			: FigisMap.geoServerBase + FigisMap.localPathForGeoserver + "/gwc/service" + "/wms",
-	wms			: FigisMap.geoServerBase + FigisMap.localPathForGeoserver + "/ows", //TODO OL3 to see where it is used for VME
+	ows			: FigisMap.geoServerBase + FigisMap.localPathForGeoserver + "/ows", //TODO OL3 to see where it is used for VME
 	Legend_Base_Request	: FigisMap.geoServerBase + FigisMap.localPathForGeoserver + "/wms" + "?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetLegendGraphic&FORMAT=image%2Fpng&WIDTH=30&HEIGHT=20",
 	wfs			: FigisMap.geoServerBase + FigisMap.localPathForGeoserver + '/wfs?request=GetFeature&version=1.0.0&typename=',
 	absWfs			: FigisMap.geoServerAbsBase + FigisMap.localPathForGeoserver + '/wfs?request=GetFeature&version=1.0.0&typename=',
@@ -450,6 +450,32 @@ FigisMap.loadScript(FigisMap.data, "UTF-8");
  * FigisMap OpenLayers functions
  * --------------------------------------------------------------------------------------
  */
+ 
+/**
+* FigisMap OL constants
+*/
+FigisMap.ol.imageFormat = 	"image/png";
+FigisMap.ol.overlaysLabel = "Overlays";
+FigisMap.ol.baselayersLabel = "Base Layer";
+ 
+/**
+ * FigisMap.ol.getDefaultOverlayGroup
+ * @param pars
+ * @return the default overlay group name
+ */
+FigisMap.ol.getDefaultOverlayGroup = function(pars){
+	var overlayGroup =FigisMap.ol.overlaysLabel;
+	if (pars.options){
+		if(pars.options.layerSwitcherOptions){
+			if(pars.options.layerSwitcherOptions.overlayGroups){
+				overlayGroup = (pars.options.layerSwitcherOptions.defaultOverlayGroup)?
+					pars.options.layerSwitcherOptions.defaultOverlayGroup : pars.options.layerSwitcherOptions.overlayGroups[0];
+			}
+		}
+	}
+	return overlayGroup;
+}
+
 
 /**
  * FigisMap.ol.reBound
@@ -684,16 +710,12 @@ FigisMap.ol.isValidExtent = function( bounds ) {
 
 
 /**
-* FigisMap OL image format
-*/
-FigisMap.ol.imageFormat = 	"image/png";
-
-/**
  * FigisMap.ol.configureBaseLayer
  * @param obj
+ * @param boundsOrigin
  * @returns an object of class {ol.layer.Tile}
  */
-FigisMap.ol.configureBaseLayer = function(obj){
+FigisMap.ol.configureBaseLayer = function(obj, boundsOrigin){
 	return new ol.layer.Tile({
 					title : obj.title,
 					type: 'base',
@@ -704,7 +726,7 @@ FigisMap.ol.configureBaseLayer = function(obj){
 							'VERSION': '1.1.1',
 							'FORMAT' : FigisMap.ol.imageFormat,
 							'TILED'	 : true,
-							'TILESORIGIN': boundsOriginString
+							'TILESORIGIN': boundsOrigin.join(',')
 						},
 						wrapX: true,
 						serverType : obj.cached ? undefined : 'geoserver',
@@ -716,6 +738,46 @@ FigisMap.ol.configureBaseLayer = function(obj){
 				});
 }
 
+/**
+ * FigisMap.ol.configureOverlayLayer
+ * @param obj
+ * @param boundsOrigin
+ * @returns an object of class {ol.layer.Tile}
+ */
+FigisMap.ol.configureOverlayLayer = function(obj, boundsOrigin){
+	
+	var wp = new Object();	
+	wp.name = obj.lsTitle;
+	wp.url = ( obj.cached ? FigisMap.rnd.vars.gwc : FigisMap.rnd.vars.wms );
+
+	//params
+	wp.params = {
+			'LAYERS' : obj.layer,
+			'VERSION': '1.1.1',
+			'FORMAT' : FigisMap.ol.imageFormat,
+			'TILED'	 : true,
+			'TILESORIGIN' : boundsOrigin.join(',')
+	}
+	if ( obj.style && obj.style != '*' && obj.style != 'default' ) wp.params.STYLES = obj.style;
+	if ( obj.filter && obj.filter != '*' ) wp.params.CQL_FILTER = obj.filter;
+	
+	//layer config
+	var layer = new ol.layer.Tile({
+		title : obj.hideInSwitcher? undefined : wp.name, //implicit way to hide a layer from layerswitcher
+		source : new ol.source.TileWMS({
+			url : wp.url,
+			params : wp.params,
+			wrapX: true,
+			serverType : 'geoserver'
+		}),
+		opacity : ( obj.opacity )? obj.opacity : 1.0,
+		visible : ( obj.hidden )? false : true
+	});
+	layer.showLegendGraphic = obj.showLegendGraphic //to make the param accessible to layerswitcher
+	layer.overlayGroup = (obj.overlayGroup)? obj.overlayGroup: FigisMap.ol.overlaysLabel;
+
+	return layer;
+}
 
 /**
  * FigisMap.ol.getLayer
@@ -755,6 +817,20 @@ FigisMap.ol.getSource = function(map, layername){
 	var layer = FigisMap.ol.getLayer(map, layername);
 	if(layer) source = layer.getSource();
 	return source;
+}
+
+/**
+ * Utility function to update the layer switcher from FigisMap
+ */
+FigisMap.ol.updateLayerSwitcher = function(map){
+	var controls = map.getControls().getArray();
+	for(var i=0;i<controls.length;i++){
+		var control = controls[i];
+		if(control instanceof ol.control.LayerSwitcher){
+			control.renderPanel();
+			break;
+		}		
+	}
 }
 
 
@@ -1331,6 +1407,8 @@ FigisMap.rfb.preparse = function( pars ) {
 				dispOrder : 1,
 				style: sett.style,
 				hideInSwitcher: false,
+				showLegendGraphic:false,
+				overlayGroup: FigisMap.ol.getDefaultOverlayGroup(pars),
 				title: ttitle,
 				skipTitle: skipTitle
 			} );
@@ -1343,6 +1421,8 @@ FigisMap.rfb.preparse = function( pars ) {
 				dispOrder : 2,
 				style: sett.style,
 				hideInSwitcher: false,
+				showLegendGraphic:false,
+				overlayGroup: FigisMap.ol.getDefaultOverlayGroup(pars),
 				title: ttitle,
 				skipTitle: skipTitle
 			} );
@@ -1354,6 +1434,8 @@ FigisMap.rfb.preparse = function( pars ) {
 				dispOrder : 2,
 				style: sett.style,
 				hideInSwitcher: false,
+				showLegendGraphic:false,
+				overlayGroup: FigisMap.ol.getDefaultOverlayGroup(pars),
 				title: ttitle,
 				skipLegend: true
 			} );
@@ -1364,6 +1446,8 @@ FigisMap.rfb.preparse = function( pars ) {
 				filter: "RFB = '" + pars.rfb + "_DEP'",
 				style: '',
 				hideInSwitcher: false,
+				showLegendGraphic:false,
+				overlayGroup: FigisMap.ol.getDefaultOverlayGroup(pars),
 				title: ttitle,
 				skipLegend: true
 			} );
@@ -1580,6 +1664,8 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 	var layerTypes = new Object();
 	for ( var i = 0; i < layers.length; i++ ) layerTypes[ layers[i].layer ] = true;
 	
+	var overlayGroup = FigisMap.ol.getDefaultOverlayGroup(pars);
+	
 	//add contextual layers if pars.contextLayers = true
 	//---------------------------------------------------
 	if( pars.contextLayers ) {
@@ -1587,6 +1673,7 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 			var contextLayer = pars.contextLayers[i];
 			if(! layerTypes[contextLayer.layer] ){
 				contextLayer.type = 'auto';
+				contextLayer.overlayGroup = (contextLayer.overlayGroup)? contextLayer.overlayGroup : overlayGroup;
 				layers.push(contextLayer);
 			}
 		}
@@ -1601,14 +1688,14 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 			layers.unshift({ //TODO check why Unshift
 				layer	: FigisMap.fifao.nma,
 				label	: '200 nautical miles arcs',
-				showLegendGraphic: true, //TODO OL3
-				group	: "Additional features", //TODO OL3
+				overlayGroup: overlayGroup,
 				filter	:'*',
-				icon	: '<img src="' + FigisMap.rnd.vars.EEZ_legendURL + '" width="30" height="20" />',
 				opacity	: 0.3,
 				hidden	: ( pars.isFIGIS && ! pars.rfb && ! (pars.context == 'FI-facp') ),
 				type	: 'auto',
-				//infoGroupsSources: FigisMap.infoGroupsSources.overlays //TODO OL3
+				skipLegend	: false,
+				hideInSwitcher	: false,
+				showLegendGraphic: true
 			});
 		}
 		//WMS FAO Areas
@@ -1616,29 +1703,27 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 			layers.unshift( { //TODO check why Unshift
 				layer	: FigisMap.fifao.maj,
 				label	: 'FAO fishing areas',
-				showLegendGraphic: true, //TODO OL3
-				group: "Additional features", //TODO OL3
+				overlayGroup: overlayGroup,
 				filter	:'*',
-				icon	:'<img src="'+FigisMap.rnd.vars.FAO_fishing_legendURL+'" width="30" height="20" />',
 				type	:'auto',
-				//infoGroupsSources: FigisMap.infoGroupsSources.overlays //TODO OL3
+				skipLegend	: false,
+				hideInSwitcher	: false,
+				showLegendGraphic: true
 			} );
 		}
 		
 		// marine areas
 		layers.push( {
 			layer		: FigisMap.fifao.lab,
+			label	: 'Oceans and sea names',
+			overlayGroup: overlayGroup,
 			cached		: true,
 			filter		: '*',
 			type		: 'auto',
 			style		: 'MarineAreasLabelled',
-            group: "Additional features", //TODO OL3
-            label	: 'Oceans and sea names',
-			remote		: false,
-            showLegendGraphic: false, //TODO OL3
 			skipLegend	: true,
 			hideInSwitcher	: false,
-            //infoGroupsSources: FigisMap.infoGroupsSources.overlays
+			showLegendGraphic: false
 		} );
 	}
 
@@ -1648,12 +1733,14 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 	if ( pars.landMask && ! layerTypes[ FigisMap.fifao.cnt ] && ! layerTypes[ FigisMap.fifao.CNT ] ) {
 		layers.push( {
 			layer		: FigisMap.fifao[ pars.options.colors ? 'CNT' : 'cnt' ], //FigisMap.fifao.cnt,
+			overlayGroup: overlayGroup,
 			cached		: true,
 			filter		: '*',
 			type		: 'auto',
 			style		: '*',
 			skipLegend	: true,
-			hideInSwitcher	: true
+			hideInSwitcher	: true,
+			showLegendGraphic:false
 		} );
 	}
 	
@@ -1949,6 +2036,7 @@ FigisMap.getStyleRuleDescription = function(STYLE, pars) {
 				skipLayerSwitcher	: (boolean) omit layer switcher if true
 				skipLoadingPanel	: (boolean) omit Loading panel (spinning wheel) if true
 				loadingPanelOptions	: (Object) object of options passed to LoadingPanel
+				layerSwitcherOptions : (Object) object of options passed to LayerSwitcher
 				skipNavigation		: (boolean) omit Navigation panel (arrows) if true
 				skipWatermark		: (boolean) omit Watermark if true
 				skipMouse		: (boolean) omit shift-mouse drag for zoom if true
@@ -1971,6 +2059,7 @@ FigisMap.getStyleRuleDescription = function(STYLE, pars) {
 			- skipTitle (boolean, default false) don't show title in legend, used when labels come from GeoServer
 			- hidden (boolean, default false) hide in map by default
 			- hideInSwitcher (boolean, default false) hide in Layer Switcher
+			- showLegendGraphic (boolean, default false) show the legend graphic in the layer switcher
 			- dispOrder (integer) automatically detected if in filter, also changes layer disposition
 			- rfb (string) A layer representing a RFB layer, the value is the name
 			- wms (OpenLayers.Layer.WMS object) Automatically valued by default
@@ -2007,8 +2096,7 @@ FigisMap.draw = function( pars ) {
 	
 	FigisMap.lastMap = ( theMap && theMap.getTarget() ) ? theMap : false;
 	FigisMap.renderedMaps[ pars.target.id ] = FigisMap.lastMap;
-	console.log("drawing");
-	console.log(FigisMap.lastMap);
+
 	return FigisMap.lastMap;
 };
 
@@ -2055,7 +2143,6 @@ FigisMap.renderer = function(options) {
 			default     : projection = 4326; myBounds =  [-180, -90, 180, 90];
 		}
 		boundsOrigin = [myBounds[0], myBounds[1]];
-		boundsOriginString = boundsOrigin.join(',');
 		boundsBox =  myBounds;
 		
 		// empty map DIV - the map, if any, is destroyed before calling
@@ -2075,24 +2162,49 @@ FigisMap.renderer = function(options) {
 		
 		if(projection == 4326 || projection == 900913){
 			for(var i=0;i<p.base.length;i++){
-				baselayerList.push(FigisMap.ol.configureBaseLayer(p.base[i]));
+				baselayerList.push(FigisMap.ol.configureBaseLayer(p.base[i], boundsOrigin));
 			}
 		}else{
-			baselayerList.push(FigisMap.ol.configureBaseLayer(p.defaultBase));
+			baselayerList.push(FigisMap.ol.configureBaseLayer(p.defaultBase, boundsOrigin));
 		}
 		//baselayer group
 		var baselayers = new ol.layer.Group({
-			'title': 'Base Layer',
+			'title': FigisMap.ol.baselayersLabel + ((baselayerList.length > 1)? "s" : ""),
 			layers: baselayerList,
 		});
 		
 		//manage overlays
 		//---------------
-		//overlays group
-		var overlays = new ol.layer.Group({
-			'title': 'Overlays',
-			layers: [ ],
-		});
+		//overlays group(s)	
+		var overlays = new Array();
+		var defaultOverlay = new ol.layer.Group({
+				'title': FigisMap.ol.overlaysLabel,
+				layers: [ ],
+			});
+		if(pars.options){
+			if(pars.options.layerSwitcherOptions){
+				if(pars.options.layerSwitcherOptions.overlayGroups){
+					if(pars.options.layerSwitcherOptions.overlayGroups.length > 0){
+						for(var i=0;i<pars.options.layerSwitcherOptions.overlayGroups.length;i++){
+							var overlay = new ol.layer.Group({
+								'title': pars.options.layerSwitcherOptions.overlayGroups[i],
+								layers: [ ],
+							});
+							overlays.push( overlay );
+						}
+					}else{
+						console.warn("Invalid overlayGroups object. Must be an array of group names");
+					}
+				}else{
+					overlays.push( defaultOverlay );
+				}
+			}else{
+				overlays.push( defaultOverlay );
+			}
+		}else{
+			overlays.push( defaultOverlay );
+		}
+		
 		
 		//Map widget
 		//----------
@@ -2102,7 +2214,7 @@ FigisMap.renderer = function(options) {
 		
 		myMap = new ol.Map({
 			target : p.target.id,
-			layers: [baselayers, overlays],
+			layers: [baselayers].concat(overlays),
 			view : new ol.View({
 				projection : viewProj,
 				center : ol.extent.getCenter(boundsBox),
@@ -2140,17 +2252,14 @@ FigisMap.renderer = function(options) {
 		}
 		
 		//Managing graticule
-		//------------------
-		//!OL2 if ( projection == 4326 ) myMap.addControl( new OpenLayers.Control.Graticule({ visible: !! pars.isVME, layerName: FigisMap.label('Coordinates Grid', p) }) );	
+		//------------------	
 		if ( projection == 4326 && !!p.isVME ){
 			FigisMap.rnd.addGraticule(myMap);
 		}
 		
 		//Managing layers 
 		//---------------
-
 		var layers = FigisMap.rnd.addAutoLayers( FigisMap.rnd.initLayers( p ), p );
-		
 		for ( var i = 0; i < layers.length; i++ ) {
 			var l = layers[i];
 			
@@ -2172,41 +2281,7 @@ FigisMap.renderer = function(options) {
 			}
 			
 			// Add wms to layers missing it
-			if ( ! l.wms ) {
-			
-				var wp = new Object(); // OpenLayers.Layer.WMS constructor Paramters
-				
-				wp.name = l.lsTitle;
-				
-				wp.url = ( l.cached ? FigisMap.rnd.vars.gwc : FigisMap.rnd.vars.wms );
-
-				//params
-				wp.params = {
-						'LAYERS' : l.layer,
-						'VERSION': '1.1.1',
-						'FORMAT' : FigisMap.ol.imageFormat,
-						'TILED'	 : true,
-						'TILESORIGIN' : boundsOriginString
-				}
-				if ( l.style && l.style != '*' && l.style != 'default' ) wp.params.STYLES = l.style;
-				if ( l.filter && l.filter != '*' ) wp.params.CQL_FILTER = l.filter;
-				
-				//layer config
-				l.wms = new ol.layer.Tile({
-					title : l.hideInSwitcher? undefined : wp.name, //implicit way to hide a layer from layerswitcher
-					source : new ol.source.TileWMS({
-						url : wp.url,
-						params : wp.params,
-						wrapX: true,
-						serverType : 'geoserver'
-					}),
-					opacity : ( l.opacity )? l.opacity : 1.0,
-					visible : ( l.hidden )? false : true
-				});
-
-				//add skipLegend parameter to inherit from layerswitcher
-				l.wms.skipLegend = l.skipLegend;
-			}
+			if ( ! l.wms ) l.wms = FigisMap.ol.configureOverlayLayer(l, boundsOrigin);
 		}
 		
 		layers = FigisMap.rnd.sort4map( layers, p );
@@ -2224,8 +2299,6 @@ FigisMap.renderer = function(options) {
 		
 		// handlig the zoom/center/extent
 		if ( p.global ) {
-			//!OL2 myMap.zoomToMaxExtent();
-			//!OL2 finalizeMap(); @eblondel moved to single call
 			myMap.zoomToMaxExtent();
 			FigisMap.debug('Render for p.global');
 				
@@ -2251,14 +2324,26 @@ FigisMap.renderer = function(options) {
 		//removed finalizeMap function to easy call of overlays
 		FigisMap.debug('Finalizing map:', myMap, 'olLayers:',olLayers);
 		myMap.updateSize();
-		for (var i = 0; i < olLayers.length; i++) {
-			overlays.getLayers().push(olLayers[i]);
+		for(var i = 0; i < overlays.length;i++){ //manage multiple groups
+			var group = overlays[i];
+			for (var j = 0; j < olLayers.length; j++) {
+				var layer = olLayers[j];
+				if(group.get('title') === layer.overlayGroup){
+					overlays[i].getLayers().push(layer);
+				}
+			}
 		}
 		
 		//Testing cluster
 		if( pars.vectorLayer ) {
 			FigisMap.debug('FigisMap - cluster layer', pars.vectorLayer);
-			FigisMap.rnd.addVectorLayer(myMap, overlays, pars.vectorLayer);
+			pars.vectorLayer.overlayGroup = FigisMap.ol.getDefaultOverlayGroup(pars);
+			for(var i = 0;i < overlays.length;i++){
+				if(group.get('title') === pars.vectorLayer.overlayGroup){
+					FigisMap.rnd.addVectorLayer(myMap, overlays[i], pars.vectorLayer);
+					break;
+				}
+			}
 		}
 		
 		//Testing popup & tooltip

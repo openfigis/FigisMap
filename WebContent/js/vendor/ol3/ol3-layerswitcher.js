@@ -14,6 +14,8 @@ ol.control.LayerSwitcher = function(opt_options) {
       options.tipLabel : 'Legend';
 
     this.displayLegend_ = options.displayLegend ? options.displayLegend : false;
+	
+	this.togglingLegendGraphic_ = options.toggleLegendGraphic ? options.displayLegend : false;
 
     this.mapListeners = [];
 
@@ -27,19 +29,19 @@ ol.control.LayerSwitcher = function(opt_options) {
     button.setAttribute('title', tipLabel);
     element.appendChild(button);
 
-    this.panel = (options.id)? document.getElementById(options.id) : document.createElement('div');
-	console.log(options.id);
-	console.log(document.getElementById(options.id));
+	this.isExternalized = (options.id)? true : false;
+    this.panel = (this.isExternalized)? document.getElementById(options.id) : document.createElement('div');
+	
     this.panel.className = 'panel';
     element.appendChild(this.panel);
 
     var this_ = this;
 
-    element.onmouseover = function(e) {
+    button.onclick = function(e) {
         this_.showPanel();
     };
-
-    button.onclick = function(e) {
+	
+    element.onmouseover = function(e) {
         this_.showPanel();
     };
 
@@ -108,10 +110,16 @@ ol.control.LayerSwitcher.prototype.setMap = function(map) {
     // Wire up listeners etc. and store reference to new map
     ol.control.Control.prototype.setMap.call(this, map);
     if (map) {
-        var this_ = this;
-        this.mapListeners.push(map.on('pointerdown', function() {
-            this_.hidePanel();
-        }));
+		
+		//configure map listeners
+		this.mapListeners.push(map.once("postrender", function(){
+			this.renderPanel();
+		}, this));
+		if(!this.isExternalized){
+			this.mapListeners.push(map.on('pointerdown', function() {
+				this.hidePanel();
+			}, this));
+		}
         this.renderPanel();
     }
 };
@@ -207,7 +215,8 @@ ol.control.LayerSwitcher.prototype.renderLayer_ = function(lyr, idx) {
         this.renderLayers_(lyr, ul);
 
     } else {
-
+	
+		//create html
         var input = document.createElement('input');
         if (lyr.get('type') === 'base') {
             input.type = 'radio';
@@ -219,37 +228,60 @@ ol.control.LayerSwitcher.prototype.renderLayer_ = function(lyr, idx) {
         input.checked = lyr.get('visible');
         input.onchange = function(e) {
             this_.setVisible_(lyr, e.target.checked);
+			if(this_.togglingLegendGraphic_) this_.toggleLegendGraphic_(lyr, idx);
         };
         li.appendChild(input);
 
         label.htmlFor = lyrId;
         label.innerHTML = lyrTitle;
         li.appendChild(label);
-
-    }
-
-    //handling legend graphic for overlays
-    if( this.displayLegend_ && !lyr.getLayers && lyr.get('type') != 'base' && !lyr.skipLegend){
-   	
-	var imgSrc = false;
-	if(lyr instanceof ol.layer.Tile){
-		imgSrc = this.getLegendGraphic_(lyr);
-	}else if(lyr instanceof ol.layer.Vector){
-		imgSrc = (lyr.icon)? lyr.icon : false;
-	}
-	
-	if(imgSrc){
-		var legend = document.createElement('div');
-		legend.style.marginLeft = "15px";
-		var img = '<img src="'+imgSrc+'" />';
-		legend.innerHTML = img;
-		li.appendChild(legend);
-	}
+		
+		//handling legend graphic for overlays
+		this.renderLegendGraphic_(lyr, idx, li);
     }
 
     return li;
 
 };
+
+/**
+ * Render a layer legend graphic
+ * @private
+ * @param {ol.layer.Base} lyr Layer for which the legend should be rendered
+ */
+ol.control.LayerSwitcher.prototype.renderLegendGraphic_ = function(lyr, idx, li) {
+	if( this.displayLegend_ && lyr.get('type') != 'base' && lyr.showLegendGraphic){
+   	
+		var imgSrc = false;
+		if(lyr instanceof ol.layer.Tile){
+			imgSrc = this.getLegendGraphic_(lyr);
+		}else if(lyr instanceof ol.layer.Vector){
+			imgSrc = (lyr.icon)? lyr.icon : false;
+		}
+		
+		if(imgSrc){
+			var legend = document.createElement('div');
+			var legendId = lyr.get('title').replace(' ', '-') + '_' + idx + "_legend";
+			legend.id = legendId;
+			legend.style.marginLeft = "15px";
+			legend.style.display = (lyr.getVisible()? "block" : "none");
+			var img = '<img src="'+imgSrc+'" />';
+			legend.innerHTML = img;
+			li.appendChild(legend);
+		}
+    }
+}
+
+/**
+ * Toggles a layer legend (hide/show legend image)
+ * @private
+ * @param {ol.layer.Base} lyr Layer for which the legend should be rendered
+ */
+ol.control.LayerSwitcher.prototype.toggleLegendGraphic_ = function(lyr, idx) {
+	var legendId = lyr.get('title').replace(' ', '-') + '_' + idx + "_legend";
+	var legend = document.getElementById(legendId);
+	legend.style.display = (lyr.getVisible()? "block" : "none");
+}
 
 /**
  * Render all layers that are children of a group.

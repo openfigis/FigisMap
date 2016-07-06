@@ -161,8 +161,8 @@ function addSpecies(extent, center, zoom, elinkDiv, urlLink, htmlLink){
 			}
 		}
 // 		titles.push( specTitle );
-		if (hasMarine) pars.distribution.push( { layer: layername, filter: "ALPHACODE='"+ code +"' AND DISPORDER = '1'", title: specTitle + ( hasInland ? ' (marine)' : ''), style: getStyle(count), autoZoom: performAutoZoom } );
-		if (hasInland) pars.distribution.push( { layer: layername, filter: "ALPHACODE='"+ code +"' AND DISPORDER = '2'", title: specTitle + ( hasMarine ? ' (inland)' : ''), style: getStyle(count), autoZoom: performAutoZoom } );
+		if (hasMarine) pars.distribution.push( { layer: layername, filter: "ALPHACODE='"+ code +"' AND DISPORDER = '1'", title: specTitle + ( hasInland ? ' (marine)' : ''), style: getStyle(count), autoZoom: performAutoZoom, overlayGroup: FigisMap.ol.getDefaultOverlayGroup(pars) } );
+		if (hasInland) pars.distribution.push( { layer: layername, filter: "ALPHACODE='"+ code +"' AND DISPORDER = '2'", title: specTitle + ( hasMarine ? ' (inland)' : ''), style: getStyle(count), autoZoom: performAutoZoom, overlayGroup: FigisMap.ol.getDefaultOverlayGroup(pars) } );
 	};
 	
 	/* -------------------------------------COMMENT---------------------------------------------*/

@@ -889,7 +889,7 @@ Vme.data.stores.rfmoStore.on('load',function(store, records, options){
             xtype: 'radio',
             width: 'auto',
             id: records.data.id + '_RFB',
-            boxLabel: '<a id="infoRFBimage_'+records.data.id+'_RFB'+'" style="color:#000000"><img style="margin-bottom: 1px; vertical-align: bottom" title = "Clik To View Regional Measures" src="theme/img/icons/information.png">'+records.data.acronym+'</a>',
+            boxLabel: '<a id="infoRFBimage_'+records.data.id+'_RFB'+'" style="color:#000000"><img style="margin-bottom: 1px; vertical-align: bottom" title = "Clik To View Regional Measures" src="assets/figis/vme/img/icons/information.png">'+records.data.acronym+'</a>',
             name: 'rfb',
             acronym: records.data.acronym,
             inputValue: records.data.id,
@@ -917,7 +917,7 @@ Vme.data.stores.rfmoStore.on('load',function(store, records, options){
                                 var json = Ext.decode(response.responseText);
                                 Vme.factsheetUrl[radio.acronym] = json.resultList[0].factsheetUrl;
                                 var id = 'infoRFBimage_' + radio.id;
-                                Ext.get(id).dom.lastChild.parentNode.outerHTML = '<a id="'+id+'" style="color:#000000" href="javascript:void(0);" //onClick="FigisMap.infoSourceLayers(\''+json.resultList[0].factsheetUrl+'\',true);"><img style="margin-bottom: 1px; vertical-align: bottom" title = "Clik To View Regional Measures" src="theme/img/icons/information.png"></a><span>'+radio.acronym+'</span>';
+                                Ext.get(id).dom.lastChild.parentNode.outerHTML = '<a id="'+id+'" style="color:#000000" href="javascript:void(0);" //onClick="FigisMap.infoSourceLayers(\''+json.resultList[0].factsheetUrl+'\',true);"><img style="margin-bottom: 1px; vertical-align: bottom" title = "Clik To View Regional Measures" src="assets/figis/vme/img/icons/information.png"></a><span>'+radio.acronym+'</span>';
                         }
                     });
 

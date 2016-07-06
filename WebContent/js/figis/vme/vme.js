@@ -25,18 +25,18 @@ VME.init = function() {
 * function setZoom
 *
 **/
-function setZoom() {
+VME.setZoom = function() {
 	var settings = FigisMap.ol.getSettings( document.getElementById("FilterRFB").value );
 	//Close popup when RFB change
 	FigisMap.ol.clearPopupCache(); //TODO OL3
-	zoomTo(settings);
+	VME.zoomTo(settings);
 }
 
 /**
 * function zoomTo
 *
 **/
-function zoomTo(settings,geom,zoom,closest) {
+VME.zoomTo = function(settings,geom,zoom,closest) {
 	if (settings != null){
 		var bbox = geom ? geom : settings.zoomExtent.split(",");
 		var curr_proj = VME.myMap.getView().getProjection(); 
@@ -156,7 +156,7 @@ VME.resetByYear = function(year){
 	Vme.form.panels.SearchPanel.layout.setActiveItem('searchcard-0');
 	
 	// Restore toggle
-	restoreToggleButtons();
+	VME.restoreToggleButtons();
 	
 	// Collapse the side panel
 	var sidePanel = Ext.getCmp("side-panel").collapse();
@@ -274,6 +274,7 @@ VME.toggleVMEs = function(el) {
 		FigisMap.ol.toggleLayer(VME.myMap, layer, false);
 		el.className =  "lblVMEs figisButtonVMEs"
 	}
+	FigisMap.ol.updateLayerSwitcher(VME.myMap);
 }
 
 /**
@@ -290,6 +291,7 @@ VME.toggleOARAs = function(el){
 		FigisMap.ol.toggleLayer(VME.myMap, layer, false);
 		el.className = "lblOARAs figisButtonOARAs"
 	}
+	FigisMap.ol.updateLayerSwitcher(VME.myMap);
 }
 
 /**
@@ -306,6 +308,63 @@ VME.toggleBFAs = function(el){
 		FigisMap.ol.toggleLayer(VME.myMap, layer, false);
 		el.className =  "lblBFAs figisButtonBFAs"
 	}
+	FigisMap.ol.updateLayerSwitcher(VME.myMap);
+}
+
+/**
+* function restoreToggleButtons
+*
+* Restore toggle buttons status for VME layers
+**/
+VME.restoreToggleButtons = function(){
+	var el = document.getElementById("lblVMEs");	
+	if(el){
+		var vme = FigisMap.ol.getLayer(VME.myMap, FigisMap.fifao.vme);
+		
+		// ///////////////////////////////////////////////
+		// If there are Embed URL params concerning VME 
+		// these should be maintained for the status 
+		// (see also FigisMap.finalizeMap).
+		// ///////////////////////////////////////////////
+		if(vme.getVisible()){
+			el.className = "lblVMEs figisButtonToggleVMEs";
+		}else{
+			el.className = "lblVMEs figisButtonVMEs";
+		}							
+	}		
+	
+	el = document.getElementById("lblBFAs");										
+    if(el){
+		var bfa = FigisMap.ol.getLayer(VME.myMap, FigisMap.fifao.vme_bfa);
+			
+		// /////////////////////////////////////////////////////
+		// If there are Embed URL params concerning Bottom fishing areas 
+		// these should be maintained for the status 
+		// (see also FigisMap.finalizeMap).
+		// /////////////////////////////////////////////////////	
+		if(bfa.getVisible()){
+			el.className = "lblBFAs figisButtonToggleBFAs";
+		}else{
+			el.className = "lblBFAs figisButtonBFAs";
+		}					
+	}
+
+	el = document.getElementById("lblOARAs");										
+    if(el){
+		var oara = FigisMap.ol.getLayer(VME.myMap, FigisMap.fifao.vme_oara);
+			
+		// /////////////////////////////////////////////////////
+		// If there are Embed URL params concerning Bottom fishing areas 
+		// these should be maintained for the status 
+		// (see also FigisMap.finalizeMap).
+		// /////////////////////////////////////////////////////	
+		if(oara.getVisible()){
+			el.className = "lblOARAs figisButtonToggleOARAs";
+		}else{
+			el.className = "lblOARAs figisButtonOARAs";
+		}					
+
+	}    
 }
 
 /**
@@ -430,8 +489,6 @@ VME.setRFBCheckBoxValue = function(rfb){
 }    
 
 
-
-
 /**
 * function setViewer
 *       extent -> The extent to zoom after the layer is rendered (optional).
@@ -466,78 +523,21 @@ VME.setViewer = function( extent, zoom, mapProjection, elinkDiv, urlLink, htmlLi
     // REFRESH IS FALSE WHEN USER CHANGE PROJECTION
     if(refresh){
         VME.resetRFBCheckBox();
-        VME.refreshLayers(); //TODO OL3
+        VME.refreshLayers();
     }else{
-        VME.refreshLayers(acronym); //TODO OL3
-    
+        VME.refreshLayers(acronym);
     }
 	
 	// Restore toggle
-	restoreToggleButtons();
+	VME.restoreToggleButtons();
 }
+
 
 /**
-* function restoreToggleButtons
-*
-* Restore toggle buttons status for VMW areas and footprints. 
-**/
-function restoreToggleButtons(){
-	var el = document.getElementById("lblVME");	
-	if(el){
-		var vme = VME.myMap.getLayersByName('VME closed areas')[0]; //TODO OL3
-		
-		// ///////////////////////////////////////////////
-		// If there are Embed URL params concerning VME 
-		// these should be maintained for the status 
-		// (see also FigisMap.finalizeMap).
-		// ///////////////////////////////////////////////
-		if(vme.getVisibility()){ //TODO OL3
-			el.className = "lblVME figisButtonToggleVME";
-		}else{
-			el.className = "lblVME figisButtonVME";
-		}							
-
-		//el.className = "lblVME figisButtonToggle";
-	}		
-	
-	el = document.getElementById("lblFootprints");										
-    if(el){
-		var footprints = VME.myMap.getLayersByName('Bottom fishing areas')[0]; //TODO OL3
-			
-		// /////////////////////////////////////////////////////
-		// If there are Embed URL params concerning Bottom fishing areas 
-		// these should be maintained for the status 
-		// (see also FigisMap.finalizeMap).
-		// /////////////////////////////////////////////////////	
-		if(footprints.getVisibility()){
-			el.className = "lblFootprints figisButtonToggleBOTTOM";
-		}else{
-			el.className = "lblFootprints figisButtonBOTTOM";
-		}					
-	
-		//el.className = "lblFootprints figisButton";
-	}
-
-	el = document.getElementById("lblVMEOther");										
-    if(el){
-		var footprints = VME.myMap.getLayersByName('Other access regulated areas')[0]; //TODO OL3
-			
-		// /////////////////////////////////////////////////////
-		// If there are Embed URL params concerning Bottom fishing areas 
-		// these should be maintained for the status 
-		// (see also FigisMap.finalizeMap).
-		// /////////////////////////////////////////////////////	
-		if(footprints.getVisibility()){ //TODO OL3
-			el.className = "lblVMEOther figisButtonToggleOTHER";
-		}else{
-			el.className = "lblVMEOther figisButtonOTHER";
-		}					
-	
-		//el.className = "lblFootprints figisButton";
-	}    
-}
-
-function setEmbeddedElementClass(elementsDiv, mapSize){
+ * Set EmbeddedElementClass
+ * 
+ */
+VME.setEmbeddedElementClass = function(elementsDiv, mapSize){
 	if(elementsDiv && elementsDiv.length > 0){
 		for(var i=0; i<elementsDiv.length; i++){
 			var target = elementsDiv[i];
@@ -557,11 +557,6 @@ VME.draw = function(pars){
 	VME.lastExtent = null;
 	VME.lastCenter = null;
 	VME.lastZoom = null;
-	
-	VME.myMap.once("postcompose", function(){
-		console.log("doing something");
-	});
-	
 }
 
 /**
@@ -606,10 +601,10 @@ VME.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, 
 	
 	var embeddedIframe = location.href.indexOf("vme_e.html") != -1 ? true : false;
 
-	/*
-	 * target: where to create the map
-	 * center: where to center the map after the creation (OpenLayers.LonLat object with values in 'EPSG:4326' projection)
-	 */
+	//overlay groups (reverse order of the layerswitcher appearance)
+	var overlayGroups = ["Additional features", "Managed areas related to UNGA Res. 61-105"];
+	 
+	//params
 	var pars = {
 		rfb		    : '',
 		target		: embeddedIframe ? 'map_e' : 'map',
@@ -619,109 +614,83 @@ VME.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, 
 			{
 				layer	: FigisMap.fifao.vme,
 				label	: 'VME closed areas', //'Area types',
-				group: "Managed areas related to UNGA Res. 61-105",
-				showLegendGraphic: true, //TODO OL3 remove?
-				wrapDateLine: false,    
-				singleTile: false,
+				overlayGroup: overlayGroups[1],
 				style: "MEASURES_VME",
 				filter	: "YEAR <= " + year + " AND END_YEAR >= "+ year,
 				opacity	: 1.0,
-				hidden	: false,
-				hideInSwitcher	: false, //TODO OL3 is it supported?
-				dispOrder: 2,
-				isMasked: false,
+				hideInSwitcher	: false,
+				showLegendGraphic: true, 
 				legend_options: "forcelabels:on;forcerule:True;fontSize:12"
 			},
 			{
 				layer	: FigisMap.fifao.vme_oara,
 				label	: 'Other access regulated areas', //'Area types',
-				group: "Managed areas related to UNGA Res. 61-105",
-				showLegendGraphic: true, //TODO OL3 remove?
-				wrapDateLine: false,    
-				singleTile: false,
+				overlayGroup: overlayGroups[1],
 				style: "MEASURES_OTHER",
 				filter	: "YEAR <= '" + year + "' AND END_YEAR >="+ year,
 				opacity	: 1.0,
-				hidden	: false,
-				hideInSwitcher	: false, //TODO OL3 is it supported?
-				dispOrder: 2,
-				isMasked: false,
+				hideInSwitcher	: false,
+				showLegendGraphic: true,
 				legend_options: "forcelabels:on;forcerule:True;fontSize:12"
 			},
 			{
 				layer	: FigisMap.fifao.vme_bfa,
 				label	: 'Bottom fishing areas', //'Area types',
-				group: "Managed areas related to UNGA Res. 61-105",
-				showLegendGraphic: true, //TODO OL3 remove?
-				wrapDateLine: false,    
-				singleTile: false,
+				overlayGroup: overlayGroups[1],
 				style: "MEASURES_BTM_FISH",
 				filter	: "YEAR <= '" + year + "' AND END_YEAR >="+ year,
 				opacity	: 1.0,
-				hidden	: false,
-				hideInSwitcher	: false, //TODO OL3 is it supported?
-				dispOrder: 1,
-				isMasked: false,
+				hideInSwitcher	: false, 
+				showLegendGraphic: true, 
 				legend_options: "forcelabels:on;forcerule:True;fontSize:12"
 			},
 			//additional VME layers
 			{
 				layer		: FigisMap.fifao.guf,
+				label	: 'Gebco Undersea Features',
+				overlayGroup: overlayGroups[0],
 				cached		: true,
 				filter		: '*',
 				style		: '',
-				group: "Additional features",
-				label	: 'Gebco Undersea Features',
-				remote		: false,
-				showLegendGraphic: false, //TODO OL3 	            
 				skipLegend	: true,
-				hidden	: false,
-				hideInSwitcher	: false, //TODO OL3 is it supported?
-				//infoGroupsSources: FigisMap.infoGroupsSources.overlays
+				hideInSwitcher	: false,
+				showLegendGraphic: false
 			},
 			{
 				layer		: FigisMap.fifao.gbi,
+				label	: 'Gebco Isobath 2000',  
+				overlayGroup: overlayGroups[0],
 				cached		: true,
 				filter		: '*',
-				style		: '',
-				group: "Additional features",
-				label	: 'Gebco Isobath 2000',
-				remote		: false,
-				showLegendGraphic: true,	            
+				style		: '',    
 				skipLegend	: true,
 				hidden	: true,
-				hideInSwitcher	: false, //TODO OL3 is it supported?
-				//infoGroupsSources: FigisMap.infoGroupsSources.overlays
+				hideInSwitcher	: false, 
+				showLegendGraphic: true
 			},
 			{
 				layer		: FigisMap.fifao.vnt,
+				label	: 'Hydrothermal Vents',
+				overlayGroup: overlayGroups[0],
 				cached		: true,
 				filter		: '*',
 				style		: 'vents_InterRidge_2011_all',
-				group: "Additional features",
-				label	: 'Hydrothermal Vents',
-				remote		: false,
-				showLegendGraphic: true, //TODO OL3	           
 				skipLegend	: true,
 				hidden	: true,
-				hideInSwitcher	: false, //TODO OL3 is it supported?
-				//infoGroupsSources: FigisMap.infoGroupsSources.overlays
+				hideInSwitcher	: false, 
+				showLegendGraphic: true
 			},
 			{
 				layer		: FigisMap.fifao.vme_regarea,
+				label	: 'RFB Competence Areas',
+				overlayGroup: overlayGroups[0],
 				cached		: true,
 				filter		: '*',
 				style		: '',
-				group: "Additional features",
-				label	: 'RFB Competence Areas',
-				remote		: false,
-				showLegendGraphic: true,//TODO OL3            
 				skipLegend	: true,
 				hidden	: true,
-				hideInSwitcher	: false, //TODO OL3 is it supported?
-				dispOrder: 3,
-				isMasked: false, 
-				//infoGroupsSources: FigisMap.infoGroupsSources.overlays
+				hideInSwitcher	: false,
+				showLegendGraphic: true
 			}
 		],
 		legend		: 'legend',
@@ -731,14 +700,18 @@ VME.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, 
 		base: FigisMap.defaults.baseLayers.reverse(),
 		options : {
 			labels: true,
-			layerSwitcherOptions: { id: "layerswitcherpanel", displayLegend: true }
+			layerSwitcherOptions: { id: "layerswitcherpanel",
+									displayLegend: true ,
+									toggleLegendGraphic : true,
+									overlayGroups : overlayGroups,
+									defaultOverlayGroup: overlayGroups[0]}
 		}
 	};
 	
 	if(embeddedIframe){
 		pars.mapSize = mapSize ? mapSize : "L";
 		var elementsDiv = [pars.target, 'main_e', 'page_e', 'wrapper_e', 'disclaimer_e'];
-		setEmbeddedElementClass(elementsDiv, pars.mapSize);		
+		VME.setEmbeddedElementClass(elementsDiv, pars.mapSize);		
 	}
 	
 	// Use this if you want to change the center at the embebbed reset
@@ -755,8 +728,6 @@ VME.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, 
 		layers = decodeURIComponent(layers);
 	}	
 	VME.draw(pars); //TODO OL3 manage visible layers FigisMap.draw( pars);
-	console.log("after drawing map");
-	console.log(VME.myMap);
 	
 	if ( VME.myMap ) {	
 
@@ -932,7 +903,6 @@ function setVMEPage(elinkDiv, urlLink, htmlLink) {
         
         var mercatorRadio = document.getElementById("mercatorRadio");
 		mercatorRadio.checked = true;
-        console.log("projection");
 		VME.setProjection('3349');
 		prj = '3349';
 	}
