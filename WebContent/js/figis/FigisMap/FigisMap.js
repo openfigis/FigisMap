@@ -45,7 +45,7 @@ FigisMap.fifao = {
 	eez : 'fifao:EEZ',
 	ics : 'fifao:ICCAT_SMU',
 	lme : 'fifao:LME',
-	maj : 'fifao:FAO_MAJOR',
+	maj : 'fifao:FAO_MAJOR_Lines',
 	ma2 : 'fifao:FAO_MAJOR',
 	nma : 'fifao:limit_200nm',
 	cmp : 'fifao:ISO3_COUNTRY',
@@ -58,11 +58,15 @@ FigisMap.fifao = {
 	sub : 'fifao:FAO_SUB_AREA',
 	sun : 'fifao:FAO_SUB_UNIT',
 
-	//VME layer
-	vme_cl : 'vme:closures', // VME closed areas
-    vme_oa : 'vme:other_areas', // Other access regulated areas    
+	//VME layers
+	vme : 'vme:closures', // VME closed areas
+    vme_oara : 'vme:other_areas', // Other access regulated areas    
     vme_bfa : 'vme:bottom_fishing_areas', // Bottom fishing areas
     vme_regarea : 'fifao:RFB_COMP_CLIP', // VME regulatory areas
+	guf : 'fifao:gebco_underseafeatures', //undersea features
+    gbi : 'vme:gebco_isobath2000', //isobath -2000m
+    vnt : 'vme:vents_InterRidge_2011_all', // Hidrotermal
+    ccr : 'vme:WCMC-001-ColdCorals2005', //ColdCorals
 
 
 };
@@ -114,8 +118,8 @@ FigisMap.defaults = {
 	layerFilter	: '',
 	layerStyle	: '*',
 	layerStyles	: { distribution : 'all_fao_areas_style', intersecting : '*', associated : '*' },
-	mapCenter : [-2.46, 18.23],
-	mapCenterProjection : 4326
+	mapCenter : [-2.46, 18.23], //TODO OL3 (if maintained, to add to doc)
+	mapCenterProjection : 4326 //TODO OL3 (if maintained, to add to doc)
 };
 
 /**
@@ -138,7 +142,7 @@ FigisMap.assetsRoot = "assets/figis/";
 FigisMap.rnd.vars = {
 	geoserverURL		: FigisMap.geoServerBase + FigisMap.localPathForGeoserver,
 	geowebcacheURL		: FigisMap.geoServerBase + FigisMap.localPathForGeoserver + "/gwc/service",
-	logoURL			: FigisMap.assetsRoot + "common/img/FAO_blue_20_transp.gif",
+	logoURL			: FigisMap.assetsRoot + "common/img/FAOWatermarkSmall.png",
 	logoURLFirms		: FigisMap.assetsRoot + "firms/img/logoFirms60.gif",
 	FAO_fishing_legendURL	: FigisMap.assetsRoot + "common/img/FAO_fishing_legend.png",
 	EEZ_legendURL		: FigisMap.assetsRoot + "common/img/EEZ_legend.png",
@@ -430,6 +434,7 @@ FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/proj4.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/4326.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/3031.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/900913.js');
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/54009.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3' + ((FigisMap.debugLevel > 0)? '-debug' : '') + '.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-layerswitcher.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-zoomtomaxextent.js');
@@ -676,6 +681,83 @@ FigisMap.ol.isValidExtent = function( bounds ) {
 	for ( var i = 0; i < bounds.length; i++ ) if ( ( ! bounds[i] ) || ! isFinite( bounds[i] ) ) return false;
 	return true;
 };
+
+
+/**
+* FigisMap OL image format
+*/
+FigisMap.ol.imageFormat = 	"image/png";
+
+/**
+ * FigisMap.ol.configureBaseLayer
+ * @param obj
+ * @returns an object of class {ol.layer.Tile}
+ */
+FigisMap.ol.configureBaseLayer = function(obj){
+	return new ol.layer.Tile({
+					title : obj.title,
+					type: 'base',
+					source : new ol.source.TileWMS({
+						url : obj.cached ? FigisMap.rnd.vars.gwc : FigisMap.rnd.vars.wms, 
+						params : { 
+							'LAYERS' : obj.layer,
+							'VERSION': '1.1.1',
+							'FORMAT' : FigisMap.ol.imageFormat,
+							'TILED'	 : true,
+							'TILESORIGIN': boundsOriginString
+						},
+						wrapX: true,
+						serverType : obj.cached ? undefined : 'geoserver',
+						attributions: obj.attribution ? [ 
+							new ol.Attribution({
+								html : obj.attribution
+							})] : []
+						})
+				});
+}
+
+
+/**
+ * FigisMap.ol.getLayer
+ * @param map
+ * @param layername (layer name as in Geoserver 'namespace:layername')
+ */
+FigisMap.ol.getLayer = function(map, layername){
+	var target = undefined;
+	for(var i=0;i<map.getLayerGroup().getLayersArray().length;i++){
+		var layer = map.getLayerGroup().getLayersArray()[i];
+		if(layer.getSource().getParams()["LAYERS"] === layername){
+			target = map.getLayerGroup().getLayersArray()[i];
+			break;
+		}
+	}
+	return target;
+}
+
+/**
+ * FigisMap.ol.toggleLayer
+ * @param map
+ * @param layername (layer name as in Geoserver 'namespace:layername')
+ * @param visible
+ */
+FigisMap.ol.toggleLayer = function(map, layername, visible){
+	var layer = FigisMap.ol.getLayer(map, layername);
+	if(layer) layer.setVisible(visible);
+}
+
+/**
+ * FigisMap.ol.getSource
+ * @param map
+ * @param layername (layer name as in Geoserver 'namespace:layername')
+ */
+FigisMap.ol.getSource = function(map, layername){
+	var source = undefined;
+	var layer = FigisMap.ol.getLayer(map, layername);
+	if(layer) source = layer.getSource();
+	return source;
+}
+
+
 /**
  * --------------------------------------------------------------------------------------
  * FigisMap Parser functions
@@ -820,6 +902,7 @@ FigisMap.parser.projection = function( p ) {
 		case 3349	: break;
 		case 900913	: break;
 		case 3031	: break;
+		case  54009 : break;
 		default			: proj = 4326;
 	}
 	return proj;
@@ -834,8 +917,8 @@ FigisMap.parser.watermark = function( p ) {
 	var w = {
 		src : FigisMap.rnd.vars.logoURL,
 		title : FigisMap.label('Powered by FIGIS', p),
-		width : 60,
-		height : 60,
+		width : 176,
+		height : 44,
 		wclass : 'ol-powered-by'
 	};
 	if ( p && p.context.indexOf('FIRMS') == 0 ) {
@@ -1307,14 +1390,14 @@ FigisMap.rfb.preparse = function( pars ) {
 
 /**
  * --------------------------------------------------------------------------------------
- * VME specicic methods
+ * VME specific methods (to check later) TODO OL3
  * --------------------------------------------------------------------------------------
  */
 
 
 
 //check if bbox of zoom area is in bbox of projection
-//TODO see if it cna be recycled somewhere
+//TODO see if it cna be recycled somewhere, possibly outside FigisMAP
 FigisMap.ol.checkValidBbox = function (projections,bboxs) {
 	if(bboxs.srs){
 		if (bboxs.srs != myMap.getView().getProjection().getCode()){
@@ -1331,7 +1414,6 @@ FigisMap.ol.checkValidBbox = function (projections,bboxs) {
 		return true; 		
 	}
 };
-
 
 
 
@@ -1373,6 +1455,15 @@ FigisMap.rnd.maxResolution = function( proj, pars ) {
 			case 'S'	: return base / 2; break;
 			case 'M'	: return base / 2; break;
 			case 'L'	: return base / 4; break;
+		}
+	} else if (proj == 54009){
+		//mollweide
+		base = 281876.4952525812;
+		switch ( size ) {
+			case 'XS'	: return base; break;
+			case 'S'	: return base / 2; break;
+			case 'M'	: return base / 2; break;
+			case 'L'	: return base / 8; break; //original value "return base / 4". adapted for figis-vme
 		}
 	} else {
 // 		base = 0.703125;
@@ -1488,30 +1579,72 @@ FigisMap.rnd.initLayers = function( pars ) {
 FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 	var layerTypes = new Object();
 	for ( var i = 0; i < layers.length; i++ ) layerTypes[ layers[i].layer ] = true;
+	
+	//add contextual layers if pars.contextLayers = true
+	//---------------------------------------------------
+	if( pars.contextLayers ) {
+		for( var i = 0; i < pars.contextLayers.length; i++) {
+			var contextLayer = pars.contextLayers[i];
+			if(! layerTypes[contextLayer.layer] ){
+				contextLayer.type = 'auto';
+				layers.push(contextLayer);
+			}
+		}
+	}
+	
+	//add default auto layers if pars.basicLayers = true
+	//---------------------------------------------------
 	if ( pars.basicsLayers ) {
-		//WMS Economic Zones
+
+		//WMS 200 nautical miles arcs
 		if ( ! layerTypes[ FigisMap.fifao.nma ] && ! pars.options.skipNauticalMiles ) {
-			layers.unshift({
+			layers.unshift({ //TODO check why Unshift
 				layer	: FigisMap.fifao.nma,
 				label	: '200 nautical miles arcs',
+				showLegendGraphic: true, //TODO OL3
+				group	: "Additional features", //TODO OL3
 				filter	:'*',
 				icon	: '<img src="' + FigisMap.rnd.vars.EEZ_legendURL + '" width="30" height="20" />',
 				opacity	: 0.3,
 				hidden	: ( pars.isFIGIS && ! pars.rfb && ! (pars.context == 'FI-facp') ),
-				type	: 'auto'
+				type	: 'auto',
+				//infoGroupsSources: FigisMap.infoGroupsSources.overlays //TODO OL3
 			});
 		}
 		//WMS FAO Areas
 		if ( pars.projection != 3031 ) if ( ! pars.options.skipFishingAreas ) if ( ! ( layerTypes[ FigisMap.fifao.ma2 ] || layerTypes[ FigisMap.fifao.maj ] ) ) {
-			layers.unshift( {
-				layer	: FigisMap.fifao.ma2,
+			layers.unshift( { //TODO check why Unshift
+				layer	: FigisMap.fifao.maj,
 				label	: 'FAO fishing areas',
+				showLegendGraphic: true, //TODO OL3
+				group: "Additional features", //TODO OL3
 				filter	:'*',
 				icon	:'<img src="'+FigisMap.rnd.vars.FAO_fishing_legendURL+'" width="30" height="20" />',
-				type	:'auto'
+				type	:'auto',
+				//infoGroupsSources: FigisMap.infoGroupsSources.overlays //TODO OL3
 			} );
 		}
+		
+		// marine areas
+		layers.push( {
+			layer		: FigisMap.fifao.lab,
+			cached		: true,
+			filter		: '*',
+			type		: 'auto',
+			style		: 'MarineAreasLabelled',
+            group: "Additional features", //TODO OL3
+            label	: 'Oceans and sea names',
+			remote		: false,
+            showLegendGraphic: false, //TODO OL3
+			skipLegend	: true,
+			hideInSwitcher	: false,
+            //infoGroupsSources: FigisMap.infoGroupsSources.overlays
+		} );
 	}
+
+	
+	//continent land mask
+	//-------------------
 	if ( pars.landMask && ! layerTypes[ FigisMap.fifao.cnt ] && ! layerTypes[ FigisMap.fifao.CNT ] ) {
 		layers.push( {
 			layer		: FigisMap.fifao[ pars.options.colors ? 'CNT' : 'cnt' ], //FigisMap.fifao.cnt,
@@ -1523,17 +1656,7 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 			hideInSwitcher	: true
 		} );
 	}
-	//Sea labels
-	if ( pars.options.labels && ! layerTypes[ FigisMap.fifao.lab ] ) {
-		layers.push( {
-			layer		: FigisMap.fifao.lab,
-			filter		: '*',
-			type		: 'auto',
-			style		: 'MarineAreasLabelled',
-			skipLegend	: true,
-			hideInSwitcher	: false
-		} );
-	}
+	
 	return layers;
 };
 
@@ -1799,6 +1922,7 @@ FigisMap.getStyleRuleDescription = function(STYLE, pars) {
 			
 			target		: (String or reference to HTML node) the DIV where the map will be actually stored.
 			context		: (String) the name of actual map context, sometimes used for defaults (Optional, defaults to 'default')
+			contextLayers : (Array) a list of context layer definitions to add as autolayers
 			base		: (boolean (false) String | Object | Array) The base layer, has default (optional)
 			distribution	: A "layer list" property, see below.
 			intersecting	: A "layer list" property, see below.
@@ -1883,42 +2007,11 @@ FigisMap.draw = function( pars ) {
 	
 	FigisMap.lastMap = ( theMap && theMap.getTarget() ) ? theMap : false;
 	FigisMap.renderedMaps[ pars.target.id ] = FigisMap.lastMap;
-	
+	console.log("drawing");
+	console.log(FigisMap.lastMap);
 	return FigisMap.lastMap;
 };
 
-/**
- * FigisMap.ol.configureBaseLayer
- * @param obj
- * @returns an object of class {ol.layer.Tile}
- */
-FigisMap.ol.configureBaseLayer = function(obj){
-	return new ol.layer.Tile({
-					title : obj.title,
-					type: 'base',
-					source : new ol.source.TileWMS({
-						url : obj.cached ? FigisMap.rnd.vars.gwc : FigisMap.rnd.vars.wms, 
-						params : { 
-							'LAYERS' : obj.layer,
-							'VERSION': '1.1.1',
-							'FORMAT' : FigisMap.ol.imageFormat,
-							'TILED'	 : true,
-							'TILESORIGIN': boundsOriginString
-						},
-						wrapX: true,
-						serverType : obj.cached ? undefined : 'geoserver',
-						attributions: obj.attribution ? [ 
-							new ol.Attribution({
-								html : obj.attribution
-							})] : []
-						})
-				});
-}
-
-/**
-* FigisMap OL image format
-*/
-FigisMap.ol.imageFormat = 	"image/png";
 
 /**
  * FigisMap.renderer
@@ -1958,6 +2051,7 @@ FigisMap.renderer = function(options) {
 		switch ( projection ) {
 			case	3031 : myBounds = [-25000000, -25000000, 25000000, 25000000]; break;
 			case	900913 : myBounds = [-20037508.34, -20037508.34, 20037508.34, 20037508.34]; break;
+			case 	54009	: myBounds = [-18040095.6961652, -9020047.847897789, 18040095.6961652, 9020047.847897789]; break;
 			default     : projection = 4326; myBounds =  [-180, -90, 180, 90];
 		}
 		boundsOrigin = [myBounds[0], myBounds[1]];

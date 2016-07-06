@@ -41,9 +41,9 @@ function addRFB(extent, center, zoom, projection, elinkDiv, urlLink, htmlLink, l
 		projection	: projection,
 		options		: { colors: false, labels: true },
 		countriesLegend	: 'MemberCountries',
-		/*base : [
+		base : [
 			{ layer: FigisMap.fifao.cnt, cached: true, remote:false, label : "Continents"}
-		]*/
+		]
 	};
 	if ( zoom != null ) pars.zoom = zoom;
 	if ( extent != null ) pars.extent = extent;

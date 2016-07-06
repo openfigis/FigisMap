@@ -27,7 +27,9 @@ ol.control.LayerSwitcher = function(opt_options) {
     button.setAttribute('title', tipLabel);
     element.appendChild(button);
 
-    this.panel = document.createElement('div');
+    this.panel = (options.id)? document.getElementById(options.id) : document.createElement('div');
+	console.log(options.id);
+	console.log(document.getElementById(options.id));
     this.panel.className = 'panel';
     element.appendChild(this.panel);
 

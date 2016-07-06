@@ -40,7 +40,7 @@
 	<script type="text/javascript" src="js/figis/vme/factsheet.js"></script> 
     <script type="text/javascript" src="js/figis/vme/infoSourcesLayer.js"></script> 
     <!-- proxy overriding configuration: allows to use a proxy for test purpose -->
-    <script type="text/javascript" src="js/figis/vme/proxy-ovr.js" defer="defer"></script>
+    <!-- script type="text/javascript" src="js/figis/vme/proxy-ovr.js" defer="defer"></script -->
 	
 	<script type="text/javascript" src="js/figis/vme/vmeData.js" ></script>
 	<script type="text/javascript" src="js/figis/vme/popups.js"></script>
@@ -131,49 +131,19 @@ document.namespaces;
 </script>
 </head>
 
-<!-- body onload="setVMEPage('e-link','rfbs-link', 'rfbs-html')" -->
 <body>
 
 <div id="page">
 	<div id="wrapper">
-    <!--
-		<div id="top">
 
-			<table width="100%" cellpadding="0" cellspacing="0" border="0">
-				<tr>
-					<td align="left">
-						<a href="http://www.fao.org" target="_blank"><img border=0 style="vertical-align: middle;" src="theme/img/FIGIS_banner-logo.gif" alt="FOOD AND AGRICULTURE ORGANIZATION OF THE UNITED NATIONS" title="Food and Agriculture Organization of the United Nations"/></a>
-					</td>
-					<td align="right">
-						<a href="http://www.fao.org/fishery" target="_blank"><img border=0 style="vertical-align: middle;" src="theme/img/FIGIS_banner-text.gif" alt="FAO Fisheries and Aquaculture Department" title="FAO Fisheries and Aquaculture Department"/></a>
-					</td>
-				</tr>
-
-				<tr>
-					<td>
-						<h1 id="title">Vulnerable Marine Ecosystems Map Viewer</h1>
-					</td>
-				</tr>			
-			</table>
-			
-		</div> -->
-        <!--div>
-            <div class="ribbon" style="position:absolute;right:0px;top:0px;z-index:5000">
-               <img src="theme/img/beta-ribbon.png" alt="Beta"/>
-            </div> 
-        </div-->
-
-        <!--div  id="header">
-            <div id="logo"></div>
-        </div-->
-
+		<!-- Banner -->
 		<iframe id="banner" src="banner/" width="100%" height="75" border="0" frameborder="0" scrolling="no"></iframe>
 		
 		<div style="display: none;" id="topBar">			
 			<label id="lblFilRFB" style="visibility:hidden">Zoom to:</label>
 			<select  style="visibility:hidden;" id="FilterRFB" onchange="setZoom()"></select>
 			<label style="visibility:hidden;" id="lblRFB">Filter by:</label>
-			<select style="visibility:hidden;" id="SelectRFB" onchange="setVME(null, null, null, 'e-link','rfbs-link', 'rfbs-html')"></select>    
+			<select style="visibility:hidden;" id="SelectRFB" onchange="VME.setViewer(null, null, null, 'e-link','rfbs-link', 'rfbs-html')"></select>    
 
 			<!--a href="javascript:embedLink();" id="EmbedLink" title="Link or embed this RFB map"><span>Link</span></a-->
 			<input id="txtCql" type="hidden" />
@@ -241,24 +211,22 @@ document.namespaces;
                 <div id="SelectSRS">
                    <div> 
                         <p>
-                            <input id="mercatorRadio" type="radio" onclick="radioClick(this)" onchange="setVME(null, null, this.value, 'embed-link','embed-url', 'embed-iframe', null,  true)" name="srs" value='3349' checked="checked"/>
+                            <input id="mercatorRadio" type="radio" onclick="radioClick(this)" onchange="VME.setViewer(null, null, this.value, 'embed-link','embed-url', 'embed-iframe', null,  true)" name="srs" value='3349' checked="checked"/>
                             <label>Mercator</label>
                         </p>
 
                         <p>
-                            <input id="WGS84Radio" type="radio" onclick="radioClick(this)" onchange="setVME(null, null, this.value, 'embed-link','embed-url', 'embed-iframe', null,  true)" name="srs" value='4326' />
+                            <input id="WGS84Radio" type="radio" onclick="radioClick(this)" onchange="VME.setViewer(null, null, this.value, 'embed-link','embed-url', 'embed-iframe', null,  true)" name="srs" value='4326' />
                             <label>WGS84</label>
                         </p>
                    </div>
                    <div> 
                         <p>
-                            <input type="radio" onclick="radioClick(this)" onchange="setVME(null, null, this.value, 'embed-link','embed-url', 'embed-iframe', null,  true)" name="srs" value='3031' />
+                            <input type="radio" onclick="radioClick(this)" onchange="VME.setViewer(null, null, this.value, 'embed-link','embed-url', 'embed-iframe', null,  true)" name="srs" value='3031' />
                             <label>South Polar</label>
                         </p>
-                        <!-- missing proj4js eck4.js file -->
-                        <!-- <option value='54012'>EckertIV (54012)</option> -->
                         <p>
-                            <input type="radio" onclick="radioClick(this)" onchange="setVME(null, null, this.value, 'embed-link','embed-url', 'embed-iframe', null,  true)" name="srs" value='54009' />
+                            <input type="radio" onclick="radioClick(this)" onchange="VME.setViewer(null, null, this.value, 'embed-link','embed-url', 'embed-iframe', null,  true)" name="srs" value='54009' />
                             <label>Mollweide</label>
                         </p>
                    </div> 
@@ -266,13 +234,13 @@ document.namespaces;
             </div>
 
             <div id="loginContainer">		
-				<div id="lblVME" class="lblVME figisButtonToggleVME" style="" onclick="toggleStyle(this, true)">VME closed areas</div>
+				<div id="lblVMEs" class="lblVMEs figisButtonToggleVMEs" style="" onclick="VME.toggleVMEs(this)">VME closed areas</div>
 				
-				<div id="lblVMEOther" class="lblVMEOther figisButtonToggleOTHER" style="" onclick="toggleStyle(this, true)">Other access regulated areas</div>
+				<div id="lblOARAs" class="lblOARAs figisButtonToggleOARAs" style="" onclick="VME.toggleOARAs(this)">Other access regulated areas</div>
 				
-				<div id="lblFootprints" class="lblFootprints figisButtonToggleBOTTOM" style="" onclick="toggleStyle(this, true)">Bottom fishing areas</div>			
+				<div id="lblBFAs" class="lblBFAs figisButtonToggleBFAs" style="" onclick="VME.toggleBFAs(this)">Bottom fishing areas</div>			
 				
-				<div id="lblReset" class="lblReset figisButton" style="" onclick="resetVME()">Reset</div>
+				<div id="lblReset" class="lblReset figisButton" style="" onclick="VME.reset()">Reset</div>
 			</div>
             <div id="sidebar">
                 <div id="leftTopPan">
@@ -319,10 +287,8 @@ document.namespaces;
 	// <![CDATA[
 		Ext.onReady(function(){
 			sidePanel.render(document.getElementById('sidebarP'));
-            
-            //selectRFB.render(document.getElementById('RFBCombo_'));
-
-			setVMEPage('embed-link','embed-url', 'embed-iframe');
+			
+			FigisMap.init( VME.init );
 			
             Ext.QuickTips.init();
 			

@@ -88,24 +88,6 @@ function getColor(count){ return COLORS[count]; }
 
 function getStyle(count){ return 'species_style_' + getColor(count); }
 
-/**
- * function addStock
- **/
-/* TODO ? OL3
- function addStock(myVectors, myRequest, myResource) {
-	var json_url = FigisMap.jma.vars.geoserverURL + "/rest/unionservice/" + myRequest;
-	
-	OpenLayers.loadURL(
-		json_url,
-		{},
-		null,
-		function(r) {
-			var p = new OpenLayers.Format.GeoJSON();
-			var f = p.read(r.responseText);
-			myVectors.addFeatures(f);
-		}
-	);
-}*/
 
 /**
 * function addSpecies
@@ -156,9 +138,9 @@ function addSpecies(extent, center, zoom, elinkDiv, urlLink, htmlLink){
 		global		: ! performAutoZoom,
 		options		: {colors: false, labels: true },
 		distribution	: new Array(),
-		/*base : [
+		base : [
 			{ layer: FigisMap.fifao.cnt, cached: true, remote:false, label : "Continents"}
-		]*/
+		]
 	};
 	
 	for (var count = 0; count < species.length; count++) {
@@ -332,10 +314,8 @@ function setSpeciesEmbedLink(targetId, specLinkId, specHtmlId){
 		var prj = document.getElementById("SelectSRS").value;
 		
 		baseURL += "?species=" + species.join(',');
-		//!OL2 baseURL += "&extent=" + myMap.getExtent().toBBOX();
 		baseURL += "&extent=" + myMap.getView().calculateExtent(myMap.getSize()).join(',');
 		baseURL += "&center=" + myMap.getView().getCenter().join(',');
-		//!OL2 baseURL += "&zoom=" + myMap.getZoom();
 		baseURL += "&zoom=" + myMap.getView().getZoom();
 		baseURL += "&prj=" + prj;
 		

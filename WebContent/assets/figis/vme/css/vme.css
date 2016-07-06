@@ -907,7 +907,7 @@ h3 {
     z-index:1050;
 }
 
-.figisButtonVME{
+.figisButtonVMEs{
     background-repeat: no-repeat;
     width:90px;
     -moz-box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.5);
@@ -937,7 +937,7 @@ h3 {
     z-index:1050;
 }
 
-.figisButtonOTHER{
+.figisButtonOARAs{
     background-repeat: no-repeat;
     width:90px;
     -moz-box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.5);
@@ -967,7 +967,7 @@ h3 {
     z-index:1050;
 }
 
-.figisButtonBOTTOM{
+.figisButtonBFAs{
     background-repeat: no-repeat;
     width:90px;
     -moz-box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.5);
@@ -997,7 +997,7 @@ h3 {
     z-index:1050;
 }
 
-.figisButtonToggleVME{
+.figisButtonToggleVMEs{
     background-repeat: no-repeat;
     width:90px;
     -moz-box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.5);
@@ -1027,7 +1027,7 @@ h3 {
     z-index:1050;
 }
 
-.figisButtonToggleOTHER{
+.figisButtonToggleOARAs{
     background-repeat: no-repeat;
     width:90px;
     -moz-box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.5);
@@ -1057,7 +1057,7 @@ h3 {
     z-index:1050;
 }
 
-.figisButtonToggleBOTTOM{
+.figisButtonToggleBFAs{
     background-repeat: no-repeat;
     width:90px;
     -moz-box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.5);
@@ -1110,19 +1110,19 @@ a.lblReset {
     /*background-image: url(../img/house.png);*/    
 }
 
-#lblVME{
+#lblVMEs{
     position:absolute;
     top:10px;
     left:-1px;
 }
 
-#lblVMEOther{
+#lblOARAs{
     position:absolute;
     top:50px;
     left:-1px;
 }
 
-#lblFootprints{
+#lblBFAs{
     position:absolute;
     top:93px;
     left:-1px;

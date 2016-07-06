@@ -72,9 +72,11 @@ FigisMap.infoGroupsSources = {
 
 FigisMap.defaults = {
 	lang		: document.documentElement.getAttribute('lang') ? document.documentElement.getAttribute('lang').toLowerCase() : 'en',
-	defaultBaseLayer	: { layer: FigisMap.fifao.cnt, cached: true, remote:false, label : "Continents" },//FigisMap.fifao.maj,
-	baseLayers	: [{ layer: FigisMap.fifao.bathimetry, cached: true, remote:false, label : "Oceans imagery",format: "image/jpeg"},
-				   { layer: FigisMap.fifao.cnt, cached: true, remote:false, label : "Continents"}],
+	defaultBaseLayer	: { layer: FigisMap.fifao.cnt, cached: true, remote:false, label : "Continents" },
+	baseLayers	: [
+		{ layer: FigisMap.fifao.cnt, cached: true, remote:false, label : "Continents"},
+		{ layer: FigisMap.fifao.bathimetry, cached: true, remote:false, label : "Oceans imagery",format: "image/jpeg"}
+	],
 	basicsLayers	: true,
 	context		: 'default',
 	drawDataRect	: false,
@@ -2115,6 +2117,9 @@ FigisMap.renderer = function(options) {
 						}
 					}
 
+					/*
+					//MANAGED IN VME.js @eblondel 05/07/2016
+					
 					var el;
 					if(layerName == "VME closed areas"){
 						el = document.getElementById("lblVME");	
@@ -2137,7 +2142,7 @@ FigisMap.renderer = function(options) {
 						}else{
 							el.className = "lblVMEOther figisButtonOTHER";
 						}					
-					}					
+					}	*/				
 				}
 			}
 		}
