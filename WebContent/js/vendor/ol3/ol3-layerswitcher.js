@@ -14,47 +14,49 @@ ol.control.LayerSwitcher = function(opt_options) {
       options.tipLabel : 'Legend';
 
     this.displayLegend_ = options.displayLegend ? options.displayLegend : false;
-	
 	this.togglingLegendGraphic_ = options.toggleLegendGraphic ? options.displayLegend : false;
 	this.collapsableGroups_ = options.collapsableGroups ? options.collapsableGroups : false;
+	this.isExternalized = (options.id)? true : false;
 	
     this.mapListeners = [];
 
-    this.hiddenClassName = 'ol-unselectable ol-control layer-switcher';
-    this.shownClassName = this.hiddenClassName + ' shown';
+	if(this.isExternalized){
+		this.panel = document.getElementById(options.id);
+		this.panel.className = 'panel';
+	}else{
+		this.panel = document.createElement('div');
+		
+		 this.hiddenClassName = 'ol-unselectable ol-control layer-switcher';
+		this.shownClassName = this.hiddenClassName + ' shown';
+		
+		var element = document.createElement('div');
+		element.className = this.hiddenClassName;
+		element.appendChild(this.panel);
+		var button = document.createElement('button');
+		button.setAttribute('title', tipLabel);
+		element.appendChild(button);
 
-    var element = document.createElement('div');
-    element.className = this.hiddenClassName;
+		var this_ = this;
 
-    var button = document.createElement('button');
-    button.setAttribute('title', tipLabel);
-    element.appendChild(button);
+		button.onclick = function(e) {
+			this_.showPanel();
+		};
+		
+		element.onmouseover = function(e) {
+			this_.showPanel();
+		};
 
-	this.isExternalized = (options.id)? true : false;
-    this.panel = (this.isExternalized)? document.getElementById(options.id) : document.createElement('div');
-	
-    this.panel.className = 'panel';
-    element.appendChild(this.panel);
-
-    var this_ = this;
-
-    button.onclick = function(e) {
-        this_.showPanel();
-    };
-	
-    element.onmouseover = function(e) {
-        this_.showPanel();
-    };
-
-    element.onmouseout = function(e) {
-        e = e || window.event;
-        if (!element.contains(e.toElement)) {
-            this_.hidePanel();
-        }
-    };
-
+		element.onmouseout = function(e) {
+			e = e || window.event;
+			if (!element.contains(e.toElement)) {
+				this_.hidePanel();
+			}
+		};
+	}
+		
+    
     ol.control.Control.call(this, {
-        element: element,
+        element: (this.isExternalized)? this.panel : element,
         target: options.target
     });
 

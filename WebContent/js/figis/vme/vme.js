@@ -706,7 +706,6 @@ VME.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, 
 									displayLegend: true ,
 									toggleLegendGraphic : true,
 									collapsableGroups : true,
-									groupsInfoHandlers : 
 									overlayGroups : overlayGroups,
 									defaultOverlayGroup: overlayGroups[0]}
 		}
