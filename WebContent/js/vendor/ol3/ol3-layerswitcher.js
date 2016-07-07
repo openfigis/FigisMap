@@ -16,7 +16,8 @@ ol.control.LayerSwitcher = function(opt_options) {
     this.displayLegend_ = options.displayLegend ? options.displayLegend : false;
 	
 	this.togglingLegendGraphic_ = options.toggleLegendGraphic ? options.displayLegend : false;
-
+	this.collapsableGroups_ = options.collapsableGroups ? options.collapsableGroups : false;
+	
     this.mapListeners = [];
 
     this.hiddenClassName = 'ol-unselectable ol-control layer-switcher';
@@ -206,8 +207,21 @@ ol.control.LayerSwitcher.prototype.renderLayer_ = function(lyr, idx) {
 
     if (lyr.getLayers) {
 
-        li.className = 'group';
+		var groupClassName = 'layer-switcher-layergroup shown';
+		var groupHiddenClassName = 'layer-switcher-layergroup';
+	
+        li.className = groupClassName;
         label.innerHTML = lyrTitle;
+		
+		if(this.collapsableGroups_ ){
+			if(lyr.getLayers().getArray().length > 0){
+				if(lyr.getLayers().getArray()[0].get('type') != 'base')
+					label.style.textDecoration = "underline";
+					label.onclick = function(e) {
+						li.className = (li.className == groupClassName)? groupHiddenClassName : groupClassName;
+					};
+			}
+		}
         li.appendChild(label);
         var ul = document.createElement('ul');
         li.appendChild(ul);
@@ -215,6 +229,8 @@ ol.control.LayerSwitcher.prototype.renderLayer_ = function(lyr, idx) {
         this.renderLayers_(lyr, ul);
 
     } else {
+	
+		li.className = "layer-switcher-layer";
 	
 		//create html
         var input = document.createElement('input');
@@ -263,7 +279,6 @@ ol.control.LayerSwitcher.prototype.renderLegendGraphic_ = function(lyr, idx, li)
 			var legend = document.createElement('div');
 			var legendId = lyr.get('title').replace(' ', '-') + '_' + idx + "_legend";
 			legend.id = legendId;
-			legend.style.marginLeft = "15px";
 			legend.style.display = (lyr.getVisible()? "block" : "none");
 			var img = '<img src="'+imgSrc+'" />';
 			legend.innerHTML = img;

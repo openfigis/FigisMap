@@ -63,6 +63,7 @@ FV.baseMapParams = function() {
 	this.options = {
 		skipScale: true,
 		labels: true,
+		topMarineLabels: true,
 		loadingPanelOptions : FV.loadingPanelOptions,
 		layerSwitcherOptions: { displayLegend: true }
 	};

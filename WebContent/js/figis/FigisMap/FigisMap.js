@@ -1091,6 +1091,7 @@ FigisMap.parser.parse = function( p ) {
 	if ( typeof p.options.skipNavigation == 'undefined' ) p.options.skipNavigation = false;
 	if ( p.projection != 4326 ) p.options.colors = false;
 	if ( typeof p.options.labels == 'undefined' ) p.options.labels = p.options.colors;
+	if ( typeof p.options.topMarineLabels == 'undefined' ) p.options.topMarineLabels = false;
 	
 	//baselayers management
 	//TODO test compatibility with other viewers
@@ -1102,6 +1103,7 @@ FigisMap.parser.parse = function( p ) {
 	if ( p.base ) {
 		for(var i=0;i<p.base.length;i++){
 			p.base[i] = FigisMap.parser.layer( p.base[i], { 'type' : 'base'} );
+			if (p.attribution) p.base[i].attribution = p.attribution;
 			if ( ! p.base[i].title ) p.base[i].title = FigisMap.label( p.base[i].label ? p.base[i].label : p.base[i].layer, p );
 		}
 	}
@@ -1666,23 +1668,12 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 	
 	var overlayGroup = FigisMap.ol.getDefaultOverlayGroup(pars);
 	
-	//add contextual layers if pars.contextLayers = true
-	//---------------------------------------------------
-	if( pars.contextLayers ) {
-		for( var i = 0; i < pars.contextLayers.length; i++) {
-			var contextLayer = pars.contextLayers[i];
-			if(! layerTypes[contextLayer.layer] ){
-				contextLayer.type = 'auto';
-				contextLayer.overlayGroup = (contextLayer.overlayGroup)? contextLayer.overlayGroup : overlayGroup;
-				layers.push(contextLayer);
-			}
-		}
-	}
-	
 	//add default auto layers if pars.basicLayers = true
 	//---------------------------------------------------
 	if ( pars.basicsLayers ) {
 
+		var hideBasicLayers = (pars.options.hideBasicLayers)? pars.options.hideBasicLayers : false;
+	
 		//WMS 200 nautical miles arcs
 		if ( ! layerTypes[ FigisMap.fifao.nma ] && ! pars.options.skipNauticalMiles ) {
 			layers.unshift({ //TODO check why Unshift
@@ -1691,7 +1682,7 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 				overlayGroup: overlayGroup,
 				filter	:'*',
 				opacity	: 0.3,
-				hidden	: ( pars.isFIGIS && ! pars.rfb && ! (pars.context == 'FI-facp') ),
+				hidden	: ( pars.isFIGIS && ! pars.rfb && ! (pars.context == 'FI-facp') ) || hideBasicLayers,
 				type	: 'auto',
 				skipLegend	: false,
 				hideInSwitcher	: false,
@@ -1707,6 +1698,7 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 				filter	:'*',
 				type	:'auto',
 				skipLegend	: false,
+				hidden: hideBasicLayers,
 				hideInSwitcher	: false,
 				showLegendGraphic: true
 			} );
@@ -1742,6 +1734,20 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 			hideInSwitcher	: true,
 			showLegendGraphic:false
 		} );
+	}
+	
+	
+	//add contextual layers if pars.contextLayers = true
+	//---------------------------------------------------
+	if( pars.contextLayers ) {
+		for( var i = 0; i < pars.contextLayers.length; i++) {
+			var contextLayer = pars.contextLayers[i];
+			if(! layerTypes[contextLayer.layer] ){
+				contextLayer.type = 'auto';
+				contextLayer.overlayGroup = (contextLayer.overlayGroup)? contextLayer.overlayGroup : overlayGroup;
+				layers.push(contextLayer);
+			}
+		}
 	}
 	
 	return layers;
@@ -1819,7 +1825,11 @@ FigisMap.rnd.sort4map = function( layers, p ) {
 		if ( l.layer == FigisMap.fifao.cbs ) {
 			countryLayers.push( l );
 		} else if ( l.layer ==  FigisMap.fifao.lab ) {
-			topLayers.push( l );
+			if(p.options.topMarineLabels){
+				topLayers.push( l );
+			}else{
+				normalLayers.push( l);
+			}
 		} else if ( l.layer ==  FigisMap.fifao.cmp ) {
 			topLayers.push( l );
 		} else if ( l.dispOrder && l.dispOrder > 1 ) {
@@ -2033,6 +2043,8 @@ FigisMap.getStyleRuleDescription = function(STYLE, pars) {
 			options		: (Object) (optional), all keys default to false:
 				colors			: (boolean) use color map background
 				labels			: (boolean) use labels - defaults to options.colors
+				topMarineLabels	: (boolean) display marine labels layer on top (in map and layerswitcher)
+				hideBasicLayers : (boolean) hide the basic auto layers FAO areas and EEZ
 				skipLayerSwitcher	: (boolean) omit layer switcher if true
 				skipLoadingPanel	: (boolean) omit Loading panel (spinning wheel) if true
 				loadingPanelOptions	: (Object) object of options passed to LoadingPanel

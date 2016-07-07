@@ -68,7 +68,7 @@ Ext.onReady(function(){
         var mainDiv = Ext.get('main') || Ext.get('main_e');
 		var bannerIframe = Ext.get('banner');
 		
-		var embeddedIframe = location.href.indexOf("index_e.html") != -1 ? true : false;
+		var embeddedIframe = location.href.indexOf("vme_e.html") != -1 ? true : false;
 		
 		var pars;
 		if(embeddedIframe){

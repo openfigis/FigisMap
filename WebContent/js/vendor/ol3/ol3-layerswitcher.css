@@ -37,12 +37,32 @@
     list-style: none;
 }
 
-.layer-switcher li.group {
+.layer-switcher-layergroup {
     padding-top: 5px;
 }
 
-.layer-switcher li.group > label {
+.layer-switcher-layergroup  ul{
+	display:none;
+}
+
+.layer-switcher-layergroup.shown  ul{
+	display:block;
+}
+
+.layer-switcher-layergroup > label {
     font-weight: bold;
+}
+
+.layer-switcher-layer {
+	margin-left:0px;
+}
+
+.layer-switcher-layer  > label{
+	margin-left:2px;
+}
+
+.layer-switcher-layer > div {
+	margin-left: 15px;
 }
 
 .layer-switcher input {

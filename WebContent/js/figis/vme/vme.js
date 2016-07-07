@@ -612,13 +612,13 @@ VME.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, 
 		contextLayers : [
 			//main VME layers
 			{
-				layer	: FigisMap.fifao.vme,
-				label	: 'VME closed areas', //'Area types',
+				layer	: FigisMap.fifao.vme_bfa,
+				label	: 'Bottom fishing areas', //'Area types',
 				overlayGroup: overlayGroups[1],
-				style: "MEASURES_VME",
-				filter	: "YEAR <= " + year + " AND END_YEAR >= "+ year,
+				style: "MEASURES_BTM_FISH",
+				filter	: "YEAR <= '" + year + "' AND END_YEAR >="+ year,
 				opacity	: 1.0,
-				hideInSwitcher	: false,
+				hideInSwitcher	: false, 
 				showLegendGraphic: true, 
 				legend_options: "forcelabels:on;forcerule:True;fontSize:12"
 			},
@@ -634,13 +634,13 @@ VME.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, 
 				legend_options: "forcelabels:on;forcerule:True;fontSize:12"
 			},
 			{
-				layer	: FigisMap.fifao.vme_bfa,
-				label	: 'Bottom fishing areas', //'Area types',
+				layer	: FigisMap.fifao.vme,
+				label	: 'VME closed areas', //'Area types',
 				overlayGroup: overlayGroups[1],
-				style: "MEASURES_BTM_FISH",
-				filter	: "YEAR <= '" + year + "' AND END_YEAR >="+ year,
+				style: "MEASURES_VME",
+				filter	: "YEAR <= " + year + " AND END_YEAR >= "+ year,
 				opacity	: 1.0,
-				hideInSwitcher	: false, 
+				hideInSwitcher	: false,
 				showLegendGraphic: true, 
 				legend_options: "forcelabels:on;forcerule:True;fontSize:12"
 			},
@@ -700,9 +700,13 @@ VME.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, 
 		base: FigisMap.defaults.baseLayers.reverse(),
 		options : {
 			labels: true,
+			topMarineLabels: false,
+			hideBasicLayers: true,
 			layerSwitcherOptions: { id: "layerswitcherpanel",
 									displayLegend: true ,
 									toggleLegendGraphic : true,
+									collapsableGroups : true,
+									groupsInfoHandlers : 
 									overlayGroups : overlayGroups,
 									defaultOverlayGroup: overlayGroups[0]}
 		}

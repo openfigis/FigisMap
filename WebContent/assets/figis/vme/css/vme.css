@@ -16,6 +16,30 @@
     left: 40px;
 }
 
+#layerswitcherpanel{
+	margin:10px 5px;
+	overflow:auto;
+}
+
+.layer-switcher-layergroup {
+	margin-top:3px;
+	margin-bottom:3px;
+	margin-left:10px;
+}
+
+.layer-switcher-layer {
+    margin-top: 1px;
+	margin-left:10px;
+}
+
+.layer-switcher-layer  > label{
+	margin-left:3px;
+}
+
+.layer-switcher-layer > div {
+	margin-left: 15px;
+}
+
 /*================================================================
 *  VME stuff
 * ================================================================
@@ -585,6 +609,11 @@ ul,li {
 	font-weight: bold;
 	padding: .5em 0;
 }
+
+#legendPanel .x-panel-body {
+    overflow-y: auto;
+}
+
 #MemberCountries {
 }
 
