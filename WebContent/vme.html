@@ -150,7 +150,7 @@ document.namespaces;
 			<input id="command" type="hidden" />
 			<input id="opt" type="hidden" />
 			
-            <!--div id="selectionRFB" onClick="setVMEEmbedLink('embed-url', 'embed-iframe');"></div-->
+            <!--div id="selectionRFB" onClick="VME.setEmbedLink('embed-url', 'embed-iframe');"></div-->
             
 			<!-- li>
 				<label id="lblCQL">Provide CQL Query</label>
@@ -172,61 +172,61 @@ document.namespaces;
 			<div id="map" class="map"></div>
             
             <!--div  id="bottomRightPanel">
-                <div id="yearLess" onClick="FigisMap.time.decrementYear(); setVMEEmbedLink('embed-url', 'embed-iframe');" unselectable="on"></div>               
+                <div id="yearLess" onClick="FigisMap.time.decrementYear(); VME.setEmbedLink('embed-url', 'embed-iframe');" unselectable="on"></div>               
                 <div id="yearCurrent">
                 2014
                 </div>
-                <div id="yearMore" onClick="FigisMap.time.incrementYear(); setVMEEmbedLink('embed-url', 'embed-iframe');" unselectable="on"></div>
+                <div id="yearMore" onClick="FigisMap.time.incrementYear(); VME.setEmbedLink('embed-url', 'embed-iframe');" unselectable="on"></div>
                 <div id="yearsLabel">
                 Year Selection
                 </div>                
             </div-->      
             
             <div id="bottomLeftPanel">            
-                <div id="selectionYears" onclick="toggleYearsPanel();">
+                <div id="selectionYears" onclick="VME.toggleYearsPanel();">
                     Year selection
                 </div> 
                 <div  id="yearsContent">
                  <div  id="bottomRightPanel">
-                    <div id="yearLess" onClick="FigisMap.time.decrementYear(); setVMEEmbedLink('embed-url', 'embed-iframe');" unselectable="on"></div>               
+                    <div id="yearLess" onClick="FigisMap.time.decrementYear(); VME.setEmbedLink('embed-url', 'embed-iframe');" unselectable="on"></div>               
                     <div id="yearCurrent">
                     2014
                     </div>
-                    <div id="yearMore" onClick="FigisMap.time.incrementYear(); setVMEEmbedLink('embed-url', 'embed-iframe');" unselectable="on"></div>
+                    <div id="yearMore" onClick="FigisMap.time.incrementYear(); VME.setEmbedLink('embed-url', 'embed-iframe');" unselectable="on"></div>
                     <!--div id="yearsLabel">
                     Year Selection
                     </div-->   
                     </div>  
                 </div> 
                 
-                <div id="selectionRFB" onclick="toggleRfbPanel();">
+                <div id="selectionRFB" onclick="VME.toggleRfbPanel();">
                     Management Body/Authority (ies)
                 </div> 
                 <div id="RFBCombo_">
                 </div> 
                 
-                <div id="lblSRS" onclick="toggleProjectionPanel();">
+                <div id="lblSRS" onclick="VME.toggleProjectionPanel();">
                     Change projection
                 </div>
                 <div id="SelectSRS">
                    <div> 
                         <p>
-                            <input id="mercatorRadio" type="radio" onclick="radioClick(this)" onchange="VME.setViewer(null, null, this.value, 'embed-link','embed-url', 'embed-iframe', null,  true)" name="srs" value='3349' checked="checked"/>
+                            <input id="RadioEPSG3349" type="radio" onclick="radioClick(this)" onchange="VME.switchProjection(this.value)" name="srs" value='3349' checked="checked"/>
                             <label>Mercator</label>
                         </p>
 
                         <p>
-                            <input id="WGS84Radio" type="radio" onclick="radioClick(this)" onchange="VME.setViewer(null, null, this.value, 'embed-link','embed-url', 'embed-iframe', null,  true)" name="srs" value='4326' />
+                            <input id="RadioEPSG4326" type="radio" onclick="radioClick(this)" onchange="VME.switchProjection(this.value)" name="srs" value='4326' />
                             <label>WGS84</label>
                         </p>
                    </div>
                    <div> 
                         <p>
-                            <input type="radio" onclick="radioClick(this)" onchange="VME.setViewer(null, null, this.value, 'embed-link','embed-url', 'embed-iframe', null,  true)" name="srs" value='3031' />
+                            <input id="RadioEPSG3031" type="radio" onclick="radioClick(this)" onchange="VME.switchProjection(this.value)" name="srs" value='3031' />
                             <label>South Polar</label>
                         </p>
                         <p>
-                            <input type="radio" onclick="radioClick(this)" onchange="VME.setViewer(null, null, this.value, 'embed-link','embed-url', 'embed-iframe', null,  true)" name="srs" value='54009' />
+                            <input id="RadioEPSG54009" type="radio" onclick="radioClick(this)" onchange="VME.switchProjection(this.value)" name="srs" value='54009' />
                             <label>Mollweide</label>
                         </p>
                    </div> 
@@ -248,7 +248,7 @@ document.namespaces;
                     <div id="leftTopLinks"> 
                         <a onclick="sidePanel.layout.setActiveItem('searchPanel');sidePanel.expand();Vme.form.panels.SearchPanel.layout.setActiveItem('searchForm');Vme.form.panels.SearchPanel.doLayout()">Advanced Search</a> |
                         <a onclick="sidePanel.layout.setActiveItem('legendPanel');sidePanel.expand();">Legend</a> <div class="xbutton-closepanels" onclick="sidePanel.collapse();" >  </div> |
-						<a onclick="sidePanel.layout.setActiveItem('embed-link');sidePanel.expand();setVMEEmbedLink('embed-url', 'embed-iframe');">EmbedLink</a> <div class="xbutton-closepanels" onclick="sidePanel.collapse();" >  </div>
+						<a onclick="sidePanel.layout.setActiveItem('embed-link');sidePanel.expand();VME.setEmbedLink('embed-url', 'embed-iframe');">EmbedLink</a> <div class="xbutton-closepanels" onclick="sidePanel.collapse();" >  </div>
                     </div>
                 </div>
 				

@@ -15,10 +15,224 @@ var VME = new Object();
  */
 
 VME.myMap = false;
+VME.mapCenter = [-2.46, 18.23];
+VME.mapCenterProjection = 4326;
+VME.overlayGroups = ["Additional features", "Managed areas related to UNGA Res. 61-105"]
 
-VME.init = function() {
-	setVMEPage('embed-link','embed-url', 'embed-iframe');
+/**
+ * VME baseMapParams
+ */
+
+VME.baseMapParams = function(year){
+	
+	this.rfb = '',
+	this.target	= 'map';
+	this.context = 'vmeViewer';
+	this.legend	= 'legend';
+	this.fullWindowMap = true;
+	this.projection = VME.currentProjection();
+	this.base = FigisMap.defaults.baseLayers.reverse();
+	this.options = {
+		labels: true,
+		baseMarineLabels: true,
+		baseMask: true,
+		hideBasicLayers: true,
+		layerSwitcherOptions: { 
+								target: "layerswitcher",
+								displayLegend: true ,
+								toggleLegendGraphic : true,
+								collapsableGroups : true,
+								overlayGroups : VME.overlayGroups,
+								defaultOverlayGroup: VME.overlayGroups[0]}
+	};
+	
+	return this;
+	
+}
+
+VME.getExtent = function() {
+	return ( VME.myMap ) ? VME.myMap.getView().calculateExtent(VME.myMap.getSize()) : null;
 };
+
+VME.getCenter = function() {
+	return ( VME.myMap ) ? VME.myMap.getView().getCenter() : null;
+};
+
+/*
+	VME.baseMapParams.prototype.setVMELayers
+	@param year: year
+*/
+VME.baseMapParams.prototype.setVMELayers = function(year){
+	this.contextLayers = [
+		//main VME layers
+		{
+			layer	: FigisMap.fifao.vme_bfa,
+			label	: 'Bottom fishing areas', //'Area types',
+			overlayGroup: VME.overlayGroups[1],
+			style: "MEASURES_BTM_FISH",
+			filter	: "YEAR <= '" + year + "' AND END_YEAR >="+ year,
+			opacity	: 1.0,
+			hideInSwitcher	: false, 
+			showLegendGraphic: true, 
+			legend_options: "forcelabels:on;forcerule:True;fontSize:12"
+		},
+		{
+			layer	: FigisMap.fifao.vme_oara,
+			label	: 'Other access regulated areas', //'Area types',
+			overlayGroup: VME.overlayGroups[1],
+			style: "MEASURES_OTHER",
+			filter	: "YEAR <= '" + year + "' AND END_YEAR >="+ year,
+			opacity	: 1.0,
+			hideInSwitcher	: false,
+			showLegendGraphic: true,
+			legend_options: "forcelabels:on;forcerule:True;fontSize:12"
+		},
+		{
+			layer	: FigisMap.fifao.vme,
+			label	: 'VME closed areas', //'Area types',
+			overlayGroup: VME.overlayGroups[1],
+			style: "MEASURES_VME",
+			filter	: "YEAR <= " + year + " AND END_YEAR >= "+ year,
+			opacity	: 1.0,
+			hideInSwitcher	: false,
+			showLegendGraphic: true, 
+			legend_options: "forcelabels:on;forcerule:True;fontSize:12"
+		},
+		//additional VME layers
+		{
+			layer		: FigisMap.fifao.guf,
+			label	: 'Gebco Undersea Features',
+			overlayGroup: VME.overlayGroups[0],
+			cached		: true,
+			filter		: '*',
+			style		: '',
+			skipLegend	: true,
+			hideInSwitcher	: false,
+			showLegendGraphic: false
+		},
+		{
+			layer		: FigisMap.fifao.gbi,
+			label	: 'Gebco Isobath 2000',  
+			overlayGroup: VME.overlayGroups[0],
+			cached		: true,
+			filter		: '*',
+			style		: '',    
+			skipLegend	: true,
+			hidden	: true,
+			hideInSwitcher	: false, 
+			showLegendGraphic: true
+		},
+		{
+			layer		: FigisMap.fifao.vnt,
+			label	: 'Hydrothermal Vents',
+			overlayGroup: VME.overlayGroups[0],
+			cached		: true,
+			filter		: '*',
+			style		: 'vents_InterRidge_2011_all',
+			skipLegend	: true,
+			hidden	: true,
+			hideInSwitcher	: false, 
+			showLegendGraphic: true
+		},
+		{
+			layer		: FigisMap.fifao.vme_regarea,
+			label	: 'RFB Competence Areas',
+			overlayGroup: VME.overlayGroups[0],
+			cached		: true,
+			filter		: '*',
+			style		: '',
+			skipLegend	: true,
+			hidden	: true,
+			hideInSwitcher	: false,
+			showLegendGraphic: true
+		}
+	];
+
+}
+
+/*
+	VME.baseMapParams.prototype.setProjection
+	@param p: projection
+*/
+VME.baseMapParams.prototype.setProjection = function( p ) { if( p ) this.projection = p; };
+
+
+/*
+	VME.baseMapParams.prototype.setExtent
+	@param e: extent, as array or string
+	Uses and sets VME.lastExtent
+	In case VME.lastExtent is boolean (false) doesn't set any extent.
+*/
+VME.baseMapParams.prototype.setExtent = function( e ) {
+	if ( e ) {
+		if ( e.constructor === Array ) VME.lastExtent = e;
+	}
+	if ( typeof VME.lastExtent == 'boolean' ) {
+		VME.lastExtent = null;
+		this.extent = null;
+		this.global = true;
+		return false;
+	}
+	if ( ! VME.lastExtent ) {
+		if ( VME.myMap ) {
+			VME.lastExtent = VME.getExtent();
+		} else {
+			VME.lastExtent = null;
+		}
+	}
+	this.extent = VME.lastExtent ? VME.lastExtent : null;
+	return true;
+};
+
+/*
+	VME.baseMapParams.prototype.setCenter
+	@param c: center, as array
+	Uses and sets VME.lastCenter
+	In case VME.lastCenter is boolean (false) doesn't set any center.
+*/
+VME.baseMapParams.prototype.setCenter = function( c ) {
+	if ( c ) {
+		if ( c.constructor === Array ) VME.lastCenter = c;
+	} else{
+		VME.lastCenter = [-2.46, 18.23];
+	}
+	if ( typeof VME.lastCenter == 'boolean' ) {
+		VME.lastCenter = null;
+		this.center = null;
+		return false;
+	}
+	if ( ! VME.lastCenter ) {
+		if ( VME.myMap ) {
+			VME.lastCenter = VME.getCenter();
+		} else {
+			VME.lastCenter = null;
+		}
+	}
+	this.center = VME.lastCenter ? VME.lastCenter : null;
+	return true;
+};
+
+/*
+	VME.baseMapParams.prototype.setZoom
+	@param z: zoom, integer
+	Uses and sets VME.lastZoom
+	In case VME.lastZoom is boolean (false) resets it to 1.
+*/
+VME.baseMapParams.prototype.setZoom = function( z ) {
+	if ( z && (z != 1) ) {
+		VME.lastZoom = z;
+		this.zoom = z;
+		return true;
+	}
+	if ( typeof VME.lastZoom == 'boolean' ) {
+		this.zoom = VME.lastExtent ? VME.myMap.getView().getZoom() : 1;
+		return false;
+	}
+	VME.lastZoom = VME.myMap ? VME.myMap.getView().getZoom() : 1;
+	this.zoom = VME.lastZoom;
+	return true;
+};
+
 
  
 /**
@@ -113,7 +327,7 @@ VME.reset = function(){
 		}
 	}
 	
-	this.resetByYear(year);
+	VME.resetByYear(year);
 }
 
 /**
@@ -126,14 +340,14 @@ VME.resetByYear = function(year){
 	document.getElementById("SelectRFB").value = "";
     
     VME.resetRFBCheckBox();
-    closeRfbPanel();
-    closeYearsPanel();
+    VME.closeRfbPanel();
+    VME.closeYearsPanel();
     
 	VME.setProjection('3349');
-    closeProjectionPanel();
+    VME.closeProjectionPanel();
 	//TODO OL3
 	FigisMap.ol.clearPopupCache();
-	setVMEPage('embed-link','embed-url', 'embed-iframe');
+	VME.setVMEPage('embed-link','embed-url', 'embed-iframe');
 	
     /*
     var years = Ext.getCmp('years-slider');
@@ -147,8 +361,13 @@ VME.resetByYear = function(year){
 	
 	VME.update();	
 	VME.myMap.zoomToMaxExtent();
-	if ( FigisMap.defaults.mapCenter ){
-        VME.myMap.setCenter( FigisMap.ol.reCenter( FigisMap.defaults.mapCenterProjection, VME.myMap.getView().getProjection() , FigisMap.defaults.mapCenter) ); //TODO OL3
+	if ( VME.mapCenter ){
+        VME.myMap.setCenter(
+			FigisMap.ol.reCenter(
+				new ol.proj.get('EPSG:'+VME.mapCenterProjection),
+				VME.myMap.getView().getProjection(),
+				VME.mapCenter)
+			);
     }
 	
 	// Ensure that rfb.js is included AFTER vmeData.js, so theese are initialized
@@ -253,9 +472,299 @@ VME.refreshLayers = function (acronym){
 	VME.refreshLayer(FigisMap.fifao.vme_bfa, year, acronym);
 };
 
+
 /**
  * ===========================================================================
- *	LAYOUT Toggle methods
+ *	main Viewer methods
+ * ===========================================================================
+ */
+
+/**
+* function addViewer
+*       extent -> The extent to zoom after the layer is rendered (optional).
+*       zoom -> The zoom level of the map (optional).
+*       elinkDiv -> The embed-link id  (optional if not using the embed link div).
+*       urlLink -> The id of the url input field of the embed-link (optional if not using the embed link div).
+*       htmlLink -> The id of the html input field of the embed-link (optional if not using the embed link div).
+**/
+VME.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, filter, center, layers, year, rfb, mapSize) {
+	
+	//sets the zoom dropdown to default values when the area selection and the selection of projection change
+	//populateZoomAreaOptions('FilterRFB');
+	
+	//time handlers
+	if(typeof year == "undefined") year = FigisMap.time.getSelectedYear();
+	FigisMap.time.incrementHandler = function(newyear){
+		VME.update();
+        Ext.get('yearCurrent').update(FigisMap.time.selectedYear);
+	}
+	FigisMap.time.decrementHandler = function(newyear){
+		VME.update();
+        Ext.get('yearCurrent').update(FigisMap.time.selectedYear);
+	}
+	FigisMap.time.selectionHandler = function(newyear){
+		if(newyear <= FigisMap.time.maxYear && newyear >= FigisMap.time.minYear && newyear != FigisMap.time.selectedYear){
+        Ext.get('yearCurrent').update(FigisMap.time.selectedYear);
+		}
+		if(newyear == FigisMap.time.minYear){
+			Ext.get('yearLess').addClass('nobackground');
+			Ext.get('yearMore').removeClass('nobackground');
+		}
+		else if( newyear == FigisMap.time.maxYear){
+			Ext.get('yearMore').addClass('nobackground');
+			Ext.get('yearLess').removeClass('nobackground');
+		}else{
+			Ext.get('yearMore').removeClass('nobackground');
+			Ext.get('yearLess').removeClass('nobackground');
+		}
+	}
+	
+	//are we in a embedded Iframe
+	var embeddedIframe = location.href.indexOf("vme_e.html") != -1 ? true : false;
+	 
+	//params
+	var pars = new VME.baseMapParams();
+	pars.setVMELayers( year );
+	pars.setProjection( projection );
+	pars.setExtent( extent );
+	pars.setCenter( center );
+	
+	if(embeddedIframe){
+		pars.target = 'map_e';
+		pars.fullWindowMap = false;
+		pars.center = (center)? par.center : [14, -26];
+		pars.mapSize = mapSize ? mapSize : "L";
+		var elementsDiv = [pars.target, 'main_e', 'page_e', 'wrapper_e', 'disclaimer_e'];
+		VME.setEmbeddedElementClass(elementsDiv, pars.mapSize);		
+	}
+	
+	// Use this if you want to change the center at the embebbed reset
+	//VME.mapCenter = embeddedIframe ? new OpenLayers.LonLat(14, -26) : new OpenLayers.LonLat(-2.46, 18.23);
+
+    if ( zoom != null ) pars.zoom = zoom;
+	
+	if ( extent != null ) pars.extent = extent;
+	pars.filter = filter;
+	
+	//if ( document.getElementById(elinkDiv) ) document.getElementById(elinkDiv).style.display = "none";
+	
+	if(layers){
+		layers = decodeURIComponent(layers);
+	}	
+	
+	
+	VME.draw(pars); //TODO OL3 manage visible layers FigisMap.draw( pars);
+	
+	
+	if ( VME.myMap ) {	
+	
+		//TODO OL3
+		if ( document.getElementById(elinkDiv) ) {
+			VME.myMap.on(
+				'moveend',
+				function(){
+					VME.setEmbedLink(urlLink, htmlLink);
+				}
+			);
+		}
+        if(rfb && rfb != '')
+            VME.refreshLayers(rfb); //TODO OL3
+        
+		var l = document.getElementById('legendLegendTitle');
+		if ( l ) l.innerHTML = FigisMap.label( 'Legend', pars );
+		l = document.getElementById('legendMembersTitle');
+		if ( l ) {
+			if ( document.getElementById('MemberCountries').innerHTML == '' ) {
+				l.style.display = 'none';
+			} else {
+				l.innerHTML = FigisMap.label('List of Members');
+				l.style.display = '';
+			}
+		}
+		
+		if(projection == "3031" && !layers && !year){
+			VME.myMap.zoomIn();
+		}	
+		
+		VME.setEmbedLink('embed-url', 'embed-iframe');
+	}
+}
+ 
+ 
+/**
+* function setViewer
+*       extent -> The extent to zoom after the layer is rendered (optional).
+*       zoom -> The zoom level of the map (optional).
+*       mapProjection -> The map projection (optional).
+*       elinkDiv -> The embed-link id  (optional if not using the embed link div).
+*       urlLink -> The id of the url input field of the embed-link (optional if not using the embed link div).
+*       htmlLink -> The id of the html input field of the embed-link (optional if not using the embed link div).
+*       refresh -> set to false to manage VME.refreshLayers() function when user change projection.
+**/
+VME.setViewer = function( extent, zoom, mapProjection, elinkDiv, urlLink, htmlLink, filter, refresh) {
+	if ( ! mapProjection ) mapProjection = VME.currentProjection();
+	
+	// Close popup when RFB change
+	FigisMap.ol.clearPopupCache(); //TODO OL3
+	VME.addViewer( extent, zoom, mapProjection, elinkDiv, urlLink, htmlLink, filter);
+
+    var acronym;
+
+    var rfbComboTop = VME.getRFBCheckBoxValue();
+    var rfmoComboSearch = Ext.getCmp("RFMOCombo").getRawValue();
+
+    if(rfbComboTop == ""){
+        acronym = rfmoComboSearch;
+    }else{
+        acronym = rfbComboTop;
+    }
+	
+    // REFRESH IS FALSE WHEN USER CHANGE PROJECTION
+    if(refresh){
+        VME.resetRFBCheckBox();
+        VME.refreshLayers();
+    }else{
+        VME.refreshLayers(acronym);
+    }
+	
+	// Restore toggle
+	VME.restoreToggleButtons();
+}
+
+/*
+* setVMEPage function. Load the base RFB Map applying the user request parameters, if any, to load the rfbs in to the map.  
+*       elinkDiv -> The embed-link id  (optional if not using the embed link div).
+*       urlLink -> The id of the url input field of the embed-link (optional if not using the embed link div).
+*       htmlLink -> The id of the html input field of the embed-link (optional if not using the embed link div).
+*/
+VME.setVMEPage = function(elinkDiv, urlLink, htmlLink) {
+	// populateRfbOptions('SelectRFB'); TDP: mandatory ?
+	
+	var layers, extent, zoom, prj, center, year, rfb, mapSize;
+	
+	if ( location.search.indexOf("embed=true") != -1 ){
+		
+		// Parsing the request to get the parameters
+		
+		var params = location.search.replace(/^\?/,'').replace(/&amp;/g,'&').split("&");
+		
+		for (var j=0; j < params.length; j++) {
+			var param = params[j].split("=");
+			switch ( param[0] ) {
+				case "layers"	: layers = param[1]; break;
+				case "extent"	: extent = param[1]; break;
+				case "zoom"	: zoom = parseInt(param[1]); break;
+				case "prj"	: prj = param[1]; break;
+				case "center"	: center = param[1]; break;
+				case "year"	: year = param[1]; break;
+                case "rfb"	: rfb = param[1]; break;
+				case "mapSize"	: mapSize = param[1]; break;
+			}
+		}
+		
+		if ( !layers || layers == '' ) layers = null;
+		
+		if ( year && year != '' ){
+			year = parseInt(year);
+			
+			// ///////////////////////////////////////////
+			// Set layers visibility if 'layers' in URL
+			// ///////////////////////////////////////////
+			//FigisMap.ol.selectedYear = year;
+			//Ext.get('yearCurrent').update(FigisMap.time.selectedYear);
+			FigisMap.time.setSelectedYear(year);
+		}else{
+			year = null;
+			//TODO OL3
+			FigisMap.time.setSelectedYear(FigisMap.time.getFullYear());
+		}
+		
+		if ( extent == "" ) extent = null;
+		if ( extent != null ) {
+			var bbox = extent.split(",");
+			extent = [bbox[0], bbox[1], bbox[2], bbox[3]]
+		}
+		
+		if ( center == "" ) center = null;
+		if ( center != null ) {
+			var c = center.split(",");
+			center = c;
+		}
+		
+		if ( zoom == '' ) zoom = null;
+		if ( zoom != null ) zoom = parseInt( zoom );
+		
+		if ( prj == '' ) prj = null;
+		
+		VME.setProjection( prj);
+		
+	}else{	
+		FigisMap.time.setSelectedYear(FigisMap.time.getFullYear());
+		
+		// //////////////////////////////////////////////////
+		// WGS84 Radio Button checked as default.
+		// //////////////////////////////////////////////////
+		
+		/*var WGS84Radio = document.getElementById("WGS84Radio");
+		WGS84Radio.checked = true;*/
+
+		// //////////////////////////////////////////////////
+		// mercatorRadio Radio Button checked as default.
+		// //////////////////////////////////////////////////
+        
+        var mercatorRadio = document.getElementById("RadioEPSG3349");
+		mercatorRadio.checked = true;
+		VME.setProjection('3349');
+		prj = '3349';
+	}
+	
+	/*
+	* Load the RFB using the request parameters.
+	*/
+	VME.addViewer(extent, zoom, prj, elinkDiv, urlLink, htmlLink, null, center, layers, year, rfb, mapSize);
+}
+
+
+/**
+* VME draw method
+* @param pars
+*/
+VME.draw = function(pars){
+	VME.myMap = FigisMap.draw( pars );
+	VME.lastPars = pars;
+	VME.lastExtent = null;
+	VME.lastCenter = null;
+	VME.lastZoom = null;
+}
+
+
+/*
+	VME.init
+ */
+ VME.init = function() {
+	VME.setVMEPage('embed-link','embed-url', 'embed-iframe');
+};
+
+/** -----------------------------------------------------------------------------------------------**/
+/** 									LAYOUT FUNCTIONALITIES 									   **/
+/** ---------------------------------------------------------------------------------------------- **/
+
+/**
+In Internet Explorer (up to at least IE8) clicking a radio button or checkbox to 
+change its value does not actually trigger the onChange event until the the input loses focus.
+Thus you need to somehow trigger the blur event yourself.
+*/
+function radioClick(radio){
+	if(Ext.isIE){
+		radio.blur();  
+		radio.focus();  
+	}
+}
+
+
+/**
+ * ===========================================================================
+ *	LAYOUT Layers Toggle methods
  * ===========================================================================
  */
 
@@ -367,11 +876,76 @@ VME.restoreToggleButtons = function(){
 	}    
 }
 
+
+/**
+ * ===========================================================================
+ *	LAYOUT Year component methods
+ * ===========================================================================
+ */
+
+
+/*
+	VME.toggleYearsPanel
+	Toggles the year panel
+*/
+VME.toggleYearsPanel = function(){
+    var el = Ext.get('yearsContent');
+    el.getHeight()==0 ? el.setHeight(50,true):el.setHeight(0,true);
+    Ext.get('selectionYears').toggleClass('open');
+    VME.closeProjectionPanel();
+    VME.closeRfbPanel();
+}
+
+/*
+	VME.closeYearsPanel
+	Closes the year panel
+*/
+VME.closeYearsPanel = function(){
+    var el = Ext.get('yearsContent');
+	if(el){
+		el.setHeight(0,true);
+	}
+	
+	el = Ext.get('selectionYears');	
+	if(el){
+		el.removeClass('open');
+	}
+}
+
+
 /**
  * ===========================================================================
  *	LAYOUT Projection component methods
  * ===========================================================================
  */
+ 
+/*
+	VME.toggleProjectionPanel
+	Toggles the Projection panel
+*/
+VME.toggleProjectionPanel = function(){
+    var el = Ext.get('SelectSRS');
+    el.getHeight()==0 ? el.setHeight(50,true):el.setHeight(0,true);
+    Ext.get('lblSRS').toggleClass('open');
+    VME.closeRfbPanel();
+    VME.closeYearsPanel();
+}
+
+/*
+	VME.closeProjectionPanel
+	Close the Projection panel
+*/
+VME.closeProjectionPanel = function(){
+    var el = Ext.get('SelectSRS');
+	if(el){
+		el.setHeight(0,true);
+	}
+	
+	el = Ext.get('lblSRS');	
+	if(el){
+		el.removeClass('open');
+	}
+}
  
 /**
 * Get projection
@@ -416,6 +990,45 @@ VME.setProjection = function(newValue) {
 	}
 }
 
+/*
+	Get VME.currentProjection
+*/
+VME.currentProjection = function( p ) {
+	var cp;
+	if ( document.getElementById('RadioEPSG4326').checked ) cp = '4326';
+	if ( ! cp ) if ( document.getElementById('RadioEPSG3349').checked ) cp = '3349';
+	if ( ! cp ) if ( document.getElementById('RadioEPSG3031').checked ) cp = '3031';
+	if ( ! cp ) if ( document.getElementById('RadioEPSG54009').checked ) cp = '54009';
+	if ( ! cp ) {
+		document.getElementById('SelectSRS4326').checked = true;
+		cp = '4326';
+	}
+	VME.lastProjection = parseInt( cp );
+	if ( ! p ) return VME.lastProjection;
+	p = String( p )
+	if ( p != cp ) {
+		document.getElementById('RadioEPSG4326').checked = ( p == '4326');
+		document.getElementById('RadioEPSG3349').checked = ( p == '3349');
+		document.getElementById('RadioEPSG3031').checked = ( p == '3031');
+		document.getElementById('RadioEPSG54009').checked = ( p == '54009');
+	}
+	VME.lastProjection = parseInt( p );
+	return VME.lastProjection;
+};
+
+/*
+	VME.switchProjection
+*/
+VME.switchProjection = function( p ) {
+	var op = VME.lastProjection;
+	p = VME.currentProjection( p );
+	var oe = VME.getExtent();
+	var ne = FigisMap.ol.reBound(op,p,oe);
+	VME.lastExtent = FigisMap.ol.isValidExtent(ne) ? ne : false;
+	VME.lastZoom = false;
+	VME.setViewer();
+};
+
 /**
  * ===========================================================================
  *	LAYOUT RFB component methods
@@ -427,7 +1040,7 @@ VME.setProjection = function(newValue) {
  * VME.getSelectedOwner returns the selected value in the Authority combo box
  */
 VME.getSelectedOwner= function(){
-	return	document.getElementById("SelectRFB").value;
+	return document.getElementById("SelectRFB").value;
 };
 
  
@@ -481,293 +1094,46 @@ VME.setRFBCheckBoxValue = function(rfb){
             if(checkbox.acronym == rfb){
                 checkbox.checked = true;
                 checkbox.el.dom.checked = true;
-                //toggleRfbPanel();
+                VME.toggleRfbPanel();
             }
         }
     }
     //return rfbValue;
-}    
-
-
-/**
-* function setViewer
-*       extent -> The extent to zoom after the layer is rendered (optional).
-*       zoom -> The zoom level of the map (optional).
-*       mapProjection -> The map projection (optional).
-*       elinkDiv -> The embed-link id  (optional if not using the embed link div).
-*       urlLink -> The id of the url input field of the embed-link (optional if not using the embed link div).
-*       htmlLink -> The id of the html input field of the embed-link (optional if not using the embed link div).
-*       refresh -> set to false to manage VME.refreshLayers() function when user change projection.
-**/
-VME.setViewer = function( extent, zoom, mapProjection, elinkDiv, urlLink, htmlLink, filter, refresh) {
-	if ( ! mapProjection ) {
-		var settings = FigisMap.rfb.getSettings( VME.getProjection());
-		VME.setProjection(settings && settings.srs ? settings.srs : '4326');
-	}
-	
-	// Close popup when RFB change
-	FigisMap.ol.clearPopupCache(); //TODO OL3
-	VME.addViewer( extent, zoom, mapProjection, elinkDiv, urlLink, htmlLink, filter);
-
-    var acronym;
-
-    var rfbComboTop = VME.getRFBCheckBoxValue();
-    var rfmoComboSearch = Ext.getCmp("RFMOCombo").getRawValue();
-
-    if(rfbComboTop == ""){
-        acronym = rfmoComboSearch;
-    }else{
-        acronym = rfbComboTop;
-    }
-	
-    // REFRESH IS FALSE WHEN USER CHANGE PROJECTION
-    if(refresh){
-        VME.resetRFBCheckBox();
-        VME.refreshLayers();
-    }else{
-        VME.refreshLayers(acronym);
-    }
-	
-	// Restore toggle
-	VME.restoreToggleButtons();
 }
 
-
-/**
- * Set EmbeddedElementClass
- * 
- */
-VME.setEmbeddedElementClass = function(elementsDiv, mapSize){
-	if(elementsDiv && elementsDiv.length > 0){
-		for(var i=0; i<elementsDiv.length; i++){
-			var target = elementsDiv[i];
-			var div = document.getElementById(target);
-			div.className = target + "_" + mapSize;
-		}
-	}
-}	
-
-/**
-* VME draw method
-* @param pars
+/*
+	VME.toggleRfbPanel
+	Toggles the RFB panel
 */
-VME.draw = function(pars){
-	VME.myMap = FigisMap.draw( pars );
-	VME.lastPars = pars;
-	VME.lastExtent = null;
-	VME.lastCenter = null;
-	VME.lastZoom = null;
+VME.toggleRfbPanel = function(){
+    var el = Ext.get('RFBCombo');
+    el.getHeight()==0 ? el.setHeight(90,true):el.setHeight(0,true);
+    Ext.get('selectionRFB').toggleClass('open');
+    VME.closeProjectionPanel();
+    VME.closeYearsPanel();
 }
+
+/*
+	VME.closeRfbPanel
+	Closes the RFB panel
+*/
+VME.closeRfbPanel = function(){
+    var el = Ext.get('RFBCombo');
+	if(el){
+		el.setHeight(0,true);
+	}
+	
+	el = Ext.get('selectionRFB');	
+	if(el){
+		el.removeClass('open');
+	}
+}   
 
 /**
-* function addViewer
-*       extent -> The extent to zoom after the layer is rendered (optional).
-*       zoom -> The zoom level of the map (optional).
-*       elinkDiv -> The embed-link id  (optional if not using the embed link div).
-*       urlLink -> The id of the url input field of the embed-link (optional if not using the embed link div).
-*       htmlLink -> The id of the html input field of the embed-link (optional if not using the embed link div).
-**/
-VME.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, filter, center, layers, year, rfb, mapSize) {
-	
-	//sets the zoom dropdown to default values when the area selection and the selection of projection change
-	//populateZoomAreaOptions('FilterRFB');
-	
-	//time handlers
-	if(typeof year == "undefined") year = FigisMap.time.getSelectedYear();
-	FigisMap.time.incrementHandler = function(newyear){
-		VME.update();
-        Ext.get('yearCurrent').update(FigisMap.time.selectedYear);
-	}
-	FigisMap.time.decrementHandler = function(newyear){
-		VME.update();
-        Ext.get('yearCurrent').update(FigisMap.time.selectedYear);
-	}
-	FigisMap.time.selectionHandler = function(newyear){
-		if(newyear <= FigisMap.time.maxYear && newyear >= FigisMap.time.minYear && newyear != FigisMap.time.selectedYear){
-        Ext.get('yearCurrent').update(FigisMap.time.selectedYear);
-		}
-		if(newyear == FigisMap.time.minYear){
-			Ext.get('yearLess').addClass('nobackground');
-			Ext.get('yearMore').removeClass('nobackground');
-		}
-		else if( newyear == FigisMap.time.maxYear){
-			Ext.get('yearMore').addClass('nobackground');
-			Ext.get('yearLess').removeClass('nobackground');
-		}else{
-			Ext.get('yearMore').removeClass('nobackground');
-			Ext.get('yearLess').removeClass('nobackground');
-		}
-	}
-	
-	var embeddedIframe = location.href.indexOf("vme_e.html") != -1 ? true : false;
-
-	//overlay groups (reverse order of the layerswitcher appearance)
-	var overlayGroups = ["Additional features", "Managed areas related to UNGA Res. 61-105"];
-	 
-	//params
-	var pars = {
-		rfb		    : '',
-		target		: embeddedIframe ? 'map_e' : 'map',
-		context		: 'vmeViewer',
-		contextLayers : [
-			//main VME layers
-			{
-				layer	: FigisMap.fifao.vme_bfa,
-				label	: 'Bottom fishing areas', //'Area types',
-				overlayGroup: overlayGroups[1],
-				style: "MEASURES_BTM_FISH",
-				filter	: "YEAR <= '" + year + "' AND END_YEAR >="+ year,
-				opacity	: 1.0,
-				hideInSwitcher	: false, 
-				showLegendGraphic: true, 
-				legend_options: "forcelabels:on;forcerule:True;fontSize:12"
-			},
-			{
-				layer	: FigisMap.fifao.vme_oara,
-				label	: 'Other access regulated areas', //'Area types',
-				overlayGroup: overlayGroups[1],
-				style: "MEASURES_OTHER",
-				filter	: "YEAR <= '" + year + "' AND END_YEAR >="+ year,
-				opacity	: 1.0,
-				hideInSwitcher	: false,
-				showLegendGraphic: true,
-				legend_options: "forcelabels:on;forcerule:True;fontSize:12"
-			},
-			{
-				layer	: FigisMap.fifao.vme,
-				label	: 'VME closed areas', //'Area types',
-				overlayGroup: overlayGroups[1],
-				style: "MEASURES_VME",
-				filter	: "YEAR <= " + year + " AND END_YEAR >= "+ year,
-				opacity	: 1.0,
-				hideInSwitcher	: false,
-				showLegendGraphic: true, 
-				legend_options: "forcelabels:on;forcerule:True;fontSize:12"
-			},
-			//additional VME layers
-			{
-				layer		: FigisMap.fifao.guf,
-				label	: 'Gebco Undersea Features',
-				overlayGroup: overlayGroups[0],
-				cached		: true,
-				filter		: '*',
-				style		: '',
-				skipLegend	: true,
-				hideInSwitcher	: false,
-				showLegendGraphic: false
-			},
-			{
-				layer		: FigisMap.fifao.gbi,
-				label	: 'Gebco Isobath 2000',  
-				overlayGroup: overlayGroups[0],
-				cached		: true,
-				filter		: '*',
-				style		: '',    
-				skipLegend	: true,
-				hidden	: true,
-				hideInSwitcher	: false, 
-				showLegendGraphic: true
-			},
-			{
-				layer		: FigisMap.fifao.vnt,
-				label	: 'Hydrothermal Vents',
-				overlayGroup: overlayGroups[0],
-				cached		: true,
-				filter		: '*',
-				style		: 'vents_InterRidge_2011_all',
-				skipLegend	: true,
-				hidden	: true,
-				hideInSwitcher	: false, 
-				showLegendGraphic: true
-			},
-			{
-				layer		: FigisMap.fifao.vme_regarea,
-				label	: 'RFB Competence Areas',
-				overlayGroup: overlayGroups[0],
-				cached		: true,
-				filter		: '*',
-				style		: '',
-				skipLegend	: true,
-				hidden	: true,
-				hideInSwitcher	: false,
-				showLegendGraphic: true
-			}
-		],
-		legend		: 'legend',
-		projection	: projection,
-		fullWindowMap: !embeddedIframe,
-		center : center ? center : (embeddedIframe ? [14, -26] : [-2.46, 18.23]),
-		base: FigisMap.defaults.baseLayers.reverse(),
-		options : {
-			labels: true,
-			topMarineLabels: false,
-			hideBasicLayers: true,
-			layerSwitcherOptions: { 
-									//id: "layerswitcherpanel",
-									displayLegend: true ,
-									toggleLegendGraphic : true,
-									collapsableGroups : true,
-									overlayGroups : overlayGroups,
-									defaultOverlayGroup: overlayGroups[0]}
-		}
-	};
-	
-	if(embeddedIframe){
-		pars.mapSize = mapSize ? mapSize : "L";
-		var elementsDiv = [pars.target, 'main_e', 'page_e', 'wrapper_e', 'disclaimer_e'];
-		VME.setEmbeddedElementClass(elementsDiv, pars.mapSize);		
-	}
-	
-	// Use this if you want to change the center at the embebbed reset
-	//FigisMap.defaults.mapCenter = embeddedIframe ? new OpenLayers.LonLat(14, -26) : new OpenLayers.LonLat(-2.46, 18.23);
-
-    if ( zoom != null ) pars.zoom = zoom;
-	
-	if ( extent != null ) pars.extent = extent;
-	pars.filter = filter;
-	
-	//if ( document.getElementById(elinkDiv) ) document.getElementById(elinkDiv).style.display = "none";
-	
-	if(layers){
-		layers = decodeURIComponent(layers);
-	}	
-	VME.draw(pars); //TODO OL3 manage visible layers FigisMap.draw( pars);
-	
-	if ( VME.myMap ) {	
-
-		//TODO OL3
-		if ( document.getElementById(elinkDiv) ) {
-			VME.myMap.on(
-				'moveend',
-				function(){
-					setVMEEmbedLink(urlLink, htmlLink);
-				}
-			);
-		}
-        if(rfb && rfb != '')
-            VME.refreshLayers(rfb); //TODO OL3
-        
-		var l = document.getElementById('legendLegendTitle');
-		if ( l ) l.innerHTML = FigisMap.label( 'Legend', pars );
-		l = document.getElementById('legendMembersTitle');
-		if ( l ) {
-			if ( document.getElementById('MemberCountries').innerHTML == '' ) {
-				l.style.display = 'none';
-			} else {
-				l.innerHTML = FigisMap.label('List of Members');
-				l.style.display = '';
-			}
-		}
-		
-		if(projection == "3031" && !layers && !year){
-			VME.myMap.zoomIn();
-		}	
-		
-		setVMEEmbedLink('embed-url', 'embed-iframe');
-	}
-}
-
-function populateRfbOptions(id) {
+*	VME.populateRfbOptions
+*	@Deprecated
+*/
+VME.populateRfbOptions = function(id) {
 	var tgt = document.getElementById(id);
 	var opt, e, cv = '';
 	if ( tgt.options.length != 0 || tgt.value ) cv = tgt.value;
@@ -795,7 +1161,11 @@ function populateRfbOptions(id) {
 	tgt.value = cv;
 }
 
-function populateZoomAreaOptions(id) {
+/**
+*	VME.populateZoomAreaOptions
+*	@Deprecated
+*/
+VME.populateZoomAreaOptions = function(id) {
 	var tgt = document.getElementById(id);
 	var opt, e, cv = '';
 	//if ( tgt.options.length != 0 || tgt.value ) cv = tgt.value;
@@ -824,105 +1194,35 @@ function populateZoomAreaOptions(id) {
 	tgt.value = cv;
 }
 
-/*
-* setVMEPage function. Load the base RFB Map applying the user request parameters, if any, to load the rfbs in to the map.  
-*       elinkDiv -> The embed-link id  (optional if not using the embed link div).
-*       urlLink -> The id of the url input field of the embed-link (optional if not using the embed link div).
-*       htmlLink -> The id of the html input field of the embed-link (optional if not using the embed link div).
-*/
-function setVMEPage(elinkDiv, urlLink, htmlLink) {
-	// populateRfbOptions('SelectRFB'); TDP: mandatory ?
-	
-	var layers, extent, zoom, prj, center, year, rfb, mapSize;
-	
-	if ( location.search.indexOf("embed=true") != -1 ){
-		
-		// Parsing the request to get the parameters
-		
-		var params = location.search.replace(/^\?/,'').replace(/&amp;/g,'&').split("&");
-		
-		for (var j=0; j < params.length; j++) {
-			var param = params[j].split("=");
-			switch ( param[0] ) {
-				case "layers"	: layers = param[1]; break;
-				case "extent"	: extent = param[1]; break;
-				case "zoom"	: zoom = parseInt(param[1]); break;
-				case "prj"	: prj = param[1]; break;
-				case "center"	: center = param[1]; break;
-				case "year"	: year = param[1]; break;
-                case "rfb"	: rfb = param[1]; break;
-				case "mapSize"	: mapSize = param[1]; break;
-			}
-		}
-		
-		if ( !layers || layers == '' ) layers = null;
-		
-		if ( year && year != '' ){
-			year = parseInt(year);
-			
-			// ///////////////////////////////////////////
-			// Set layers visibility if 'layers' in URL
-			// ///////////////////////////////////////////
-			//FigisMap.ol.selectedYear = year;
-			//Ext.get('yearCurrent').update(FigisMap.time.selectedYear);
-			FigisMap.time.setSelectedYear(year);
-		}else{
-			year = null;
-			//TODO OL3
-			FigisMap.time.setSelectedYear(FigisMap.time.getFullYear());
-		}
-		
-		if ( extent == "" ) extent = null;
-		if ( extent != null ) {
-			var bbox = extent.split(",");
-			extent = [bbox[0], bbox[1], bbox[2], bbox[3]]
-		}
-		
-		if ( center == "" ) center = null;
-		if ( center != null ) {
-			var c = center.split(",");
-			center = c;
-		}
-		
-		if ( zoom == '' ) zoom = null;
-		if ( zoom != null ) zoom = parseInt( zoom );
-		
-		if ( prj == '' ) prj = null;
-		
-		VME.setProjection( prj);
-		
-	}else{	
-		FigisMap.time.setSelectedYear(FigisMap.time.getFullYear());
-		
-		// //////////////////////////////////////////////////
-		// WGS84 Radio Button checked as default.
-		// //////////////////////////////////////////////////
-		
-		/*var WGS84Radio = document.getElementById("WGS84Radio");
-		WGS84Radio.checked = true;*/
 
-		// //////////////////////////////////////////////////
-		// mercatorRadio Radio Button checked as default.
-		// //////////////////////////////////////////////////
-        
-        var mercatorRadio = document.getElementById("mercatorRadio");
-		mercatorRadio.checked = true;
-		VME.setProjection('3349');
-		prj = '3349';
+
+/**
+ * ===========================================================================
+ *	Embeddes link methods
+ * ===========================================================================
+ */
+
+
+/**
+ * Set EmbeddedElementClass
+ * 
+ */
+VME.setEmbeddedElementClass = function(elementsDiv, mapSize){
+	if(elementsDiv && elementsDiv.length > 0){
+		for(var i=0; i<elementsDiv.length; i++){
+			var target = elementsDiv[i];
+			var div = document.getElementById(target);
+			div.className = target + "_" + mapSize;
+		}
 	}
-	
-	/*
-	* Load the RFB using the request parameters.
-	*/
-	VME.addViewer(extent, zoom, prj, elinkDiv, urlLink, htmlLink, null, center, layers, year, rfb, mapSize);
 }
 
 /*
-* setVMEEmbedLink function. Manage the expand/collapse of the Embed-Link div.
+* VME.setEmbedLink function. Manage the expand/collapse of the Embed-Link div.
 *       embedUrl -> The id of the url input field of the embed-link.
 *       embedIframe -> The id of the html input field of the embed-link.
 */
-function setVMEEmbedLink(embedUrl, embedIframe) {
+VME.setEmbedLink = function(embedUrl, embedIframe) {
 
 	// /////////////////////////////////
 	// Get involved layers in the map
@@ -1010,76 +1310,4 @@ function setVMEEmbedLink(embedUrl, embedIframe) {
 	htmlId.setValue(htmlFrame);
 	
 	//alert(baseURL);
-}
-
-
-/* GUI changes - TODO move it in a separeate file */
-
-function toggleProjectionPanel(){
-    var el = Ext.get('SelectSRS');
-    el.getHeight()==0 ? el.setHeight(50,true):el.setHeight(0,true);
-    Ext.get('lblSRS').toggleClass('open');
-    closeRfbPanel();
-    closeYearsPanel();
-}
-function closeProjectionPanel(){
-    var el = Ext.get('SelectSRS');
-	if(el){
-		el.setHeight(0,true);
-	}
-	
-	el = Ext.get('lblSRS');	
-	if(el){
-		el.removeClass('open');
-	}
-}
-
-function toggleRfbPanel(){
-    var el = Ext.get('RFBCombo');
-    el.getHeight()==0 ? el.setHeight(90,true):el.setHeight(0,true);
-    Ext.get('selectionRFB').toggleClass('open');
-    closeProjectionPanel();
-    closeYearsPanel();
-}
-function closeRfbPanel(){
-    var el = Ext.get('RFBCombo');
-	if(el){
-		el.setHeight(0,true);
-	}
-	
-	el = Ext.get('selectionRFB');	
-	if(el){
-		el.removeClass('open');
-	}
-}
-
-function toggleYearsPanel(){
-    var el = Ext.get('yearsContent');
-    el.getHeight()==0 ? el.setHeight(50,true):el.setHeight(0,true);
-    Ext.get('selectionYears').toggleClass('open');
-    closeProjectionPanel();
-    closeRfbPanel();
-}
-function closeYearsPanel(){
-    var el = Ext.get('yearsContent');
-	if(el){
-		el.setHeight(0,true);
-	}
-	
-	el = Ext.get('selectionYears');	
-	if(el){
-		el.removeClass('open');
-	}
-}
-
-/**
-In Internet Explorer (up to at least IE8) clicking a radio button or checkbox to 
-change its value does not actually trigger the onChange event until the the input loses focus.
-Thus you need to somehow trigger the blur event yourself.
-*/
-function radioClick(radio){
-	if(Ext.isIE){
-		radio.blur();  
-		radio.focus();  
-	}
 }

@@ -117,9 +117,7 @@ FigisMap.defaults = {
 	mapSize		: 'S',
 	layerFilter	: '',
 	layerStyle	: '*',
-	layerStyles	: { distribution : 'all_fao_areas_style', intersecting : '*', associated : '*' },
-	mapCenter : [-2.46, 18.23], //TODO OL3 (if maintained, to add to doc)
-	mapCenterProjection : 4326 //TODO OL3 (if maintained, to add to doc)
+	layerStyles	: { distribution : 'all_fao_areas_style', intersecting : '*', associated : '*' }
 };
 
 /**
@@ -773,6 +771,7 @@ FigisMap.ol.configureOverlayLayer = function(obj, boundsOrigin){
 		opacity : ( obj.opacity )? obj.opacity : 1.0,
 		visible : ( obj.hidden )? false : true
 	});
+	layer.legendGraphic = FigisMap.ol.getLegendGraphic(layer);
 	layer.showLegendGraphic = obj.showLegendGraphic //to make the param accessible to layerswitcher
 	layer.overlayGroup = (obj.overlayGroup)? obj.overlayGroup: FigisMap.ol.overlaysLabel;
 
@@ -818,6 +817,35 @@ FigisMap.ol.getSource = function(map, layername){
 	if(layer) source = layer.getSource();
 	return source;
 }
+
+
+/**
+ * Builds a GetLegendGraphic WMS request to handle layer legend
+ * @param {ol.layer.TileWMS} lyr WMS Layer
+ * @return {String} string representing the GetLegendGraphic URL request
+ * 
+ */
+FigisMap.ol.getLegendGraphic = function(lyr) {
+	
+	var source = lyr.getSource();
+	if( !(source instanceof ol.source.TileWMS) ) return false;
+	
+	var params = source.getParams();
+
+	var request = '';
+	request += source.getUrls()[0] + '?';
+	request += 'VERSION=1.0.0';
+	request += '&REQUEST=GetLegendGraphic';
+	request += '&LAYER=' + params.LAYERS;
+	request += '&STYLE=' + ( (params.STYLES)? params.STYLES : '');
+	request += '&LEGEND_OPTIONS=forcelabels:on;forcerule:True;fontSize:12'; //maybe to let as options
+	request += '&SCALE=139770286.4465912'; //to investigate
+	request += '&FORMAT=image/png';
+	request += '&TRANSPARENT=true';
+	
+	return request;
+}
+
 
 /**
  * Utility function to update the layer switcher from FigisMap
@@ -1091,7 +1119,8 @@ FigisMap.parser.parse = function( p ) {
 	if ( typeof p.options.skipNavigation == 'undefined' ) p.options.skipNavigation = false;
 	if ( p.projection != 4326 ) p.options.colors = false;
 	if ( typeof p.options.labels == 'undefined' ) p.options.labels = p.options.colors;
-	if ( typeof p.options.topMarineLabels == 'undefined' ) p.options.topMarineLabels = false;
+	if ( typeof p.options.baseMarineLabels == 'undefined' ) p.options.baseMarineLabels = false;
+	if ( typeof p.options.baseMask == 'undefined' ) p.options.baseMask = false;
 	
 	//baselayers management
 	//TODO test compatibility with other viewers
@@ -1666,6 +1695,7 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 	var layerTypes = new Object();
 	for ( var i = 0; i < layers.length; i++ ) layerTypes[ layers[i].layer ] = true;
 	
+	
 	var overlayGroup = FigisMap.ol.getDefaultOverlayGroup(pars);
 	
 	//add default auto layers if pars.basicLayers = true
@@ -1718,7 +1748,6 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 			showLegendGraphic: false
 		} );
 	}
-
 	
 	//continent land mask
 	//-------------------
@@ -1731,11 +1760,11 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 			type		: 'auto',
 			style		: '*',
 			skipLegend	: true,
+			isMask	: true,
 			hideInSwitcher	: true,
 			showLegendGraphic:false
 		} );
 	}
-	
 	
 	//add contextual layers if pars.contextLayers = true
 	//---------------------------------------------------
@@ -1822,13 +1851,17 @@ FigisMap.rnd.sort4map = function( layers, p ) {
 	
 	for (var i = 0; i < layers.length; ++i) {
 		var l = layers[i];
+		if (l.isMask && p.options.baseMask){
+			normalLayers = [l].concat(normalLayers);
+			continue;
+		}
 		if ( l.layer == FigisMap.fifao.cbs ) {
 			countryLayers.push( l );
 		} else if ( l.layer ==  FigisMap.fifao.lab ) {
-			if(p.options.topMarineLabels){
-				topLayers.push( l );
-			}else{
+			if(p.options.baseMarineLabels){
 				normalLayers.push( l);
+			}else{
+				topLayers.push( l );
 			}
 		} else if ( l.layer ==  FigisMap.fifao.cmp ) {
 			topLayers.push( l );
@@ -2043,7 +2076,8 @@ FigisMap.getStyleRuleDescription = function(STYLE, pars) {
 			options		: (Object) (optional), all keys default to false:
 				colors			: (boolean) use color map background
 				labels			: (boolean) use labels - defaults to options.colors
-				topMarineLabels	: (boolean) display marine labels layer on top (in map and layerswitcher)
+				baseMarineLabels	: (boolean) display marine labels layer on top of basic auto layers (in map and layerswitcher)
+				baseMask : (boolean) display continent mask just above baselayers (before any other overlay)
 				hideBasicLayers : (boolean) hide the basic auto layers FAO areas and EEZ
 				skipLayerSwitcher	: (boolean) omit layer switcher if true
 				skipLoadingPanel	: (boolean) omit Loading panel (spinning wheel) if true

@@ -8,24 +8,24 @@
  */
 ol.control.LayerSwitcher = function(opt_options) {
 
+	//options
     var options = opt_options || {};
-
-    var tipLabel = options.tipLabel ?
-      options.tipLabel : 'Legend';
-
+    var tipLabel = options.tipLabel ? options.tipLabel : 'Legend';
     this.displayLegend_ = options.displayLegend ? options.displayLegend : false;
 	this.togglingLegendGraphic_ = options.toggleLegendGraphic ? options.displayLegend : false;
 	this.collapsableGroups_ = options.collapsableGroups ? options.collapsableGroups : false;
-	this.isExternalized = (options.id)? true : false;
+	this.isExternalized = (options.target)? true : false;
+	this.id = (options.target)? options.target : undefined;
 	
+	//array for map listeners
     this.mapListeners = [];
 
+	this.panel = document.createElement('div');
+	this.panel.className = 'panel';
+	
 	var element = document.createElement('div');
-	if(this.isExternalized){
-		this.panel = document.getElementById(options.id);
-		if(this.panel) this.panel.className = 'panel';
-	}else{
-		
+	if(!this.isExternalized){
+	
 		this.hiddenClassName = 'ol-unselectable ol-control layer-switcher';
 		this.shownClassName = this.hiddenClassName + ' shown';
 		element.className = this.hiddenClassName;
@@ -33,11 +33,8 @@ ol.control.LayerSwitcher = function(opt_options) {
 		var button = document.createElement('button');
 		button.setAttribute('title', tipLabel);
 		element.appendChild(button);
-		
-		this.panel = document.createElement('div');
-		this.panel.className = 'panel';
 		element.appendChild(this.panel);
-
+		
 		var this_ = this;
 
 		button.onclick = function(e) {
@@ -54,10 +51,13 @@ ol.control.LayerSwitcher = function(opt_options) {
 				this_.hidePanel();
 			}
 		};
+	}else{
+		var element = document.createElement('div');
+		element.appendChild(this.panel);
 	}
 		
     ol.control.Control.call(this, {
-        element: (this.isExternalized)? this.panel : element,
+        element: element,
         target: options.target
     });
 
@@ -91,14 +91,33 @@ ol.control.LayerSwitcher.prototype.renderPanel = function() {
 
     this.ensureTopVisibleBaseLayerShown_();
 
-    while(this.panel.firstChild) {
-        this.panel.removeChild(this.panel.firstChild);
-    }
-
-    var ul = document.createElement('ul');
-    this.panel.appendChild(ul);
-    this.renderLayers_(this.getMap(), ul);
-
+	if(this.isExternalized){
+		var targetElement = document.getElementById(this.id);
+		while(targetElement.firstChild){
+		 targetElement.removeChild(targetElement.firstChild);
+		}
+		while(this.element.firstChild) {
+			this.element.removeChild(this.element.firstChild);
+		}
+		this.panel = document.createElement('div');
+		this.panel.className = 'panel';
+		
+		 var ul = document.createElement('ul');
+		this.panel.appendChild(ul);
+		this.renderLayers_(this.getMap(), ul);
+		
+		this.element.appendChild(this.panel);
+		targetElement.appendChild(this.element);
+		
+	}else{
+		while(this.panel.firstChild) {
+			this.panel.removeChild(this.panel.firstChild);
+		}
+		var ul = document.createElement('ul');
+		this.panel.appendChild(ul);
+		this.renderLayers_(this.getMap(), ul);
+	}
+  
 };
 
 /**
@@ -106,25 +125,32 @@ ol.control.LayerSwitcher.prototype.renderPanel = function() {
  * @param {ol.Map} map The map instance.
  */
 ol.control.LayerSwitcher.prototype.setMap = function(map) {
-    // Clean up listeners associated with the previous map
+
+	// Clean up listeners associated with the previous map
     for (var i = 0, key; i < this.mapListeners.length; i++) {
         this.getMap().unByKey(this.mapListeners[i]);
     }
     this.mapListeners.length = 0;
-    // Wire up listeners etc. and store reference to new map
-    ol.control.Control.prototype.setMap.call(this, map);
+  
     if (map) {
+		 // Wire up listeners etc. and store reference to new map
+		ol.control.Control.prototype.setMap.call(this, map);
 		
-		//configure map listeners
-		this.mapListeners.push(map.once("postrender", function(){
-			this.renderPanel();
-		}, this));
-		if(!this.isExternalized){
+		if(this.isExternalized){
+			//configure map listeners
+			this.mapListeners.push(map.once("postrender", function(){
+				this.renderPanel();
+			}, this));
+			this.mapListeners.push(map.getView().on('propertychange', function(e) {
+				this.renderPanel();
+			}, this));
+		
+		}else{
 			this.mapListeners.push(map.on('pointerdown', function() {
 				this.hidePanel();
 			}, this));
+			this.renderPanel();
 		}
-        this.renderPanel();
     }
 };
 
@@ -161,35 +187,6 @@ ol.control.LayerSwitcher.prototype.setVisible_ = function(lyr, visible) {
         });
     }
 };
-
-
-/**
- * Builds a GetLegendGraphic WMS request to handle layer legend
- * @param {ol.layer.TileWMS} lyr WMS Layer
- * @return {String} string representing the GetLegendGraphic URL request
- * 
- */
-ol.control.LayerSwitcher.prototype.getLegendGraphic_ = function(lyr) {
-	
-	var source = lyr.getSource();
-	if( !(source instanceof ol.source.TileWMS) ) return false;
-	
-	var params = source.getParams();
-
-	var request = '';
-	request += source.getUrls()[0] + '?';
-	request += 'VERSION=1.0.0';
-	request += '&REQUEST=GetLegendGraphic';
-	request += '&LAYER=' + params.LAYERS;
-	request += '&STYLE=' + ( (params.STYLES)? params.STYLES : '');
-	request += '&LEGEND_OPTIONS=forcelabels:on;forcerule:True;fontSize:12'; //maybe to let as options
-	request += '&SCALE=139770286.4465912'; //to investigate
-	request += '&FORMAT=image/png';
-	request += '&TRANSPARENT=true';
-	
-	return request;
-}
-
 
 /**
  * Render all layers that are children of a group.
@@ -271,12 +268,7 @@ ol.control.LayerSwitcher.prototype.renderLayer_ = function(lyr, idx) {
 ol.control.LayerSwitcher.prototype.renderLegendGraphic_ = function(lyr, idx, li) {
 	if( this.displayLegend_ && lyr.get('type') != 'base' && lyr.showLegendGraphic){
    	
-		var imgSrc = false;
-		if(lyr instanceof ol.layer.Tile){
-			imgSrc = this.getLegendGraphic_(lyr);
-		}else if(lyr instanceof ol.layer.Vector){
-			imgSrc = (lyr.icon)? lyr.icon : false;
-		}
+		var imgSrc = (lyr.legendGraphic)? lyr.legendGraphic : false;
 		
 		if(imgSrc){
 			var legend = document.createElement('div');

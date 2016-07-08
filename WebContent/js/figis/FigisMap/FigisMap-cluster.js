@@ -130,7 +130,7 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 		clusterLayer.id = layer.id;
 		
 		//adding layer.icon to layer object (for inheriting in layerswitcher)
-		clusterLayer.icon = layer.icon;
+		clusterLayer.legendGraphic = layer.icon;
 
 		if ( overlays ) {
 			overlays.getLayers().push(clusterLayer);

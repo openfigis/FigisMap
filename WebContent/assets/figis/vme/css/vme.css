@@ -16,7 +16,7 @@
     left: 40px;
 }
 
-#layerswitcherpanel{
+#layerswitcher{
 	margin:10px 5px;
 	overflow:auto;
 }
@@ -1230,19 +1230,6 @@ a.lblReset {
     text-align : left;
 }
 
-#layerswitcher >div{
-	display:none;
-}
-#layerswitcher div.layersDiv{
-	margin: 10px 5px;
-	display:block;
-}
-
-#layerswitcher div.layersDiv .baseLbl, #layerswitcher div.layersDiv .dataLbl{
-	font-weight:bold;
-	margin: 4px auto;
-	
-}
 
 .dataLbl {
     display: none;
