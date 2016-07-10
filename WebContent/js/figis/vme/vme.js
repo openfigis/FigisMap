@@ -1,6 +1,8 @@
 /**
  * VME Map viewer Javascript
- * Authors: Geosolutions, E. Blondel
+ * Authors:
+ *	Geosolutions (original code based on OpenLayers 2),
+ *	Emmanuel Blondel (major updates to migrate to OpenLayers 3 and new FigisMap)
  * 
  */
 
@@ -25,13 +27,16 @@ VME.overlayGroups = ["Additional features", "Managed areas related to UNGA Res. 
 
 VME.baseMapParams = function(year){
 	
+	var baselayers = FigisMap.defaults.baseLayers;
+	if(!VME.myMap) baselayers.reverse();
+	
 	this.rfb = '',
 	this.target	= 'map';
 	this.context = 'vmeViewer';
 	this.legend	= 'legend';
 	this.fullWindowMap = true;
 	this.projection = VME.currentProjection();
-	this.base = FigisMap.defaults.baseLayers.reverse();
+	this.base = baselayers;
 	this.options = {
 		labels: true,
 		baseMarineLabels: true,
