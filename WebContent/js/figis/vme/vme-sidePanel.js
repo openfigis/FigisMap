@@ -1,25 +1,51 @@
 /*
 	side-panel.js
 	Search module for VME using Extjs
-	Authors: Lorenzo Natali. Geo-Solutions
+	Authors:
+		Lorenzo Natali. Geo-Solutions
+		Emmanuel Blondel. FAO - Modification to integration with FigisMap OL3
 	
 	Status: Beta.	
 */
 
-Vme.form={
+VMESearch = new Object();
+
+
+
+// FIXED ZOOM TO FOR SOME RFB TYPE (ZOOM TO WRAPDATELINE FEATURES)
+/**
+ * VMESearch.rfbZooms constants
+ * Used to fix zoom extent for some RFBs (zoom to wrapdateLine features)
+ */
+VMESearch.rfbZooms = {
+    SPRFMO : {isWrapDateLine: true, zoomExtent: [-50, -60, 100, 10]},
+    NPFC : {isWrapDateLine: true, zoomExtent: [-55, 15, 75, 55]},
+	NEAFC : {isWrapDateLine: false, zoomExtent: [-78.93, 32.38, 82.77, 77.23]},
+	NAFO : {isWrapDateLine: false, zoomExtent: [-121.75710936669134, 13.121674445496733, 25.899140612752504, 68.12634423147448]}
+}
+
+
+/**
+ * VMESearch.loader widget
+ */
+VMESearch.loader = function(){
+	return new Ext.LoadMask(Ext.getBody(), {msg: "Please wait ..."});
+}
+
+VMESearch.form={
 	panels:{},
 	widgets:{}
 		
 };
 
 // store Factsheet URL for popup
-Vme.factsheetUrl={};
+VMESearch.factsheetUrl={};
 
 /**
- * Vme.form.widgets.SearchResults
+ * VMESearch.form.widgets.SearchResults
  * Data view for search results. uses SearchResultStore and searchResult template
  */
-Vme.form.widgets.SearchResults = new Ext.DataView({
+VMESearch.form.widgets.SearchResults = new Ext.DataView({
 	store: Vme.data.stores.SearchResultStore,
 	tpl: Vme.data.templates.searchResult,
 	pageSize:Vme.data.constants.pageSize,
@@ -44,7 +70,7 @@ Vme.form.widgets.SearchResults = new Ext.DataView({
 /**
 * clickOnResult
 */
-Vme.clickOnFeature =function(geographicFeatureId,rec_year,zoom){
+VMESearch.clickOnFeature =function(geographicFeatureId,rec_year,zoom){
           
         //TODO OL3
 	/*var layer = myMap.getLayersByName("highlight")[0];
@@ -109,7 +135,7 @@ Vme.clickOnFeature =function(geographicFeatureId,rec_year,zoom){
                       zoomExtent: bounds.toBBOX(20)
                     };
                     
-					zoomTo(settings,repro_bbox,zoom,false);
+					VME.zoomTo(settings,repro_bbox,zoom,false);
                     
                     //myMap.paddingForPopups.right = 240; //TODO: use this to center the popup when the search panel is opened!!! 
 														  //but if do this we are problem on dateline (popup disappears)
@@ -159,11 +185,11 @@ Vme.clickOnFeature =function(geographicFeatureId,rec_year,zoom){
       };
 
 /**
- * Vme.form.panels.SearchForm
+ * VMESearch.form.panels.SearchForm
  * form to perform searches on Vme search services (now to WFS) 
  * 
  */
-Vme.form.panels.SearchForm = new Ext.FormPanel({
+VMESearch.form.panels.SearchForm = new Ext.FormPanel({
 	labelWidth: 75, // label settings here cascade unless overridden
 
 	bodyStyle:'padding:5px 5px 0',
@@ -219,27 +245,12 @@ Vme.form.panels.SearchForm = new Ext.FormPanel({
 			    }
 			}
 		},
-		/*{
-			fieldLabel: FigisMap.label('SEARCH_CRIT_LBL'),//+' [<a href="#">?</a>]',
-			name: 'vme_criteria',
-			ref: '../vmeCriteria',
-			emptyText:  FigisMap.label('SEARCH_CRIT_EMP'),
-			value:   FigisMap.label('SEARCH_CRIT_EMP'),   
-			allowBlank:true,
-			forceSelection:true,
-			typeAhead: true,
-			triggerAction: 'all',
-			mode: 'local',
-			store:  Vme.data.stores.VmeCriteriaStore,
-			valueField : 'id',
-			displayField: 'displayText'			
-		},*/ 
 		{
 			fieldLabel: FigisMap.label('SEARCH_YEAR_LBL'),//+'[<a href="#">?</a>]',
 			id: "id_selectYear",
 			name: 'year',
 			ref:'../year', 
-			emptyText:FigisMap.label('SEARCH_YEAR_EMP'),
+			emptyText: FigisMap.label('SEARCH_YEAR_EMP'),
 			allowBlank:true,
 			forceSelection:true,
 			typeAhead: true,
@@ -256,7 +267,7 @@ Vme.form.panels.SearchForm = new Ext.FormPanel({
 			ref: '../Clear',
 			cls:'figisButton',
 			handler: function(){
-				Vme.form.panels.SearchForm.getForm().reset();
+				VMESearch.form.panels.SearchForm.getForm().reset();
 				document.getElementById('searchtext').value = "";
 			}
 			
@@ -266,7 +277,7 @@ Vme.form.panels.SearchForm = new Ext.FormPanel({
 			cls: 'figisButton',
 			
 			handler: function(){
-                Vme.search(true);
+                VMESearch.search(true);
             }
 		}
 	],
@@ -280,65 +291,56 @@ Vme.form.panels.SearchForm = new Ext.FormPanel({
     } 
 });
 
+
 /**
- * Vme.search
+ * VMESearch.search
  * Search VMEs zooming to the VME autority area.
  * 
  */
-Vme.search = function(advanced){
+VMESearch.search = function(advanced){
+
+	var vmeLoader = VMESearch.loader();
 
 	// ///////////////////////////////////////////////////
-	// Retrieve Autority area extent to perform a zoomTo.
+	// Retrieve Autority area extent to perform a VME.zoomTo.
 	// ///////////////////////////////////////////////////
 	
 	var RFMOCombo = Ext.getCmp("RFMOCombo");
 	var RFMStore = RFMOCombo.getStore();
 	var value = RFMOCombo.getValue();
     
-    FigisMap.ol.clearPopupCache(); //TODO OL3
+	FigisMap.ol.clearPopupCache(); //TODO OL3
 
-    // TODO OL3 remove highlight layer on new search
-    /*var layer = myMap.getLayersByName("highlight")[0];
-    create layer
-    if(layer){
-        myMap.removeLayer(layer,false);
-    }*/	        
+	// TODO OL3 remove highlight layer on new search
+	/*var layer = myMap.getLayersByName("highlight")[0];
+	if(layer){
+	myMap.removeLayer(layer,false);
+	}*/	        
         
 	var dIndex = RFMStore.find("id", value); 
-    
+    	
 	if(dIndex > -1){
         var rfbCheckboxValue = Ext.getCmp(value+"_RFB").acronym;
-        setRFBCheckBoxValue(rfbCheckboxValue);
+        VME.setRFBCheckBoxValue(rfbCheckboxValue);
         
-		var r = RFMStore.getAt(dIndex);	
-		var rfmName = r.data.acronym;
+	var r = RFMStore.getAt(dIndex);	
+	var rfbName = r.data.acronym;
         
-        // perform CQL_FILTER
-        VME.refreshLayers(rfmName);
-        
-		var filter = new OpenLayers.Filter.Comparison({
-			type: OpenLayers.Filter.Comparison.EQUAL_TO,
-			property: FigisMap.rnd.vars.vmeSearchZoomTo.filterProperty,    // "RFB",
-			value: rfmName
-		});
-		
-		var protocol = new OpenLayers.Protocol.WFS({
-		   version: FigisMap.rnd.vars.vmeSearchZoomTo.wfsVersion,          // "1.1.0",					
-		   url: FigisMap.rnd.vars.vmeSearchZoomTo.wfsUrl,                  // "http://figisapps.fao.org/figis/geoserver/" + "wfs",									   
-		   featureType: FigisMap.rnd.vars.vmeSearchZoomTo.featureType,     // "RFB_COMP",
-		   featurePrefix: FigisMap.rnd.vars.vmeSearchZoomTo.featurePrefix, // "fifao",
-		   srsName: FigisMap.rnd.vars.vmeSearchZoomTo.srsName,             // "EPSG:4326",
-		   defaultFilter: filter
-		});
+        VME.refreshLayers(rfbName);
 
-		var mask = new Ext.LoadMask(Ext.getBody(), {msg: "Please wait ..."});
-		
-		var callback = function(r) {
-			var features = r.features;
+		//vector source
+		var layer = "fifao:RFB_COMP_CLIP";
+		var sourceUrl = FigisMap.rnd.vars.wfs + layer;
+		var cqlFilter = "RFB=" + "'" + rfbName + "'";
+        var vectorSource = FigisMap.rnd.configureVectorSource(sourceUrl, cqlFilter);
+		vectorSource.loadFeatures();
+		console.log(vectorSource);
 			
+		var loadFeaturesCallback = function(){		
+			var features = vectorSource.getFeatures();
 			if(!features || features.length < 1){
-				mask.hide();
-				
+				vmeLoader.hide();
+						
 				Ext.MessageBox.show({
 					title: "Info",
 					msg: FigisMap.label("SIDP_NOFEATURES"),
@@ -346,42 +348,39 @@ Vme.search = function(advanced){
 					icon: Ext.MessageBox.WARNING,
 					scope: this
 				});
-                return;
+				return;
 			}
-					
+						
 			// ///////////////////////////
 			// Get the bigger extent
 			// ///////////////////////////			
-			
-            //CHECK IF AREATYPE IS 1 OR 2 FOR NAFO AND NEAFC    
-            var areaType1 = new Array();
-            var areaType2 = new Array();
-            
-            for (var i = 0;i<features.length;i++){
-                if (features[i].attributes.AREATYPE == 1){
-                    areaType1.push({bounds:features[i].bounds})
-                }else if(features[i].attributes.AREATYPE == 2){
-                    areaType2.push({bounds:features[i].bounds})
-                }
-            }
+				
+		   //CHECK IF AREATYPE IS 1 OR 2 FOR NAFO AND NEAFC    
+			var areaType1 = new Array();
+			var areaType2 = new Array();
+				
+			for (var i = 0;i<features.length;i++){
+				if (features[i].getProperties().AREATYPE == 1){
+						areaType1.push({bounds:features[i].getProperties().bbox})
+				}else if(features[i].getProperties().AREATYPE == 2){
+						areaType2.push({bounds:features[i].getProperties().bbox})
+				}
+			}
 
 			var size = areaType2.length == 0 ? areaType1.length : areaType2.length;
 			var bounds = areaType2.length == 0 ? areaType1[0].bounds : areaType2[0].bounds;
-			
-			var bottom = bounds.bottom;
-			var left = bounds.left;
-			var right = bounds.right;
-		    var top = bounds.top;
-			
+
+			var left = bounds[0];
+			var bottom = bounds[1];
+			var right = bounds[2];
+			var top = bounds[3];
+					
+				
 			for(var i=0; i<size; i++){
 				var b = areaType2.length == 0 ? areaType1[i].bounds : areaType2[i].bounds;
 				if(!b){
 					continue;
 				}
-				
-				/*if(bounds && b.contains(bounds)){
-					bounds = b;
-				}*/
 
 				if(b.bottom < bottom){
 					bottom = b.bottom;
@@ -399,36 +398,24 @@ Vme.search = function(advanced){
 					top = b.top
 				}
 			}
-			
-            // WORKOROUND TO FIX STRANGE BEHAVIOR WHEN XMAX = 90 IN COORDINATE TRANSFORMATION TO GOOGLE MERCATOR
-            top = (top > 85 && top <= 92) ? 85 : top;
-            
-            var fixedZoomTo = vmeViewerRFBZoomTo[features[0].data.RFB]
-            
-            // ZOOM TO WRAPDATELINE FEATURES
-            bounds = fixedZoomTo ? fixedZoomTo.zoomExtent : new OpenLayers.Bounds(left, bottom, right, top);
-			
-			//var test = new OpenLayers.Layer.Vector("test", {
-			//		displayInLayerSwitcher: true
-			//});
-
-            var defaultProj = getProjection();
-            var mapProj = myMap.getProjectionObject();
-            
-            var repro_geom = bounds.toGeometry().transform(
-                new OpenLayers.Projection(FigisMap.rnd.vars.vmeSearchZoomTo.srsName),
-                mapProj
-                //defaultProj == "3031" ? new OpenLayers.Projection("EPSG:4326") : mapProj //use this if default map projection is 4326
-            );
-			
-			//test.addFeatures(new OpenLayers.Feature.Vector(repro_geom));	
-			//myMap.addLayers([test]);
-			
-			var repro_bbox = repro_geom.getBounds();
-			var settings = {
-				zoomExtent: bounds.toBBOX(20)
-			};
-			
+				
+			// WORKOROUND TO FIX STRANGE BEHAVIOR WHEN XMAX = 90 IN COORDINATE TRANSFORMATION TO GOOGLE MERCATOR
+			top = (top > 85 && top <= 92) ? 85 : top;
+		
+			var fixedZoomTo = VMESearch.rfbZooms[features[0].getProperties().RFB]
+		
+			// ZOOM TO WRAPDATELINE FEATURES
+			bounds = fixedZoomTo ? fixedZoomTo.zoomExtent : [left, bottom, right, top];
+			var defaultProj = VME.getProjection();
+			var mapProj = VM.myMap.getView().getProjection();
+		
+			var repro_bbox = ol.proj.transformExtent(bounds,
+					new ol.proj.get("EPSG:4326"),
+					mapProj
+					//defaultProj == "3031" ? new OpenLayers.Projection("EPSG:4326") : mapProj //use this if default map projection is 4326);
+			);
+			var settings = { zoomExtent: bounds };
+				
 			// ////////////////////////////////////////////////////
 			// Chek if 'CCAMLR' is selected in order to perform 
 			// a reproject the map in 3031.
@@ -440,41 +427,31 @@ Vme.search = function(advanced){
 			var RFMORecord = RFMOComboStore.getAt(RFMOComboStore.find('acronym', "CCAMLR"));
 			var RFMOId = RFMORecord.get('id');
 
-            if (fixedZoomTo && fixedZoomTo.isWrapDateLine){
-                repro_bbox.newLeft = repro_bbox.right;
-                repro_bbox.newRight = repro_bbox.left;
-                repro_bbox.right = repro_bbox.newRight;
-                repro_bbox.left = repro_bbox.newLeft;
-
-                delete repro_bbox["newLeft"];
-                delete repro_bbox["newRight"];
-            }
-        
+			if (fixedZoomTo && fixedZoomTo.isWrapDateLine){
+				var newLeft = repro_bbox[2];
+				var newRight = repro_bbox[0];
+				repro_bbox[0] = newLeft;
+				repro_bbox[2] = newRight;
+			}
+			
 			if(RFMOValue == RFMOId){
 				settings.srs = "EPSG:3031";
-				zoomTo(settings, repro_bbox, false, true);
+				VME.zoomTo(settings, repro_bbox, false, true);
 			}else{
-				zoomTo(settings, repro_bbox, true, true);
+				VME.zoomTo(settings, repro_bbox, true, true);
 			}			
-			
-			//
-			// Perform the store load
-			//
-            vmeSearch(advanced);
-			
-			mask.hide();
-		};
-		
-		mask.show();
-		var response = protocol.read({
-			callback: callback
-		});	
-	}else{
-		//
-		// Perform the store load
-		//
-        vmeSearch(advanced);
+		   
+		}
+		vmeSearch(advanced);
+		vmeLoader.hide();
 	}
+	
+	vectorSource.on("change", function(e){
+		console.log("adding features");
+		loadFeaturesCallback();
+	});
+	
+	vectorSource.loadFeatures();
 };
 
 function vmeSearch(advanced){
@@ -487,7 +464,7 @@ function vmeSearch(advanced){
 	store.baseParams={};
 	var fields = {};
 	if(advanced){
-		var fields = Vme.form.panels.SearchForm.getForm().getFieldValues(true);
+		var fields = VMESearch.form.panels.SearchForm.getForm().getFieldValues(true);
 	}
 	fields.text = document.getElementById('searchtext').value;
 	var params = {
@@ -515,192 +492,168 @@ function vmeSearch(advanced){
 		params: params
 	});
 	
-	Vme.form.panels.SearchPanel.layout.setActiveItem('resultPanel');
+	VMESearch.form.panels.SearchPanel.layout.setActiveItem('resultPanel');
 }
 
 /**
- * Vme.rfbZoomTo
+ * VMESearch.rfbZoomTo
  * Zooming to the RFB areas.
- * 
+ * @param acronym
  */
-Vme.rfbZoomTo = function(acronym,value){
+VMESearch.rfbZoomTo = function(acronym){
+
+	var vmeLoader = VMESearch.loader();
 
 	////////////////////////////////////////////////////
-	// Retrieve RFB areas extent to perform a zoomTo. //
+	// Retrieve RFB areas extent to perform a VME.zoomTo. //
 	////////////////////////////////////////////////////
-
     var rfbName = acronym;
     
-    // perform CQL_FILTER
+   // perform CQL_FILTER
     VME.refreshLayers(rfbName);
 
-    FigisMap.ol.clearPopupCache();    
+    FigisMap.ol.clearPopupCache();   //TODO OL3  
 
-    // TODO OL3 remove highlight layer on new search
-    //var layer = myMap.getLayersByName("highlight")[0];
-    //create layer
-    /*if(layer){
-        myMap.removeLayer(layer,false);
-    }*/	   
+	// TODO OL3 remove highlight layer on new search
+	//var layer = myMap.getLayersByName("highlight")[0];
+	/*if(layer){
+		myMap.removeLayer(layer,false);
+	*/	   
     
-    var filter = new OpenLayers.Filter.Comparison({
-        type: OpenLayers.Filter.Comparison.EQUAL_TO,
-        property: FigisMap.rnd.vars.vmeSearchZoomTo.filterProperty,    // "RFB",
-        value: rfbName
-    });
-    
-    var protocol = new OpenLayers.Protocol.WFS({
-       version: FigisMap.rnd.vars.vmeSearchZoomTo.wfsVersion,          // "1.1.0",					
-       url: FigisMap.rnd.vars.vmeSearchZoomTo.wfsUrl,                  // "http://figisapps.fao.org/figis/geoserverdv/" + "wfs",									   
-       featureType: FigisMap.rnd.vars.vmeSearchZoomTo.featureType,     // "regulatory_areas",
-       featurePrefix: FigisMap.rnd.vars.vmeSearchZoomTo.featurePrefix, // "vme",
-       srsName: FigisMap.rnd.vars.vmeSearchZoomTo.srsName,             // "EPSG:4326",
-       defaultFilter: filter
-    });
+	//vector source
+	var layer = "fifao:RFB_COMP_CLIP";
+	var sourceUrl = FigisMap.rnd.vars.wfs + layer;
+	var cqlFilter = "RFB=" + "'" + rfbName + "'";
+    var vectorSource = FigisMap.rnd.configureVectorSource(sourceUrl, cqlFilter);
+	
+	var loadFeaturesCallback = function(){	
+		
+		var features = vectorSource.getFeatures();
+		if(!features || features.length < 1){
+			vmeLoader.hide();
+			
+			Ext.MessageBox.show({
+				title: "Info",
+				msg: FigisMap.label("SIDP_NOFEATURES"),
+				buttons: Ext.Msg.OK,
+				icon: Ext.MessageBox.WARNING,
+				scope: this
+			});
+			return;
+		}
+					
+		// ///////////////////////////
+		// Get the bigger extent
+		// ///////////////////////////			
+		
+		//CHECK IF AREATYPE IS 1 OR 2 FOR NAFO AND NEAFC    
+		var areaType1 = new Array();
+		var areaType2 = new Array();
+		
+		for (var i = 0;i<features.length;i++){
+			if (features[i].getProperties().AREATYPE == 1){
+				areaType1.push({bounds:features[i].getProperties().bbox})
+			}else if(features[i].getProperties().AREATYPE == 2){
+				areaType2.push({bounds:features[i].getProperties().bbox})
+			}
+		}
 
-    var mask = new Ext.LoadMask(Ext.getBody(), {msg: "Please wait ..."});
-    
-    var callback = function(r) {
-        var features = r.features;
-        
-        if(!features || features.length < 1){
-            mask.hide();
-            
-            Ext.MessageBox.show({
-                title: "Info",
-                msg: FigisMap.label("SIDP_NOFEATURES"),
-                buttons: Ext.Msg.OK,
-                icon: Ext.MessageBox.WARNING,
-                scope: this
-            });
-            return;
-        }
-                
-        // ///////////////////////////
-        // Get the bigger extent
-        // ///////////////////////////			
-        
-        //CHECK IF AREATYPE IS 1 OR 2 FOR NAFO AND NEAFC    
-        var areaType1 = new Array();
-        var areaType2 = new Array();
-        
-        for (var i = 0;i<features.length;i++){
-            if (features[i].attributes.AREATYPE == 1){
-                areaType1.push({bounds:features[i].bounds})
-            }else if(features[i].attributes.AREATYPE == 2){
-                areaType2.push({bounds:features[i].bounds})
-            }
-        }
+		var size = areaType2.length == 0 ? areaType1.length : areaType2.length;
+		var bounds = areaType2.length == 0 ? areaType1[0].bounds : areaType2[0].bounds;
+		
+		var left = bounds[0];
+		var bottom = bounds[1];
+		var right = bounds[2];
+		var top = bounds[3];
+		
+		for(var i=0; i<size; i++){
+			var b = areaType2.length == 0 ? areaType1[i].bounds : areaType2[i].bounds;
+			if(!b){
+				continue;
+			}
+			
+			/*if(bounds && b.contains(bounds)){
+				bounds = b;
+			}*/
 
-        var size = areaType2.length == 0 ? areaType1.length : areaType2.length;
-        var bounds = areaType2.length == 0 ? areaType1[0].bounds : areaType2[0].bounds;
-        
-        var bottom = bounds.bottom;
-        var left = bounds.left;
-        var right = bounds.right;
-        var top = bounds.top;
-        
-        for(var i=0; i<size; i++){
-            var b = areaType2.length == 0 ? areaType1[i].bounds : areaType2[i].bounds;
-            if(!b){
-                continue;
-            }
-            
-            /*if(bounds && b.contains(bounds)){
-                bounds = b;
-            }*/
+			if(b.bottom < bottom){
+				bottom = b.bottom;
+			}
+			
+			if(b.left < left){
+				left = b.left
+			}
+			
+			if(b.right > right){
+				right = b.right;
+			}
+			
+			if(b.top > top){
+				top = b.top
+			}
+		}
+			
+		// WORKOROUND TO FIX STRANGE BEHAVIOR WHEN XMAX = 90 IN COORDINATE TRANSFORMATION TO GOOGLE MERCATOR
+		top = (top > 85 && top <= 92) ? 85 : top;
 
-            if(b.bottom < bottom){
-                bottom = b.bottom;
-            }
-            
-            if(b.left < left){
-                left = b.left
-            }
-            
-            if(b.right > right){
-                right = b.right;
-            }
-            
-            if(b.top > top){
-                top = b.top
-            }
-        }
-        
-        // WORKOROUND TO FIX STRANGE BEHAVIOR WHEN XMAX = 90 IN COORDINATE TRANSFORMATION TO GOOGLE MERCATOR
-        top = (top > 85 && top <= 92) ? 85 : top;
-
-            
-        var fixedZoomTo = vmeViewerRFBZoomTo[features[0].data.RFB]
-        
-        // ZOOM TO WRAPDATELINE FEATURES
-        bounds = fixedZoomTo ? fixedZoomTo.zoomExtent : new OpenLayers.Bounds(left, bottom, right, top);
-        
-        //var test = new OpenLayers.Layer.Vector("test", {
-        //		displayInLayerSwitcher: true
-        //});
-        var defaultProj = getProjection();
-        var mapProj = myMap.getProjectionObject();
-        
-        var repro_geom = bounds.toGeometry().transform(
-            new OpenLayers.Projection(FigisMap.rnd.vars.vmeSearchZoomTo.srsName),
-            mapProj
-            //defaultProj == "3031" ? new OpenLayers.Projection("EPSG:4326") : mapProj //use this if default map projection is 4326
-        );
-        
-        //test.addFeatures(new OpenLayers.Feature.Vector(repro_geom));	
-        //myMap.addLayers([test]);
-        
-        var repro_bbox = repro_geom.getBounds();
-        var settings = {
-            zoomExtent: bounds.toBBOX(20)
-        };
-        
-        // ////////////////////////////////////////////////////
-        // Chek if 'CCAMLR' is selected in order to perform 
-        // a reproject the map in 3031.
-        // /////////////////////////////////////////////////////
-        
-        var RFBValue = features[0].data.RFB;            
-        var RFBComboStore = Vme.data.stores.rfmoStore;
-        var RFBRecord = RFBComboStore.getAt(RFBComboStore.find('acronym', "CCAMLR"));
-        var RFBId = RFBRecord.get('acronym');
-        
-        // ZOOM TO WRAPDATELINE FEATURES
-        if (fixedZoomTo && fixedZoomTo.isWrapDateLine){
-            repro_bbox.newLeft = repro_bbox.right;
-            repro_bbox.newRight = repro_bbox.left;
-            repro_bbox.right = repro_bbox.newRight;
-            repro_bbox.left = repro_bbox.newLeft;
-
-            delete repro_bbox["newLeft"];
-            delete repro_bbox["newRight"];
-        }
-        
-        if(RFBValue == RFBId){
-            settings.srs = "EPSG:3031";
-            zoomTo(settings, repro_bbox, false, true);
-        }else{
-            zoomTo(settings, repro_bbox, true, true);
-        }			
-        
-        mask.hide();
-    };
-    
-    mask.show();
-    var response = protocol.read({
-        callback: callback
-    });	
-
+		var fixedZoomTo = VMESearch.rfbZooms[features[0].getProperties().RFB]
+		
+		// ZOOM TO WRAPDATELINE FEATURES
+		bounds = fixedZoomTo ? fixedZoomTo.zoomExtent : [left, bottom, right, top];
+		var defaultProj = VME.getProjection();
+		var mapProj = VME.myMap.getView().getProjection();
+		
+		var repro_bbox = ol.proj.transformExtent(bounds,
+			new ol.proj.get("EPSG:4326"),
+			mapProj
+			//defaultProj == "3031" ? new OpenLayers.Projection("EPSG:4326") : mapProj //use this if default map projection is 4326
+			);
+		var settings = {
+			zoomExtent: bounds
+		};
+			
+		// ZOOM TO WRAPDATELINE FEATURES
+		if (fixedZoomTo && fixedZoomTo.isWrapDateLine){
+			newLeft = repro_bbox[2];
+			newRight = repro_bbox[0];
+			repro_bbox[0] = newLeft;
+			repro_bbox[2] = newRight;
+		}	
+			
+		// ////////////////////////////////////////////////////
+		// Chek if 'CCAMLR' is selected in order to perform 
+		// a reproject the map in 3031.
+		// /////////////////////////////////////////////////////
+			
+		var RFBValue = features[0].getProperties().RFB;            
+		var RFBComboStore = Vme.data.stores.rfmoStore;
+		var RFBRecord = RFBComboStore.getAt(RFBComboStore.find('acronym', "CCAMLR"));
+		var RFBId = RFBRecord.get('acronym');
+		if(RFBValue == RFBId){
+			settings.srs = "EPSG:3031";
+			VME.zoomTo(settings, repro_bbox, false, true);
+		}else{
+			VME.zoomTo(settings, repro_bbox, true, true);
+		}			
+			
+		vmeLoader.hide();
+	}
+	
+	vectorSource.on("change", function(e){
+		console.log("adding features");
+		loadFeaturesCallback();
+	});
+	
+	vectorSource.loadFeatures();
 };
 
 /** 
- * Vme.form.panels.SearchPanel
+ * VMESearch.form.panels.SearchPanel
  * panel containing search form and search results dataview using
  * card layout. Wraps the previous components to complete search GUI
  *
  */
-Vme.form.panels.SearchPanel = new Ext.Panel({
+VMESearch.form.panels.SearchPanel = new Ext.Panel({
 	
 	layout:'card',
 	activeItem: 0,
@@ -716,7 +669,7 @@ Vme.form.panels.SearchPanel = new Ext.Panel({
 			defaults: {
 				border:false
 			},
-			items:[Vme.form.panels.SearchForm]
+			items:[VMESearch.form.panels.SearchForm]
 		},{
 			id: 'resultPanel',
 			xtype:'panel',
@@ -729,7 +682,7 @@ Vme.form.panels.SearchPanel = new Ext.Panel({
                     border: false,
 					xtype:'panel',
                     layout:'fit',
-					items:[Vme.form.widgets.SearchResults],
+					items:[VMESearch.form.widgets.SearchResults],
 					bbar : new Ext.ux.LazyPagingToolbar({
 							store: Vme.data.stores.SearchResultStore,
 							pageSize: Vme.data.constants.pageSize
@@ -739,7 +692,7 @@ Vme.form.panels.SearchPanel = new Ext.Panel({
 				xtype: 'button',
 				text: FigisMap.label('SEARCH_BACK_FORM'),
 				iconCls: 'back-search-icon',
-				handler: function(){Vme.form.panels.SearchPanel.layout.setActiveItem('searchForm');}
+				handler: function(){VMESearch.form.panels.SearchPanel.layout.setActiveItem('searchForm');}
 			}]
 		}
 	]
@@ -822,7 +775,7 @@ var sidePanel = new Ext.Panel({
             id: 'searchPanel',
 			//title:FigisMap.label('SIDP_SEARCH'),
 			iconCls: 'search-icon',
-			items:[Vme.form.panels.SearchPanel]
+			items:[VMESearch.form.panels.SearchPanel]
 		}
 		
 	]
@@ -841,7 +794,8 @@ var selectRFB = new Ext.Panel({
     },
     id:'selectRFB'
 });
-    
+ 
+
 Vme.data.stores.rfmoStore.on('load',function(store, records, options){
     
     var items = [];
@@ -889,15 +843,9 @@ Vme.data.stores.rfmoStore.on('load',function(store, records, options){
             listeners: {
                 check: function(radio, checked){
                     if(checked){
-                        var acronym = radio.acronym;
-                        var value = radio.inputValue;
-                        Vme.rfbZoomTo(acronym,value);
+                        VMESearch.rfbZoomTo(radio.acronym);
                         sidePanel.layout.setActiveItem('legendPanel');
                         sidePanel.expand();  
-						
-						toogleWME(false);
-						toogleWMEOther(false);
-						toogleFootprints(false);	
                     }
                 },
                 afterrender: function(radio){               
@@ -908,45 +856,12 @@ Vme.data.stores.rfmoStore.on('load',function(store, records, options){
                         headers: {"Accept": "application/json", 'Content-Type': 'application/json;charset=utf-8'},
                         success: function(response) {
                                 var json = Ext.decode(response.responseText);
-                                Vme.factsheetUrl[radio.acronym] = json.resultList[0].factsheetUrl;
+                                VMESearch.factsheetUrl[radio.acronym] = json.resultList[0].factsheetUrl;
                                 var id = 'infoRFBimage_' + radio.id;
-                                Ext.get(id).dom.lastChild.parentNode.outerHTML = '<a id="'+id+'" style="color:#000000" href="javascript:void(0);" //onClick="FigisMap.infoSourceLayers(\''+json.resultList[0].factsheetUrl+'\',true);"><img style="margin-bottom: 1px; vertical-align: bottom" title = "Clik To View Regional Measures" src="assets/figis/vme/img/icons/information.png"></a><span>'+radio.acronym+'</span>';
+                                Ext.get(id).dom.lastChild.parentNode.outerHTML = '<a id="'+id+'" style="color:#000000" href="javascript:void(0);" //onClick="VMEInfo.infoHandler(\''+json.resultList[0].factsheetUrl+'\',true);"><img style="margin-bottom: 1px; vertical-align: bottom" title = "Clik To View Regional Measures" src="assets/figis/vme/img/icons/information.png"></a><span>'+radio.acronym+'</span>';
                         }
                     });
 
-                    //Kiran: Commented this code out as it seems to create looped stores which is not allowed in ExtJs 
-                    /*
-                    var rfbStoreAcronym =  new Ext.data.JsonStore({
-                        url: FigisMap.geoServerBase + "/figis/ws/vme/webservice/owner/"+radio.acronym+"/scope/Regulatory/vmes", //Vme.data.models.factsheetCCAMLR,
-                        autoLoad: false,
-                        remoteSort: false,
-                        root: 'vmeDto',                      
-                        fields: ['vmeId',{name: "factsheetUrl", mapping: "factsheetUrl"}]          
-                    });
-                    
-                    rfbStoreAcronym.load();
-                    rfbStoreAcronym.on('load',function(store, records, options){
-                        store.each(function(records,count,tot) {
-                            Vme.factsheetUrl[radio.acronym] = records.data.factsheetUrl;
-                            var id = 'infoRFBimage_' + radio.id;
-                            Ext.get(id).dom.lastChild.parentNode.outerHTML = '<a id="'+id+'" style="color:#000000" href="javascript:void(0);" onClick="FigisMap.infoSourceLayers(\''+records.data.factsheetUrl+'\',true);"><img style="margin-bottom: 1px; vertical-align: bottom" title = "Clik To View Regional Measures" src="theme/img/icons/information.png"></a><span>'+radio.acronym+'</span>';
-                        })
-                    });
-                    */
-                    
-                    //WORKAROUND TO MANAGE GFCM AND WECAFC WEB-SERVICE ERROR
-                    //if(Vme.data.stores[rfbStore].data.length != 0){
-                    /*if(radio.acronym != "GFCM" && radio.acronym != "WECAFC"){                    
-                        Vme.data.stores[rfbStore].on('load',function(store, records, options){
-                            store.each(function(records,count,tot) {
-                                var id = 'infoRFBimage_' + radio.id;
-                                Ext.get(id).dom.lastChild.parentNode.outerHTML = '<a id="'+id+'" style="color:#000000" href="javascript:void(0);" onClick="FigisMap.infoSourceLayers(\''+records.data.factsheetUrl+'\');"><img style="margin-bottom: 1px; vertical-align: bottom" title = "Clik To View Regional Measures" src="theme/img/icons/information.png"></a><span>'+radio.acronym+'</span>';
-                            })
-                        })
-                    }else{
-                        var id = 'infoRFBimage_' + radio.id;
-                        Ext.get(id).dom.lastChild.parentNode.outerHTML = '<a id="'+id+'" style="color:#000000" href="javascript:void(0);" onClick="Vme.msgAlert(\''+radio.acronym+'\')"><img style="margin-bottom: 1px; vertical-align: bottom" title = "Clik To View Regional Measures" src="theme/img/icons/information.png"></a><span>'+radio.acronym+'</span>';
-                    }*/
                 }
             }
         });
@@ -966,13 +881,13 @@ Vme.data.stores.rfmoStore.on('load',function(store, records, options){
         }
         
         if ( rfb && rfb != '' && typeof(rfb) != 'undefined' && rfb != 'undefined'){
-            setRFBCheckBoxValue(rfb);
+            VME.setRFBCheckBoxValue(rfb);
         }        
     }
 
 });
 
 //REMOVE WHEN GFCM AND WECAFC WEB-SERVICE WILL UP
-Vme.msgAlert = function (acronym){
+VMESearch.msgAlert = function (acronym){
     Ext.Msg.alert("MESSAGE", "WEB-SERVICE: "+acronym+" IS DOWN");
 };

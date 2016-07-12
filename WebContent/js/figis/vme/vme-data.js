@@ -1,15 +1,9 @@
 ﻿// unicode glyph:  - don't remove, needed for Windows bug
 
+var VMEData = new Object();
 
-// FIXED ZOOM TO FOR SOME RFB TYPE (ZOOM TO WRAPDATELINE FEATURES)
-var vmeViewerRFBZoomTo = {
-    SPRFMO : {isWrapDateLine: true, zoomExtent: [-50, -60, 100, 10]},
-    NPFC : {isWrapDateLine: true, zoomExtent: [-55, 15, 75, 55]},
-	NEAFC : {isWrapDateLine: false, zoomExtent: [-78.93, 32.38, 82.77, 77.23]},
-	NAFO : {isWrapDateLine: false, zoomExtent: [-121.75710936669134, 13.121674445496733, 25.899140612752504, 68.12634423147448]}
-}
 
-var staticLabels = {
+VMEData.staticLabels = {
 	'(NO SPECIES SELECTED)'	: { en: '(No species selected)' },
 	'200 NMI ARCS'		: '200 nmi arcs',
 	'FAO FISHING AREAS'	: { en:'FAO fishing areas', fr:'Zones de pêche de la FAO'},

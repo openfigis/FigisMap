@@ -9,7 +9,7 @@ var performAutoZoom = true;
 //Load dependencies
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-animatedclusterlayer.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-selectclusterinteraction.js');
-FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/figis/FigisMap/FigisMap-cluster.js');
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/figis/FigisMap/FigisMap-vector.js'); //manage vector and cluster sources
 
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-popup.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/figis/FigisMap/FigisMap-popup.js');
@@ -54,7 +54,7 @@ FV.baseMapParams = function() {
 	this.mapSize = 'L';
 	this.projection = FV.currentProjection();
 	this.watermark = {
-		src: FigisMap.assetsRoot + 'common/img/FAOWatermarkSmall.png',
+		src: FigisMap.assetsRoot + 'common/img/FAOwatermarkSmall.png',
 		title : 'Powered by FIGIS',
 		width : 176,
 		height : 48,
@@ -191,6 +191,7 @@ FV.baseMapParams.prototype.setZoom = function( z ) {
 	Gets layer Url
 */
 FV.baseMapParams.prototype.getLayerUrl = function( l ) {
+	console.log(FigisMap.rnd.vars.wfs);
 	return FigisMap.rnd.vars.wfs + 'firms:' + l + '_all_points';
 }
 

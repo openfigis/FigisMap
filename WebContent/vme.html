@@ -16,8 +16,6 @@
 	<!-- FigisMap -->
 	<link rel="stylesheet" type="text/css" href="js/figis/FigisMap/FigisMap.css"></link>
 	<script type="text/javascript" src="js/figis/FigisMap/FigisMap.js"></script>
-	<script type="text/javascript" src="js/figis/FigisMap/FigisMap-time.js"></script>
-	<script type="text/javascript" src="js/figis/FigisMap/FigisMap-featureinfo.js"></script>
 	
 	<!-- Extra dependencies -->
 	<!-- TODO support of extjs / GeoEXT -->
@@ -35,7 +33,7 @@
     <link rel="stylesheet" href="assets/figis/vme/css/vmefonts.css" type="text/css" />
 	
 	
-	<script type="text/javascript" src="js/figis/vme/figis-data.js"></script>
+	
 	<script type="text/javascript" src="js/figis/vme/georeferences.js"></script>
 	<!--script type="text/javascript" src="js/figis/vme/login.js"></script-->	
 	<script type="text/javascript" src="js/figis/vme/factsheet.js"></script> 
@@ -45,10 +43,11 @@
 	
 	<script type="text/javascript" src="js/figis/vme/vmeData.js" ></script>
 	<script type="text/javascript" src="js/figis/vme/popups.js"></script>
-	<script type="text/javascript" src="js/figis/vme/sidePanel.js" defer></script>
-
-
-	<script type="text/javascript" src="js/figis/vme/infoSourcesLayer.js"></script> 
+	
+	<!-- VME viewer -->
+	<script type="text/javascript" src="js/figis/vme/vme-data.js"></script>
+	<script type="text/javascript" src="js/figis/vme/vme-infoSourcesLayer.js"></script>
+	<script type="text/javascript" src="js/figis/vme/vme-sidePanel.js" defer></script>
 	<script type="text/javascript" src="js/figis/vme/vme.js"></script>
 	
 
@@ -249,9 +248,9 @@ document.namespaces;
 			</div>
             <div id="sidebar">
                 <div id="leftTopPan">
-                    <div id="searchtextwrapper"><input type="text" id="searchtext" name="searchtext" onkeydown="if (event.keyCode == 13) { Vme.search(false);sidePanel.layout.setActiveItem('searchPanel');sidePanel.expand();Vme.form.panels.SearchPanel.layout.setActiveItem('resultPanel');}"/><div onclick=" Vme.search(false);sidePanel.layout.setActiveItem('searchPanel');sidePanel.expand();Vme.form.panels.SearchPanel.layout.setActiveItem('resultPanel');" id="simpleSearchButton"></div></div>
+                    <div id="searchtextwrapper"><input type="text" id="searchtext" name="searchtext" onkeydown="if (event.keyCode == 13) { Vme.search(false);sidePanel.layout.setActiveItem('searchPanel');sidePanel.expand();VMESearch.form.panels.SearchPanel.layout.setActiveItem('resultPanel');}"/><div onclick=" Vme.search(false);sidePanel.layout.setActiveItem('searchPanel');sidePanel.expand();VMESearc.form.panels.SearchPanel.layout.setActiveItem('resultPanel');" id="simpleSearchButton"></div></div>
                     <div id="leftTopLinks"> 
-                        <a onclick="sidePanel.layout.setActiveItem('searchPanel');sidePanel.expand();Vme.form.panels.SearchPanel.layout.setActiveItem('searchForm');Vme.form.panels.SearchPanel.doLayout()">Advanced Search</a> |
+                        <a onclick="sidePanel.layout.setActiveItem('searchPanel');sidePanel.expand();VMESearch.form.panels.SearchPanel.layout.setActiveItem('searchForm');VMESearch.form.panels.SearchPanel.doLayout()">Advanced Search</a> |
                         <a onclick="sidePanel.layout.setActiveItem('legendPanel');sidePanel.expand();">Legend</a> <div class="xbutton-closepanels" onclick="sidePanel.collapse();" >  </div> |
 						<a onclick="sidePanel.layout.setActiveItem('embed-link');sidePanel.expand();VME.setEmbedLink('embed-url', 'embed-iframe');">EmbedLink</a> <div class="xbutton-closepanels" onclick="sidePanel.collapse();" >  </div>
                     </div>
@@ -328,8 +327,6 @@ document.namespaces;
 		}		
 	// ]]>
 	</script>
-	<!--<input type="button" id="addlayer" value="Show RFB" onclick="addLayer()"/>
-	<input type="button" id="addlayer" value="Show zoom" onclick="SLD()"/>-->
 	
 	<script type="text/javascript">
 		var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -153,15 +153,6 @@ FigisMap.rnd.vars = {
 	Legend_Base_Request	: FigisMap.geoServerBase + FigisMap.localPathForGeoserver + "/wms" + "?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetLegendGraphic&FORMAT=image%2Fpng&WIDTH=30&HEIGHT=20",
 	wfs			: FigisMap.geoServerBase + FigisMap.localPathForGeoserver + '/wfs?request=GetFeature&version=1.0.0&typename=',
 	absWfs			: FigisMap.geoServerAbsBase + FigisMap.localPathForGeoserver + '/wfs?request=GetFeature&version=1.0.0&typename=',
-	//TODO OL3 move from here (VME specific?)
-	vmeSearchZoomTo: {
-		wfsUrl: FigisMap.geoServerBase + FigisMap.geoServerResource + "/wfs",
-		wfsVersion: "1.1.0",
-		filterProperty: "RFB",
-	    featureType: "RFB_COMP_CLIP",
-	    featurePrefix: "fifao",
-	    srsName: "EPSG:4326"
-	}    
 };
 
 //Path for FigisMapData
@@ -462,7 +453,7 @@ FigisMap.ol.baselayersLabel = "Base Layer";
  * @return the default overlay group name
  */
 FigisMap.ol.getDefaultOverlayGroup = function(pars){
-	var overlayGroup = {name: FigisMap.ol.overlaysLabel, infoUrl: false};
+	var overlayGroup = {name:FigisMap.ol.overlaysLabel, infoUrl:false};
 	if (pars.options){
 		if(pars.options.layerSwitcherOptions){
 			if(pars.options.layerSwitcherOptions.overlayGroups){
@@ -771,9 +762,9 @@ FigisMap.ol.configureOverlayLayer = function(obj, boundsOrigin){
 		opacity : ( obj.opacity )? obj.opacity : 1.0,
 		visible : ( obj.hidden )? false : true
 	});
-	layer.legendGraphic = FigisMap.ol.getLegendGraphic(layer);
+	FigisMap.ol.setLegendGraphic(layer);
 	layer.showLegendGraphic = obj.showLegendGraphic //to make the param accessible to layerswitcher
-	layer.overlayGroup = (obj.overlayGroup)? obj.overlayGroup: FigisMap.ol.overlaysLabel;
+	layer.overlayGroup = (obj.overlayGroup)? obj.overlayGroup: {name:FigisMap.ol.overlaysLabel, infoUrl:false};
 
 	return layer;
 }
@@ -806,6 +797,27 @@ FigisMap.ol.toggleLayer = function(map, layername, visible){
 	if(layer) layer.setVisible(visible);
 }
 
+/** 
+ * FigisMap.refreshLayer
+ * Refresh a layer with acronym/time filters
+ * @param layer name of the layer as in Geoserver ('namespace:layername')
+ */
+FigisMap.ol.refreshLayer = function(layer, newParams){
+	
+	var olLayer = FigisMap.ol.getLayer(VME.myMap, layer);
+	var source = olLayer.getSource();
+	var params = source.getParams();
+	
+	var targetKeys = Object.keys(newParams);
+	for(var i=0;i<targetKeys.length;i++){
+		var key = targetKeys[i];
+		params[key] = newParams[key];
+	}
+
+	source.updateParams(params);
+	FigisMap.ol.setLegendGraphic(olLayer); //update legend graphic (required)	
+}
+
 /**
  * FigisMap.ol.getSource
  * @param map
@@ -820,12 +832,11 @@ FigisMap.ol.getSource = function(map, layername){
 
 
 /**
- * Builds a GetLegendGraphic WMS request to handle layer legend
+ * Builds a SetLegendGraphic WMS request to handle layer legend
  * @param {ol.layer.TileWMS} lyr WMS Layer
- * @return {String} string representing the GetLegendGraphic URL request
  * 
  */
-FigisMap.ol.getLegendGraphic = function(lyr) {
+FigisMap.ol.setLegendGraphic = function(lyr) {
 	
 	var source = lyr.getSource();
 	if( !(source instanceof ol.source.TileWMS) ) return false;
@@ -843,7 +854,7 @@ FigisMap.ol.getLegendGraphic = function(lyr) {
 	request += '&FORMAT=image/png';
 	request += '&TRANSPARENT=true';
 	
-	return request;
+	lyr.legendGraphic = request
 }
 
 
@@ -1505,35 +1516,6 @@ FigisMap.rfb.preparse = function( pars ) {
 
 /**
  * --------------------------------------------------------------------------------------
- * VME specific methods (to check later) TODO OL3
- * --------------------------------------------------------------------------------------
- */
-
-
-
-//check if bbox of zoom area is in bbox of projection
-//TODO see if it cna be recycled somewhere, possibly outside FigisMAP
-FigisMap.ol.checkValidBbox = function (projections,bboxs) {
-	if(bboxs.srs){
-		if (bboxs.srs != myMap.getView().getProjection().getCode()){
-			return false;
-		}else{
-			return true;
-		}
-	}
-	if (projections == '3031'){
-	    var bbox2 = bboxs.zoomExtent.split(",");
-		var southpolarbbox = [-180,-90,180, -60];
-		return ol.extent.containsExtent(southpolarbbox,bbox2);			
-	}else{
-		return true; 		
-	}
-};
-
-
-
-/**
- * --------------------------------------------------------------------------------------
  * FigisMap Rendering methods
  * --------------------------------------------------------------------------------------
  */
@@ -2073,6 +2055,7 @@ FigisMap.getStyleRuleDescription = function(STYLE, pars) {
 			drawDataRect	: (boolean) to draw a data rectangle around the species layer. Optional, defaults false.
 			extent		: (String) the map max extent. Optional, autoZoom on default.
 			zoom		: (Number) the map initial zoom level. Optional, autoZoom on default.
+			staticLabels	: (false) additional object of staticLabels to be made available to FigisMap.label function
 			options		: (Object) (optional), all keys default to false:
 				colors			: (boolean) use color map background
 				labels			: (boolean) use labels - defaults to options.colors
@@ -2240,7 +2223,7 @@ FigisMap.renderer = function(options) {
 							overlays.push( overlay );
 						}
 					}else{
-						console.warn("Invalid overlayGroups object. Must be an array");
+						console.warn("Invalid overlayGroups object. Must be an array of group names");
 					}
 				}else{
 					overlays.push( defaultOverlay );
@@ -2381,7 +2364,7 @@ FigisMap.renderer = function(options) {
 			}
 		}
 		
-		//Add eventual vector/cluster layer
+		//Testing cluster
 		if( pars.vectorLayer ) {
 			FigisMap.debug('FigisMap - cluster layer', pars.vectorLayer);
 			pars.vectorLayer.overlayGroup = FigisMap.ol.getDefaultOverlayGroup(pars);
@@ -2393,18 +2376,7 @@ FigisMap.renderer = function(options) {
 			}
 		}
 		
-		//Add eventual getFeatureInfo events
-		if( pars.getFeatureInfoLayers ) {
-			FigisMap.debug('FigisMap - configure getFeatureInfo for layers', pars.getFeatureInfoLayers);
-			for(var i = 0;i < pars.getFeatureInfoLayers.length;i++){
-				var gfi = pars.getFeatureInfoLayers[i];
-				var source = FigisMap.ol.getSource(myMap, gfi.layer);
-				FigisMap.rnd.configureGetFeatureInfoSource(myMap, source, null, gfi.handlers);  
-			}
-		
-		}
-
-		//Add eventual popup/tooltip
+		//Testing popup & tooltip
 		if( pars.popup ) {
 			FigisMap.debug('FigisMap - popup', pars.popup);
 			FigisMap.rnd.configurePopup(myMap, pars.vectorLayer.id, pars.popup);

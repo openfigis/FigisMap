@@ -6,6 +6,11 @@
  * 
  */
 
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/figis/FigisMap/FigisMap-time.js');
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/figis/FigisMap/FigisMap-vector.js');
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/figis/FigisMap/FigisMap-featureinfo.js');
+
+
 var VME = new Object();
 
 
@@ -18,11 +23,12 @@ var VME = new Object();
 
 VME.myMap = false;
 VME.mapCenter = [-2.46, 18.23];
-VME.mapCenterProjection = 4326;
 VME.overlayGroups = [
 	{name: "Additional features", infoUrl : "vme_info_ovl.html"},
 	{name: "Managed areas related to UNGA Res. 61-105", infoUrl : false}
 ];
+
+
 
 /**
  * VME baseMapParams
@@ -47,6 +53,8 @@ VME.baseMapParams = function(year){
 		{layer: FigisMap.fifao.vme_oara, handler: function(e){}}
 	];
 
+	this.staticLabels = VMEData.staticLabels;
+
 	this.options = {
 		labels: true,
 		baseMarineLabels: true,
@@ -58,7 +66,9 @@ VME.baseMapParams = function(year){
 								toggleLegendGraphic : true,
 								collapsableGroups : true,
 								overlayGroups : VME.overlayGroups,
-								groupInfoHandler : VMEInfo.groupInfoHandler,
+								groupInfoHandler : function(lyr) {
+									return VMEInfo.infoHandler(lyr.infoUrl, false);
+								},
 								defaultOverlayGroup: VME.overlayGroups[0]}
 	};
 	
@@ -273,14 +283,14 @@ VME.zoomTo = function(settings,geom,zoom,closest) {
 		var bboxproj = settings.srs || "EPSG:3349";
 		
 		//check 
-		var projcode = curr_proj.split(":")[1];
-		var valid = FigisMap.ol.checkValidBbox(projcode,settings); //TODO OL3
+		var projcode = curr_proj.getCode().split(":")[1];
+		var valid = VME.checkValidBbox(projcode,settings); //TODO OL3
 
 		if(valid){
 			if(!geom){
-				bbox = bbox.clone().transform(
+				bbox = ol.proj.transformExtent(bbox,
 					new ol.proj.get(bboxproj),
-					new ol.proj.get(curr_proj)
+					curr_proj
 				);			
 			}
 			
@@ -300,15 +310,15 @@ VME.zoomTo = function(settings,geom,zoom,closest) {
 			var newproj = bboxproj.split(":")[1];
             
             // uncomment this if default projection is 4326
-			/*bbox = bbox.clone().transform(
-				newproj == "4326" ? new ol.projection.get(newproj) : new ol.projection.get(curr_proj),
-                new ol.projection.get(bboxproj)
+			/*bbox = ol.proj.transformExtent(bbox,
+				newproj == "4326" ? new ol.proj.get(newproj) : new ol.proj.get(curr_proj),
+                new ol.proj.get(bboxproj)
 			);*/	
 
 			//TODO OL3
-			bbox = bbox.clone().transform(
-				new ol.projection.get(curr_proj),
-				new ol.projection.get(bboxproj == "EPSG:3349" ? "EPSG:900913" : bboxproj)
+			bbox = ol.proj.transformExtent(bbox,
+				new ol.proj.get(curr_proj),
+				new ol.proj.get(bboxproj == "EPSG:3349" ? "EPSG:900913" : bboxproj)
 			);
 			
 			VME.setViewer(bbox, null, newproj, 'embed-link','embed-url', 'embed-iframe');
@@ -380,7 +390,7 @@ VME.resetByYear = function(year){
 	if ( VME.mapCenter ){
         VME.myMap.setCenter(
 			FigisMap.ol.reCenter(
-				new ol.proj.get('EPSG:'+VME.mapCenterProjection),
+				new ol.proj.get('EPSG:4326'),
 				VME.myMap.getView().getProjection(),
 				VME.mapCenter)
 			);
@@ -441,15 +451,12 @@ VME.update = function(){
  */
 VME.refreshLayer = function(layer, year, acronym){
 
+	//prepare new params
 	var RFBFilter = (typeof(acronym) == 'undefined' || acronym == 'undefined' || acronym == "") ? false : true; 
-
-	//source params
-	var source = FigisMap.ol.getSource(VME.myMap, layer);
-	var params = source.getParams();
-	
+	var newParams = {};
 	if(layer == FigisMap.fifao.vme_regarea){
 		//case of RFB layer
-		params.CQL_FILTER = (RFBFilter ? "RFB = '" + acronym + "'" : "RFB <> '*'");
+		newParams.CQL_FILTER = (RFBFilter ? "RFB = '" + acronym + "'" : "RFB <> '*'");
 	}else{
 		//cases of VME layers
 		var styleId = undefined;
@@ -467,13 +474,17 @@ VME.refreshLayer = function(layer, year, acronym){
 		var style = "MEASURES_" + styleId;
 		var styleForRfb = style + "_for_" + acronym;
 		var styleToApply = (RFBFilter ?  styleForRfb : style);
-		params.CQL_FILTER = (RFBFilter ? "YEAR <= " + year + " AND END_YEAR >= "+ year+" AND OWNER ='"+acronym+"'" : "YEAR <= " + year + " AND END_YEAR >= "+ year);
-		params.STYLES = styleToApply;
-		params.STYLE = styleToApply;
-		params.legend_options = "forcelabels:on;forcerule:True;fontSize:12";
+		newParams.CQL_FILTER = (RFBFilter ? "YEAR <= " + year + " AND END_YEAR >= "+ year+" AND OWNER ='"+acronym+"'" : "YEAR <= " + year + " AND END_YEAR >= "+ year);
+		newParams.STYLES = styleToApply;
+		newParams.STYLE = styleToApply;
+		newParams.legend_options = "forcelabels:on;forcerule:True;fontSize:12";
 	}
-	source.updateParams(params);
+
+	//update layer
+	FigisMap.ol.refreshLayer(layer, newParams);
+	
 }
+
 
 /** 
  * VME.refreshLayers
@@ -482,10 +493,31 @@ VME.refreshLayer = function(layer, year, acronym){
  */
 VME.refreshLayers = function (acronym){
 	var year = FigisMap.time.getSelectedYear();
-    VME.refreshLayer(FigisMap.fifao.vme_regarea, year, acronym);
+    	VME.refreshLayer(FigisMap.fifao.vme_regarea, year, acronym);
 	VME.refreshLayer(FigisMap.fifao.vme, year, acronym);
 	VME.refreshLayer(FigisMap.fifao.vme_oara, year, acronym);
 	VME.refreshLayer(FigisMap.fifao.vme_bfa, year, acronym);
+	FigisMap.ol.updateLayerSwitcher(VME.myMap);
+};
+
+
+
+//check if bbox of zoom area is in bbox of projection
+VME.checkValidBbox = function (projections,bboxs) {
+	if(bboxs.srs){
+		if (bboxs.srs != VME.myMap.getView().getProjection().getCode()){
+			return false;
+		}else{
+			return true;
+		}
+	}
+	if (projections == '3031'){
+	    var bbox2 = bboxs.zoomExtent.split(",");
+		var southpolarbbox = [-180,-90,180, -60];
+		return ol.extent.containsExtent(southpolarbbox,bbox2);			
+	}else{
+		return true; 		
+	}
 };
 
 

@@ -61,18 +61,18 @@ Ext.IframeWindow = Ext.extend(Ext.Window, {
 
 
 /**
- * VME.groupInfoHandler
+ * VME.infoHandler
  * Description: handler function to display/access a group information panel from the layer switcher
  * @param lyr object of class {ol.layer.Group}
  */
-VMEInfo.groupInfoHandler = function(lyr){
+VMEInfo.infoHandler = function(InfoSourcesLayerUrl, addUrl){
 		
 
 	Ext.onReady(function(){
 	
 		//infoSourceLayer window
-        	if(!lyr.infoUrl){
-            		lyr.infoUrl = FigisMap.geoServerBase + "/";
+        	if(!InfoSourcesLayerUrl){
+            		InfoSourcesLayerUrl = FigisMap.geoServerBase + "/";
 		}
 		
         	var tbarDiv = Ext.get('logo') || Ext.get('topBar');
@@ -101,8 +101,8 @@ VMEInfo.groupInfoHandler = function(lyr){
         	new Ext.IframeWindow(Ext.applyIf({
             		id:'factsheetWindow',
 			title: " <a style=\"position:absolute;right:60px;\" onclick=\"Ext.getCmp('factsheetWindow').close();\">&laquo;Back to map&nbsp;</a>",
-            		src: lyr.infoUrl,
-            		closeAction: 'destroy',
+            		src: addUrl ? FigisMap.geoServerBase + "/" + InfoSourcesLayerUrl : InfoSourcesLayerUrl,
+			closeAction: 'destroy',
             		maximizable: false,
 			maximized: false,
             		draggable: false,
