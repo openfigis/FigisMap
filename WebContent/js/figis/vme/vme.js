@@ -19,7 +19,10 @@ var VME = new Object();
 VME.myMap = false;
 VME.mapCenter = [-2.46, 18.23];
 VME.mapCenterProjection = 4326;
-VME.overlayGroups = ["Additional features", "Managed areas related to UNGA Res. 61-105"]
+VME.overlayGroups = [
+	{name: "Additional features", infoUrl : "vme_info_ovl.html"},
+	{name: "Managed areas related to UNGA Res. 61-105", infoUrl : false}
+];
 
 /**
  * VME baseMapParams
@@ -37,6 +40,13 @@ VME.baseMapParams = function(year){
 	this.fullWindowMap = true;
 	this.projection = VME.currentProjection();
 	this.base = baselayers;
+	
+	this.getFeatureInfoHandlers = [
+		{layer: FigisMap.fifao.vme, handler: function(e){}},
+		{layer: FigisMap.fifao.vme_bfa, handler: function(e){}},
+		{layer: FigisMap.fifao.vme_oara, handler: function(e){}}
+	];
+
 	this.options = {
 		labels: true,
 		baseMarineLabels: true,
@@ -48,6 +58,7 @@ VME.baseMapParams = function(year){
 								toggleLegendGraphic : true,
 								collapsableGroups : true,
 								overlayGroups : VME.overlayGroups,
+								groupInfoHandler : VMEInfo.groupInfoHandler,
 								defaultOverlayGroup: VME.overlayGroups[0]}
 	};
 	

@@ -462,7 +462,7 @@ FigisMap.ol.baselayersLabel = "Base Layer";
  * @return the default overlay group name
  */
 FigisMap.ol.getDefaultOverlayGroup = function(pars){
-	var overlayGroup =FigisMap.ol.overlaysLabel;
+	var overlayGroup = {name: FigisMap.ol.overlaysLabel, infoUrl: false};
 	if (pars.options){
 		if(pars.options.layerSwitcherOptions){
 			if(pars.options.layerSwitcherOptions.overlayGroups){
@@ -2233,13 +2233,14 @@ FigisMap.renderer = function(options) {
 					if(pars.options.layerSwitcherOptions.overlayGroups.length > 0){
 						for(var i=0;i<pars.options.layerSwitcherOptions.overlayGroups.length;i++){
 							var overlay = new ol.layer.Group({
-								'title': pars.options.layerSwitcherOptions.overlayGroups[i],
+								'title': pars.options.layerSwitcherOptions.overlayGroups[i].name,
 								layers: [ ],
 							});
+							overlay.infoUrl = pars.options.layerSwitcherOptions.overlayGroups[i].infoUrl;
 							overlays.push( overlay );
 						}
 					}else{
-						console.warn("Invalid overlayGroups object. Must be an array of group names");
+						console.warn("Invalid overlayGroups object. Must be an array");
 					}
 				}else{
 					overlays.push( defaultOverlay );
@@ -2374,25 +2375,36 @@ FigisMap.renderer = function(options) {
 			var group = overlays[i];
 			for (var j = 0; j < olLayers.length; j++) {
 				var layer = olLayers[j];
-				if(group.get('title') === layer.overlayGroup){
+				if(group.get('title') === layer.overlayGroup.name){
 					overlays[i].getLayers().push(layer);
 				}
 			}
 		}
 		
-		//Testing cluster
+		//Add eventual vector/cluster layer
 		if( pars.vectorLayer ) {
 			FigisMap.debug('FigisMap - cluster layer', pars.vectorLayer);
 			pars.vectorLayer.overlayGroup = FigisMap.ol.getDefaultOverlayGroup(pars);
 			for(var i = 0;i < overlays.length;i++){
-				if(group.get('title') === pars.vectorLayer.overlayGroup){
+				if(group.get('title') === pars.vectorLayer.overlayGroup.name){
 					FigisMap.rnd.addVectorLayer(myMap, overlays[i], pars.vectorLayer);
 					break;
 				}
 			}
 		}
 		
-		//Testing popup & tooltip
+		//Add eventual getFeatureInfo events
+		if( pars.getFeatureInfoLayers ) {
+			FigisMap.debug('FigisMap - configure getFeatureInfo for layers', pars.getFeatureInfoLayers);
+			for(var i = 0;i < pars.getFeatureInfoLayers.length;i++){
+				var gfi = pars.getFeatureInfoLayers[i];
+				var source = FigisMap.ol.getSource(myMap, gfi.layer);
+				FigisMap.rnd.configureGetFeatureInfoSource(myMap, source, null, gfi.handlers);  
+			}
+		
+		}
+
+		//Add eventual popup/tooltip
 		if( pars.popup ) {
 			FigisMap.debug('FigisMap - popup', pars.popup);
 			FigisMap.rnd.configurePopup(myMap, pars.vectorLayer.id, pars.popup);

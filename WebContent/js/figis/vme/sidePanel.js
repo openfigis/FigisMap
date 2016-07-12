@@ -46,21 +46,15 @@ Vme.form.widgets.SearchResults = new Ext.DataView({
 */
 Vme.clickOnFeature =function(geographicFeatureId,rec_year,zoom){
           
-        //if( window.console ) console.log('dataView.click(%o,%o,%o,%o)',view,index,node,event);
-		//var selectedRecord =this.store.getAt(index);
-		var layer = myMap.getLayersByName("highlight")[0];
-		//create layer
-		if(layer){
-			myMap.removeLayer(layer,false);
-		}	
+        //TODO OL3
+	/*var layer = myMap.getLayersByName("highlight")[0];
+	create layer
+	if(layer){
+		myMap.removeLayer(layer,false);
+	}*/	
 
-        var vmeId = 103; //selectedRecord.get("vmeId");
-        //var geographicFeatureId = selectedRecord.get("geographicFeatureId");
-        // vecchi parametri
         var layerName = FigisMap.fifao.vme_cl.split(':',2)[1];
-        var featureid = layerName+'.'+vmeId;
-        //nuovi parametri
-        var typename = FigisMap.fifao.vme_cl;
+        var typename = FigisMap.fifao.vme;
         var CQL_FILTER = "VME_AREA_TIME = '"+geographicFeatureId+"'";
 
         Ext.Ajax.request({
@@ -70,7 +64,6 @@ Vme.clickOnFeature =function(geographicFeatureId,rec_year,zoom){
                 service:'WFS',
                 version:'1.0.0',
                 request:'GetFeature',
-                //featureid: featureid,
                 typename: typename,
                 cql_filter: CQL_FILTER,
                 outputFormat:'json'
@@ -133,7 +126,7 @@ Vme.clickOnFeature =function(geographicFeatureId,rec_year,zoom){
 
                     // start refresh legend
                     var nameRFB = jsonData.features[0].properties.OWNER;
-                    FigisMap.ol.refreshFilters(nameRFB);
+                    VME.refreshLayers(nameRFB);
                     // end
                     
                     // uncomment when work on the line 6
@@ -302,14 +295,14 @@ Vme.search = function(advanced){
 	var RFMStore = RFMOCombo.getStore();
 	var value = RFMOCombo.getValue();
     
-    FigisMap.ol.clearPopupCache();  
+    FigisMap.ol.clearPopupCache(); //TODO OL3
 
-    // remove highlight layer on new search
-    var layer = myMap.getLayersByName("highlight")[0];
-    //create layer
+    // TODO OL3 remove highlight layer on new search
+    /*var layer = myMap.getLayersByName("highlight")[0];
+    create layer
     if(layer){
         myMap.removeLayer(layer,false);
-    }	        
+    }*/	        
         
 	var dIndex = RFMStore.find("id", value); 
     
@@ -321,7 +314,7 @@ Vme.search = function(advanced){
 		var rfmName = r.data.acronym;
         
         // perform CQL_FILTER
-        FigisMap.ol.refreshFilters(rfmName);
+        VME.refreshLayers(rfmName);
         
 		var filter = new OpenLayers.Filter.Comparison({
 			type: OpenLayers.Filter.Comparison.EQUAL_TO,
@@ -539,16 +532,16 @@ Vme.rfbZoomTo = function(acronym,value){
     var rfbName = acronym;
     
     // perform CQL_FILTER
-    FigisMap.ol.refreshFilters(rfbName);
+    VME.refreshLayers(rfbName);
 
     FigisMap.ol.clearPopupCache();    
 
-    // remove highlight layer on new search
-    var layer = myMap.getLayersByName("highlight")[0];
+    // TODO OL3 remove highlight layer on new search
+    //var layer = myMap.getLayersByName("highlight")[0];
     //create layer
-    if(layer){
+    /*if(layer){
         myMap.removeLayer(layer,false);
-    }	   
+    }*/	   
     
     var filter = new OpenLayers.Filter.Comparison({
         type: OpenLayers.Filter.Comparison.EQUAL_TO,

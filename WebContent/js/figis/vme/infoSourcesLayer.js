@@ -17,11 +17,17 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+//namespace
+var VMEInfo = {};
+
  /**
  * 
  * InfoSourceLayer display window.
  * 
- * Author: Lorenzo Pini (GeoSolutions S.A.S.)
+ * Authors:
+ *	Lorenzo Pini (GeoSolutions S.A.S.)
+ * 	Emmanuel Blondel (FAO) - modification for use with FigisMap OL3
  *
  */
 Ext.IframeWindow = Ext.extend(Ext.Window, {
@@ -42,30 +48,35 @@ Ext.IframeWindow = Ext.extend(Ext.Window, {
 
     },
 	onDestroy: function(){
-        Ext.EventManager.removeResizeListener(this.resizeHandler, this);
+        	Ext.EventManager.removeResizeListener(this.resizeHandler, this);
         
     },
 	resizeHandler: function(w, h){
-//         this.setPosition(this.tbarDiv.getX() -5 , this.tbarDiv.getY() + this.tbarDiv.getHeight() - 31 );
-//         this.setWidth(this.mainDiv.getWidth() + 10 );
-//         this.setHeight(this.mainDiv.getHeight() + this.tbarDiv.getHeight() - 49 );
 		this.setPosition(10, 80 );
 		this.setWidth(this.mainDiv.getWidth() - 20 );
 		this.setHeight(mainDiv.getHeight() + bannerIframe.getHeight() - 100);
     }
 });
 
-Ext.onReady(function(){
-    //
-	//infoSourceLayer window
-	//
-    FigisMap.infoSourceLayers = function(InfoSourcesLayerUrl,addUrl){
-        if(!InfoSourcesLayerUrl){
-            InfoSourcesLayerUrl = FigisMap.geoServerBase + "/";
+
+
+/**
+ * VME.groupInfoHandler
+ * Description: handler function to display/access a group information panel from the layer switcher
+ * @param lyr object of class {ol.layer.Group}
+ */
+VMEInfo.groupInfoHandler = function(lyr){
+		
+
+	Ext.onReady(function(){
+	
+		//infoSourceLayer window
+        	if(!lyr.infoUrl){
+            		lyr.infoUrl = FigisMap.geoServerBase + "/";
 		}
 		
-        var tbarDiv = Ext.get('logo') || Ext.get('topBar');
-        var mainDiv = Ext.get('main') || Ext.get('main_e');
+        	var tbarDiv = Ext.get('logo') || Ext.get('topBar');
+        	var mainDiv = Ext.get('main') || Ext.get('main_e');
 		var bannerIframe = Ext.get('banner');
 		
 		var embeddedIframe = location.href.indexOf("vme_e.html") != -1 ? true : false;
@@ -87,18 +98,18 @@ Ext.onReady(function(){
 			};	
 		}				
 		
-        new Ext.IframeWindow(Ext.applyIf({
-            id:'factsheetWindow',
+        	new Ext.IframeWindow(Ext.applyIf({
+            		id:'factsheetWindow',
 			title: " <a style=\"position:absolute;right:60px;\" onclick=\"Ext.getCmp('factsheetWindow').close();\">&laquo;Back to map&nbsp;</a>",
-            src: addUrl ? FigisMap.geoServerBase + "/" + InfoSourcesLayerUrl : InfoSourcesLayerUrl,
-            closeAction: 'destroy',
-            maximizable: false,
+            		src: lyr.infoUrl,
+            		closeAction: 'destroy',
+            		maximizable: false,
 			maximized: false,
-            draggable: false,
-            resizable: false,
-            shadow: false
-        }, pars)).show();
-    };
+            		draggable: false,
+            		resizable: false,
+            		shadow: false
+        	}, pars)).show();
+    	});
 		
-});
+};
  

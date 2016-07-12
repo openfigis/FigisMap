@@ -63,11 +63,6 @@ FigisMap.fifao = {
 	//bathimetry: 'fifao:color_etopo1_ice_full' //etopo
 	bathimetry: 'fifao:OB_LR'				//natural earth ocean bottom
 	
-}; 
-
-FigisMap.infoGroupsSources = {
-    vme      : "index_vme.html",
-    overlays : "index_ovl.html"
 };
 
 FigisMap.defaults = {

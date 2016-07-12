@@ -8,14 +8,13 @@
 	<meta name="description" content="Map application to display areas of Vulnerable Marine Ecosystems." />
 	<meta name="author-corporate" content="FAO of the UN" />
 	<meta name="copyright" content="http://www.fao.org/corp/copyright/en/" />
-	<meta name="keywords" content="RFB, Regional Fishery Body, Map, FAO" />
+	<meta name="keywords" content="VME, Vulnerable Marine Ecosystem, Map, FAO" />
 	<title>Vulnerable Marine Ecosystems Database</title>
     
-	<link rel="stylesheet" type="text/css" href="lib/OpenLayers/theme/default/style.css" />
-	<link rel="stylesheet" href="theme/css/style.css" type="text/css" />
-	<link rel="stylesheet" href="theme/css/html.css" type="text/css" />
-	<link rel="stylesheet" href="theme/css/vme.css" type="text/css" />
-    <link rel="stylesheet" href="theme/css/vmefonts.css" type="text/css" />    
+	<link rel="stylesheet" href="assets/figis/vme/css/style.css" type="text/css" />
+	<link rel="stylesheet" href="assets/figis/vme/css/html.css" type="text/css" />
+	<link rel="stylesheet" href="assets/figis/vme/css/vme.css" type="text/css" />
+    	<link rel="stylesheet" href="assets/figis/vme/css/vmefonts.css" type="text/css" />    
 	
     <!-- header style -->
     <style type="text/css">
@@ -49,7 +48,7 @@
         }
 </style>
 <!--[if lt IE 9]>
-    <link rel="stylesheet" href="theme/css/oldie.css" type="text/css" />
+    <link rel="stylesheet" href="assets/figis/vme/css/oldie.css" type="text/css" />
 
     <![endif]-->
 <script type="text/javascript">
@@ -58,54 +57,17 @@ document.namespaces;
 </script>
 </head>
 
-<!-- body onload="setVMEPage('e-link','rfbs-link', 'rfbs-html')" -->
+
 <body>
 
 <div id="page">
 	<div id="wrapper">
-    <!--
-		<div id="top">
-
-			<table width="100%" cellpadding="0" cellspacing="0" border="0">
-				<tr>
-					<td align="left">
-						<a href="http://www.fao.org" target="_blank"><img border=0 style="vertical-align: middle;" src="theme/img/FIGIS_banner-logo.gif" alt="FOOD AND AGRICULTURE ORGANIZATION OF THE UNITED NATIONS" title="Food and Agriculture Organization of the United Nations"/></a>
-					</td>
-					<td align="right">
-						<a href="http://www.fao.org/fishery" target="_blank"><img border=0 style="vertical-align: middle;" src="theme/img/FIGIS_banner-text.gif" alt="FAO Fisheries and Aquaculture Department" title="FAO Fisheries and Aquaculture Department"/></a>
-					</td>
-				</tr>
-
-				<tr>
-					<td>
-						<h1 id="title">Vulnerable Marine Ecosystems Map Viewer</h1>
-					</td>
-				</tr>			
-			</table>
-			
-		</div> -->
-        <!--div>
-            <div class="ribbon" style="position:absolute;right:0px;top:0px;z-index:5000">
-               <img src="theme/img/beta-ribbon.png" alt="Beta"/>
-            </div> 
-        </div-->
-
-        <div  id="header">
-            <!--div id="logo"><a href="#" onClick="resetVME();"><img src="theme/img/logo.fw.png" width="377" height="172"  alt=""/></a></div>
-            <div id="subTitle" class="info"-->
-            	<!--The Vulnerable Marine Ecosystem Database (VME-DB)<br />
-            	gathers information on VME areas stored in harmonized<br />
-            	way and disseminated through maps and fact sheets.-->
-				<!--Global inventory of fisheries measures adopted in ABNJ <br />
-				to prevent significant adverse impacts of high-seas <br />
-				bottom fisheries on vulnerable marine ecosystems (VMEs) and associated information
-            </div-->
-        </div>
+        	<div  id="header"></div>
         
-        <div style="position:relative" id="main">
-            </BR></BR></BR>
-            Managements regulations related to UNGA RES. 61/105
-        </div>
+        	<div style="position:relative" id="main">
+            		</BR></BR></BR>
+            		Managements regulations related to UNGA RES. 61/105
+        	</div>
 	
 	</div>
 </div>
@@ -129,8 +91,7 @@ document.namespaces;
 		document.getElementById('subTitle').innerHTML = "Global inventory of fisheries measures adopted in ABNJ <br />to prevent significant adverse impacts of high-seas <br />bottom fisheries on vulnerable marine ecosystems (VMEs) and associated information";
 	// ]]>
 	</script>
-	<!--<input type="button" id="addlayer" value="Show RFB" onclick="addLayer()"/>
-	<input type="button" id="addlayer" value="Show zoom" onclick="SLD()"/>-->
+
 	</body>
 </html>
 
