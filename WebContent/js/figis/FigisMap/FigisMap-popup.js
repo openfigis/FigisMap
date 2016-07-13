@@ -4,50 +4,78 @@
  * It may be extended to other supports (map, getfeatureinfo)
  * 
  * The config may have the following parameters
- * -> urlHandler the url of a web-resource to load asynchronously
- * -> contentHandler a function with the following arguments:
+ * -> id (mandatory) id of the popup
+ * -> strategy (mandatory) one of the following values:
+ *		- "getfeature": in this case popup will be associated to a vector layer based on feature
+ * 		- "getfeatureinfo": in this case popup will be associated to Tile layer on pixel getFeatureInfo request
+ * -> resourceHandler (optional) the url of a web-resource to load asynchronously
+ * -> contentHandler (mandatory) a function with the following arguments:
  * 		- feature: the GIS feature from which to extract property values
  * 		- response: the response of the asynchronous call (if urlHandler provided)
- * -> onopen a function (with feature argument) to do some stuff when the popup is opened
- * -> onclose a function (with feature argument) to do some stuff when the popup is closed
+ * -> onopen (optional) a function (with feature argument) to do some stuff when the popup is opened
+ * -> onclose (optional) a function (with feature argument) to do some stuff when the popup is closed
  * 
  * @param {ol.Map} the current map
- * @param {String}{Integer} an identifier for the popup
  * @param config
  */
-FigisMap.rnd.configurePopup = function(map, id, config) {
+FigisMap.rnd.configurePopup = function(map, config) {
 
+	if( !config.id ) alert("Missing popup config 'id'");
+	if( !config.strategy ) alert("Missing popup config 'strategy'");
 	if( !config.contentHandler ) alert("Missing popup config 'contentHandler'");
 	
 	//configure popup
-	var popup = new ol.Overlay.Popup({id: id});
+	var popup = new ol.Overlay.Popup({id: config.id});
 	popup.config = config;
 	map.addOverlay(popup);
 	
-	//display popup on click
-	map.on('click', function(evt) {
-	  var feature = map.forEachFeatureAtPixel(evt.pixel,
-		  function(feature, layer) {
+	//display popup on singleclick depending on strategy "getfeature" or "getfeatureinfo"
+	if(config.strategy === "getfeature"){
+		//"getfeature" strategy (vector feature based)
+		//---------------------
+		map.on('singleclick', function(evt) {
+	  		var feature = map.forEachFeatureAtPixel(evt.pixel,
+		  		function(feature, layer) {
 						
-			if (layer) if(layer.id != id) return;
+					if (layer) if(layer.id != config.id) return;
 
-			var features = feature.get('features');
-			if( !!features ) {
-				var size = features.length;
-				if( size > 1 ) {
-					return;
-				} else {
-					feature = features[0];
-				}
-			}
-			return feature;
-		  });
+					var features = feature.get('features');
+					if( !!features ) {
+						var size = features.length;
+						if( size > 1 ) {
+							return;
+						} else {
+							feature = features[0];
+						}
+					}
+					return feature;
+		 		 });
 	  
-	  if (feature) {
-		var coords = feature.getGeometry().getCoordinates();
-		FigisMap.rnd.showPopupForCoordinates(popup, feature, coords);
-	  }	
-	});
+	  		if (feature) {
+				var coords = feature.getGeometry().getCoordinates();
+				FigisMap.rnd.showPopupForCoordinates(popup, feature, coords);
+	  		}	
+		});
+
+	}else if(config.strategy === "getfeatureinfo"){
+		//"getfeatureinfo" strategy (tile based)
+		//-------------------------
+		map.on('singleclick', function(evt) {
+  			
+  			var viewResolution = /** @type {number} */ (map.getView().getResolution());	
+			
+			var layer = FigisMap.ol.getLayer(map, config.id);
+			var url = layer.getSource().getGetFeatureInfoUrl(
+      				evt.coordinate, viewResolution, map.getView().getProjection().getCode(),
+      				{'INFO_FORMAT': '"application/vnd.ogc.gml"'}
+			);
+			
+  				
+			if (url) {
+				console.log(url);
+    			}
+		});
+	}
 	
 	//close event
 	if( config.onclose) popup.closer.addEventListener("click", config.onclose);
@@ -99,19 +127,21 @@ FigisMap.rnd.showPopupForCoordinates = function(popup, feature, coords) {
  * An function to configure a tooltip popup.
  * 
  * The config may have the following parameters
+ * -> id (mandatory) id of the popup
  * -> tooltipHandler a function with the following arguments:
  * 		- feature: the GIS feature from which to extract property values
  * 
  * @param {ol.Map} the current map
- * @param {String}{Integer} an identifier for the popup
  * @param config
  */
-FigisMap.rnd.configureTooltipPopup = function(map, id, config) {
+FigisMap.rnd.configureTooltipPopup = function(map, config) {
+	
+	if( !config.id ) alert("Missing popup config 'id'");
 
 	if( !!config.tooltipHandler ) {
 	
 		//configure popup
-		var popup = new ol.Overlay.Popup({isTooltip: true});
+		var popup = new ol.Overlay.Popup({id: config.id, isTooltip: true});
 		popup.config = config;
 		map.addOverlay(popup);
 	

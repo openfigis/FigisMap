@@ -2386,10 +2386,27 @@ FigisMap.renderer = function(options) {
 		}
 		
 		//Testing popup & tooltip
-		if( pars.popup ) {
-			FigisMap.debug('FigisMap - popup', pars.popup);
-			FigisMap.rnd.configurePopup(myMap, pars.vectorLayer.id, pars.popup);
-			FigisMap.rnd.configureTooltipPopup(myMap, pars.vectorLayer.id+'-tooltip', pars.popup);
+		if( pars.popups ) {
+			for(var i = 0;i<pars.popups.length;i++){
+				var popupConfig = pars.popups[i];
+				if(popupConfig.strategy){
+					switch(popupConfig.strategy){
+						case "getfeature":
+							popupConfig.id = pars.vectorLayer.id;
+							FigisMap.rnd.configurePopup(myMap, popupConfig);
+							break;
+						case "getfeature-tooltip":
+							popupConfig.id = pars.vectorLayer.id+'-tooltip';
+							FigisMap.rnd.configureTooltipPopup(myMap, popupConfig);
+							break;
+						case "getfeatureinfo":
+							FigisMap.rnd.configurePopup(myMap, popupConfig);
+							break;
+					}
+				}else{
+					alert("Invalid popup. Missing 'strategy' property.");
+				}			
+			}
 		}
 
 		

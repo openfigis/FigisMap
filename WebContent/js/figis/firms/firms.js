@@ -80,28 +80,36 @@ FV.baseMapParams = function() {
 	
 // 	this.associated = [ FigisMap.fifao.rfb ];
 	this.vectorLayer = {};
-	this.popup = {
-		resourceHandler : function(feature) {
-			return '/figis/moniker.html/firmspopup/'
+	this.popups = [
+		//vector popup
+		//------------
+		{
+			strategy: "getfeature",
+			resourceHandler : function(feature) {
+				return '/figis/moniker.html/firmspopup/'
 				+ feature.get('DOMAIN') + '/' + feature.get('FIGIS_ID')
-				+ '/' + feature.get('LANG')
-			;
+				+ '/' + feature.get('LANG');
+			},
+			contentHandler : function(feature, request) {
+				var content = document.createElement("div");
+				content.appendChild(request.responseXML.documentElement);
+				return content.innerHTML;
+			},
+			onopen: function( feature ){
+				FV.currentFeatureID = feature.get('FIGIS_ID');
+			},
+			onclose: function( feature ){
+				FV.currentFeatureID = false;
+			}
 		},
-		contentHandler : function(feature, request) {
-			var content = document.createElement("div");
-			content.appendChild(request.responseXML.documentElement);
-			return content.innerHTML;
-		},
-		onopen: function( feature ){
-			FV.currentFeatureID = feature.get('FIGIS_ID');
-		},
-		onclose: function( feature ){
-			FV.currentFeatureID = false;
-		},
-		tooltipHandler : function(feature){
-			return ((feature.get('DOMAIN') == 'fishery')? (feature.get('GEOREF') + ' ') : '') + feature.get('TITLE');
-		}
-	};
+		//tooltip popup
+		//-------------
+		{
+			strategy: "getfeature-tooltip",
+			tooltipHandler : function(feature){
+				return ((feature.get('DOMAIN') == 'fishery')? (feature.get('GEOREF') + ' ') : '') + feature.get('TITLE');
+			}
+		}];
 
 	return this;
 };

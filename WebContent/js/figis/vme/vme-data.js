@@ -245,193 +245,194 @@ VMEData.templates = {
 						}
                     	      		     }
 				}
-			),			
-		vme_cl: 
-			new Ext.XTemplate(
-				'<tpl for=".">'+
-                    '<tpl if="[xindex] &gt; \'1\'">'+
-                        '<hr/>'+
-                    '</tpl>'+
+			),
+		/** VMEData.templates.vme
+		 * displays content of VME closures popup
+	     	 */			
+		vme: new Ext.XTemplate(
+			'<tpl for=".">'+
+                    		'<tpl if="[xindex] &gt; \'1\'">'+
+                        	'<hr/>'+
+                    		'</tpl>'+
 					'<div class="popup-result" style="text-align:left;">' +
 						'<h3>{localname}</h3>'+
 						'<em>Management Body/Authority: </em><span class="own">{owner}</span><br/>'+
 						//'<em>Measure first applied in: </em><span>{[this.getValidity(values, true)]}</span> <br/> '+
-                        '<em>Closed since </em><span>{validityPeriodFrom}</span> {[this.checkUntilYear(values)]}{[this.checkYearReview(values)]}'+
-                        //'<em>Measure: </em><span>{measure}</span> <a  target="_blank" href="{pdfURL}"><img title="Download pdf" src="assets/figis/vme/img/icons/download_pdf.png"></a><br/> '+
-                        '<em>Measure: </em>{[this.formatMeasure(values)]}'+
+                        			'<em>Closed since </em><span>{validityPeriodFrom}</span> {[this.checkUntilYear(values)]}{[this.checkYearReview(values)]}'+
+                        			//'<em>Measure: </em><span>{measure}</span> <a  target="_blank" href="{pdfURL}"><img title="Download pdf" src="assets/figis/vme/img/icons/download_pdf.png"></a><br/> '+
+                        			'<em>Measure: </em>{[this.formatMeasure(values)]}'+
 						//'<em>Validity: </em><span>{[this.getValidity(values)]}</span> <br/> '+
 						//'<em>Year: </em>{year}<br/> '+
 						//'<em>Management Body/Authority: </em><span class="own">{owner}</span><br/>'+
 						//'<em>Geographical reference: </em><span class="geo_ref" >{geo_ref}</span> <br/>'+
 						'<em>Area Type: </em><span>{vmeType}</span> <br/> '+
-                        '<em>Surface: </em><span>{[VMEData.utils.surfaceUoMConverter(values, "skm")]}</span><span> km&#178;</span> <br/> '+
+                        			'<em>Surface: </em><span>{[VMEData.utils.surfaceUoMConverter(values, "skm")]}</span><span> km&#178;</span> <br/> '+
 						//'<em>Start Date: </em><span>{validityPeriodFrom}</span> <br/> '+
-                        //'<em>End Date: </em><span>{validityPeriodTo}</span> <br/> '+                        
+                        			//'<em>End Date: </em><span>{validityPeriodTo}</span> <br/> '+                        
 						// '<em>UN Criteria: </em>{criteria}<br/> '+
 						//'<em>Vme ID:</em><span class="own"> {vme_id}</span><br/>'+
-                        '<br/>' +
+                        			'<br/>' +
 						'<div style="text-align:right;float:right;">' +
 							'<a  target="_blank" href="{[this.getDownloadLink(values)]}"><img title="Download as shapefile" src="assets/figis/vme/img/icons/download.png"></a>' +
 							//'{[this.getDownloadFDS(values)]}' +
 							'&nbsp;&nbsp;<a onClick="'+
-								'myMap.zoomToExtent(OpenLayers.Bounds.fromString( \'{[this.getBBOX(values)]}\'));'+
-                                //'FigisMap.ol.refreshFilters(\'{owner_acronym}\');'+
-                               // 'setRFBCheckBoxValue(\'{owner_acronym}\');'+
-                                //'FigisMap.ol.clearPopupCache();'+
+								'VME.myMap.zoomToExtent(OpenLayers.Bounds.fromString( \'{[this.getBBOX(values)]}\'));'+
+                               			 		//'FigisMap.ol.refreshFilters(\'{owner_acronym}\');'+
+                               					// 'VME.setRFBCheckBoxValue(\'{owner_acronym}\');'+
+                                				//'FigisMap.ol.clearPopupCache();'+
 								'FigisMap.ol.emulatePopupFromVert({[this.getVert(values.geometry)]})'+
 							'"><img title="Zoom to area" src="assets/figis/vme/img/icons/buttonzoom.png"></a>' +
-                            '&nbsp;&nbsp;<a href="javascript:void(0);" onClick="FigisMap.factsheetRel(\'{[this.getFactsheetUrl(values)]}\');"><img title="View fact sheet" src="assets/figis/vme/img/icons/buttonfactsheet.png" /></a>' +
+                            				'&nbsp;&nbsp;<a href="javascript:void(0);" onClick="VMESearch.factsheetRel(\'{[this.getFactsheetUrl(values)]}\');"><img title="View fact sheet" src="assets/figis/vme/img/icons/buttonfactsheet.png" /></a>' +
 
 							//'<br/>{[this.addProtectedLinks(values)]}' +
-                        '</div>'+
+                        			'</div>'+
 						'<div style="text-align:left;">' +
-							'<u><a href="javascript:void(0);" onClick="FigisMap.factsheetRel(\'{[this.getFactsheetUrl(values)]}\');" >Access the VME Factsheet</a><br/><a href="javascript:void(0);" onClick="FigisMap.infoSourceLayers(\'{[this.getFactsheet(values)]}\',true);" >Access the Regional Factsheet</a></u>' +
-                        '</div>'+                        
-                    '</div>'+
+							'<u><a href="javascript:void(0);" onClick="VMESearch.factsheetRel(\'{[this.getFactsheetUrl(values)]}\');" >Access the VME Factsheet</a><br/><a href="javascript:void(0);" onClick="FigisMap.infoSourceLayers(\'{[this.getFactsheet(values)]}\',true);" >Access the Regional Factsheet</a></u>' +
+                        			'</div>'+                        
+                    			'</div>'+
 				'</tpl>',
 				{
-					compiled:true,
-                    getFactsheet: function(values){
-                        return VMESearch.factsheetUrl[values.owner_acronym];
-                    },
-                    checkUntilYear:function(values){
-                        var untilValue = values.validityPeriodTo.split("-")
-                        if(untilValue[0] === "9999"){
-                            return ""; 
-                        }else{
-                            return "<em>until</em> <span>"+values.validityPeriodTo+"</span>";
-                        }
-                    },
-                    checkYearReview:function(values){
-                        if(values.reviewYear === 0 || values.reviewYear === null){
-                            return "<br/>"; 
-                        }else{
-                            return ", <em>review in</em> <span>"+values.reviewYear+"</span><br/>";
-                        }
-                    },
-                    formatMeasure:function(values){
-                        var pdf = values.pdfURL;
-                        var measureArray = values.measure.split("__");
-                        var html="";
+				compiled:true,
+                    		getFactsheet: function(values){
+                        		return VMESearch.factsheetUrl[values.owner_acronym];
+                    		},
+                    		checkUntilYear : function(values){
+                        		var untilValue = values.validityPeriodTo.split("-");
+                        		if(untilValue[0] === "9999"){
+                            			return ""; 
+                        		}else{
+                            			return "<em>until</em> <span>"+values.validityPeriodTo+"</span>";
+                        		}
+                    		},
+                    		checkYearReview:function(values){
+                        		if(values.reviewYear === 0 || values.reviewYear === null){
+                            			return "<br/>"; 
+                        		}else{
+                            			return ", <em>review in</em> <span>"+values.reviewYear+"</span><br/>";
+                        		}
+                    		},
+                    		formatMeasure:function(values){
+                        		var pdf = values.pdfURL;
+                        		var measureArray = values.measure.split("__");
+                        		var html="";
                         
-                        for (var i = 0;i<measureArray.length;i++){
-                            if (pdf == ""){
-                                html += '</em><span>' + measureArray[i] + '</span> <a  target="_blank" href="' + pdf + '"></a><br/>';
-                            }else{
-                                html += '</em><span>' + measureArray[i] + '</span> <a  target="_blank" href="' + pdf + '"><img title="Download pdf" src="assets/figis/vme/img/icons/download_pdf.png"></a><br/>';
-                            }
-                        }
-                        return html;
-                    },
-					getBBOX:function(values){
-                        if (values.bbox.left == -180)
-                            values.bbox.left = 180
-						var projcode = "EPSG:4326";
-						if(myMap.getProjection() == projcode ){
-							bbox = values.bbox;
-							return bbox.toArray(); 
-						}else{
-							var geom = values.bbox;
-							var repro_geom = geom.clone().transform(new ol.proj.get(projcode), myMap.getView().getProjection());
-                            //var repro_bbox = repro_geom.getBounds();
-                            return repro_geom.toArray();
+                        		for (var i = 0;i<measureArray.length;i++){
+                            			if (pdf == ""){
+                                			html += '</em><span>' + measureArray[i] + '</span> <a  target="_blank" href="' + pdf + '"></a><br/>';
+                            			}else{
+                                			html += '</em><span>' + measureArray[i] + '</span> <a  target="_blank" href="' + pdf + '"><img title="Download pdf" src="assets/figis/vme/img/icons/download_pdf.png"></a><br/>';
+                            			}
+                        		}
+                        		return html;
+                    		},
+				getBBOX:function(values){
+                        		if (values.bbox.left == -180)
+                           			 values.bbox.left = 180
+					var projcode = "EPSG:4326";
+					if(myMap.getProjection() == projcode ){
+						bbox = values.bbox;
+						return bbox.toArray(); 
+					}else{
+						var geom = values.bbox;
+						var repro_geom = geom.clone().transform(new ol.proj.get(projcode), myMap.getView().getProjection());
+                            			//var repro_bbox = repro_geom.getBounds();
+                            			return repro_geom.toArray();
 						
-						}
-					},
-					getVert: function(geom){
-                        var vert = {};
-                        var projcode = "EPSG:4326";
-                        var repro_geom = geom.clone().transform(
-                            new OpenLayers.Projection(projcode),
-                            myMap.getProjectionObject()
-                        );                        
-                        if(getProjection() == "4326"){
-                            vert = "{x: " + geom.getVertices()[0].x +", y:" + geom.getVertices()[0].y + "}";
-                            return vert;
-                        }else{
-                            var checkWrapDateLine = repro_geom.getVertices()[0].x * (-1);
-                            var getVerticesX = geom.getVertices()[0].x == 180 ? checkWrapDateLine : repro_geom.getVertices()[0].x;
-                            vert = "{x: " + getVerticesX +", y:" + repro_geom.getVertices()[0].y + "}";
-                            //vert = "{x: " + repro_geom.getVertices()[0].x +", y:" + repro_geom.getVertices()[0].y + "}";
-                            return vert;
-                        }                      
-					},
-                    /**
-                     * Returns Validity String
-                     * "validityFrom - validityTo" or "from validityFrom"
-                     * 
-                     */
-                    getValidity: function(values, firstOnly){
-						if(firstOnly === true){
-							return values.validityPeriodFrom ? values.validityPeriodFrom : "Not Found";
-						}else{
-							if(values.validityPeriodFrom){
-								if(values.validityPeriodTo && values.validityPeriodTo != 9999){
-									return values.validityPeriodFrom + " - " + values.validityPeriodTo;
-								}else{
-									return "from "+ values.validityPeriodFrom;
-								}
-							}else{
-								return("Not Found");
-							}
-						}
-                    },
-                    /**
-                     * Returns the link to the factsheet
-                     */
-                    getFactsheetUrl: function(values){
-
-                        if(values.factsheetUrl){
-                            return(values.factsheetUrl);
-                        }else
-                        {
-                            //return("fishery/vme/10/en");
-                            //return("http://figisapps.fao.org/fishery/vme/10/en");
-                            return(FigisMap.geoServerBase + "/fishery/vme/10/en");
-                        }
-                    },
-					/**
-					 * Download all vme areas
-					 */
-					getDownloadLink: function(values){
-						return VMEData.utils.generateDownloadLink(
-							FigisMap.rnd.vars.ows,
-							FigisMap.fifao.vme_cl,
-							VMEData.utils.generateVMEFilter(values.vme_id),
-							"shape-zip",
-							{format_options:"filename:VME-DB_"+values.vme_id+".zip"}
-						);
-						//return +"?service=WFS&version=1.0.0&request=GetFeature&typeName=" + FigisMap.fifao.vme+ "&outputFormat=shape-zip" +
-						//	"&cql_filter=" + encodeURIComponent( "YEAR = '" + values.year + "' AND VME_ID = '" +values.vme_id +"'" )
-							
-					},
-					/**
-					 * Download all vme areas + encoutners & sd for this vme
-					 */
-					getDownloadFDS:function(values){
-						/*if(!FigisMap.rnd.status.logged){
-							return "";
-						}*/
-						var filter = VMEData.utils.generateVMEFilter(values.vme_id);
-						filter =filter +";"+ filter + ";" + filter;
-						return '<a class="zipmlink" target="_blank" href="'+
-							VMEData.utils.generateDownloadLink(
-								FigisMap.rnd.vars.ows,
-                                //Remove encounters and ...
-								//[FigisMap.fifao.vme,FigisMap.fifao.vme_en,FigisMap.fifao.vme_sd],
-                                [FigisMap.fifao.vme_cl],
-								filter,
-								"shape-zip",
-								{format_options:"filename:VME-DB_"+values.vme_id+"_DS.zip"}
-							)
-							+'">Download full Data Set</a>' ;
-					},
-					addProtectedLinks: function(values){
-						/*if(!FigisMap.rnd.status.logged){
-							return "";
-						}*/
-						return  '<a class="rellink" onClick=\'Ext.MessageBox.show({title: "Info",msg: "Related Encounters and Survey Data not implemented yet",buttons: Ext.Msg.OK,icon: Ext.MessageBox.INFO,scope: this}); \'>Related</a>';
 					}
+				},
+				getVert: function(geom){
+                        		var vert = {};
+                        		var projcode = "EPSG:4326";
+                        		var repro_geom = geom.transform(
+                            			new OpenLayers.Projection(projcode),
+                            			myMap.getProjectionObject()
+                        		);                        
+                        		if(getProjection() == "4326"){
+                            			vert = "{x: " + geom.getVertices()[0].x +", y:" + geom.getVertices()[0].y + "}";
+                            			return vert;
+                        		}else{
+                            			var checkWrapDateLine = repro_geom.getVertices()[0].x * (-1);
+                            			var getVerticesX = geom.getVertices()[0].x == 180 ? checkWrapDateLine : repro_geom.getVertices()[0].x;
+                            			vert = "{x: " + getVerticesX +", y:" + repro_geom.getVertices()[0].y + "}";
+                            			//vert = "{x: " + repro_geom.getVertices()[0].x +", y:" + repro_geom.getVertices()[0].y + "}";
+                            			return vert;
+                       			}                      
+				},
+                    		/**
+                    		 * Returns Validity String
+                     		 * "validityFrom - validityTo" or "from validityFrom"
+                     		 * 
+                     		 */
+                    		getValidity: function(values, firstOnly){
+					if(firstOnly === true){
+						return values.validityPeriodFrom ? values.validityPeriodFrom : "Not Found";
+					}else{
+						if(values.validityPeriodFrom){
+							if(values.validityPeriodTo && values.validityPeriodTo != 9999){
+								return values.validityPeriodFrom + " - " + values.validityPeriodTo;
+							}else{
+								return "from "+ values.validityPeriodFrom;
+							}
+						}else{
+							return("Not Found");
+						}
+					}
+                    		},
+                    		/**
+                     		 * Returns the link to the factsheet
+                     		 */
+                    		getFactsheetUrl: function(values){
+
+                        		if(values.factsheetUrl){
+                            			return(values.factsheetUrl);
+                        		}else{
+                            			//return("fishery/vme/10/en");
+                            			//return("http://figisapps.fao.org/fishery/vme/10/en");
+                            			return(FigisMap.geoServerBase + "/fishery/vme/10/en");
+                        		}
+                    		},
+				/**
+				 * Download all vme areas
+				 */
+				getDownloadLink: function(values){
+					return VMEData.utils.generateDownloadLink(
+						FigisMap.rnd.vars.ows,
+						FigisMap.fifao.vme_cl,
+						VMEData.utils.generateVMEFilter(values.vme_id),
+						"shape-zip",
+						{format_options:"filename:VME-DB_"+values.vme_id+".zip"}
+					);
+					//return +"?service=WFS&version=1.0.0&request=GetFeature&typeName=" + FigisMap.fifao.vme+ "&outputFormat=shape-zip" +
+					//	"&cql_filter=" + encodeURIComponent( "YEAR = '" + values.year + "' AND VME_ID = '" +values.vme_id +"'" )
+							
+				},
+				/**
+				 * Download all vme areas + encoutners & sd for this vme
+				 */
+				getDownloadFDS:function(values){
+					/*if(!FigisMap.rnd.status.logged){
+						return "";
+					}*/
+					var filter = VMEData.utils.generateVMEFilter(values.vme_id);
+					filter =filter +";"+ filter + ";" + filter;
+					return '<a class="zipmlink" target="_blank" href="'+
+						VMEData.utils.generateDownloadLink(
+							FigisMap.rnd.vars.ows,
+                                			//Remove encounters and ...
+							//[FigisMap.fifao.vme,FigisMap.fifao.vme_en,FigisMap.fifao.vme_sd],
+                                			[FigisMap.fifao.vme_cl],
+							filter,
+							"shape-zip",
+							{format_options:"filename:VME-DB_"+values.vme_id+"_DS.zip"}
+						)
+						+'">Download full Data Set</a>' ;
+				},
+				addProtectedLinks: function(values){
+					/*if(!FigisMap.rnd.status.logged){
+						return "";
+					}*/
+					return  '<a class="rellink" onClick=\'Ext.MessageBox.show({title: "Info",msg: "Related Encounters and Survey Data not implemented yet",buttons: Ext.Msg.OK,icon: Ext.MessageBox.INFO,scope: this}); \'>Related</a>';
+				}
 				}
 			),
 		vme_oa: 

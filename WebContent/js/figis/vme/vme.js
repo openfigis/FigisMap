@@ -8,7 +8,9 @@
 
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/figis/FigisMap/FigisMap-time.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/figis/FigisMap/FigisMap-vector.js');
-FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/figis/FigisMap/FigisMap-featureinfo.js');
+
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-popup.js');
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/figis/FigisMap/FigisMap-popup.js');
 
 
 var VME = new Object();
@@ -55,10 +57,10 @@ VME.baseMapParams = function(year){
 	this.projection = VME.currentProjection();
 	this.base = baselayers;
 	
-	this.getFeatureInfoHandlers = [
-		{layer: FigisMap.fifao.vme, handler: function(e){}},
-		{layer: FigisMap.fifao.vme_bfa, handler: function(e){}},
-		{layer: FigisMap.fifao.vme_oara, handler: function(e){}}
+	this.popups = [
+		{id: FigisMap.fifao.vme, strategy: "getfeatureinfo", contentHandler: function(e){}},
+		{id: FigisMap.fifao.vme_bfa, strategy: "getfeatureinfo",contentHandler: function(e){}},
+		{id: FigisMap.fifao.vme_oara, strategy: "getfeatureinfo",contentHandler: function(e){}}
 	];
 
 	this.staticLabels = VMELabels.staticLabels;
