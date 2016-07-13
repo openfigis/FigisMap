@@ -557,8 +557,8 @@ VME.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, 
         	Ext.get('yearCurrent').update(FigisMap.time.selectedYear);
 	}
 	FigisMap.time.selectionHandler = function(newyear){
-		if(newyear <= FigisMap.time.maxYear && newyear >= FigisMap.time.minYear && newyear != FigisMap.time.selectedYear){
-        		Ext.get('yearCurrent').update(FigisMap.time.selectedYear);
+		if(newyear <= FigisMap.time.maxYear && newyear >= FigisMap.time.minYear){
+        		Ext.get('yearCurrent').update(newyear);
 		}
 		if(newyear == FigisMap.time.minYear){
 			Ext.get('yearLess').addClass('nobackground');
