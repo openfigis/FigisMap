@@ -454,7 +454,7 @@ VMESearch.search = function(advanced){
 			var repro_bbox = ol.proj.transformExtent(bounds,
 					new ol.proj.get("EPSG:4326"),
 					mapProj
-					//defaultProj == "3031" ? new OpenLayers.Projection("EPSG:4326") : mapProj //use this if default map projection is 4326);
+					//defaultProj == "3031" ? new ol.proj.get("EPSG:4326") : mapProj //use this if default map projection is 4326);
 			);
 			var settings = { zoomExtent: bounds };
 				
@@ -646,7 +646,7 @@ VMESearch.rfbZoomTo = function(acronym){
 		var repro_bbox = ol.proj.transformExtent(bounds,
 			new ol.proj.get("EPSG:4326"),
 			mapProj
-			//defaultProj == "3031" ? new OpenLayers.Projection("EPSG:4326") : mapProj //use this if default map projection is 4326
+			//defaultProj == "3031" ? new ol.proj.get("EPSG:4326") : mapProj //use this if default map projection is 4326
 			);
 		var settings = {
 			zoomExtent: bounds

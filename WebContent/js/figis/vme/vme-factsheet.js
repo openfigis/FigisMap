@@ -57,13 +57,14 @@ Ext.IframeWindow = Ext.extend(Ext.Window, {
 
 Ext.onReady(function(){
     //
-	//Factsheet window
-	//
-    FigisMap.factsheetRel = function(factsheetUrl){
-        var factsheetUrl = factsheetUrl.replace(FigisMap.geoServerBase + "/","");
+    //Factsheet window
+    //
+    VMESearch.factsheetRel = function(factsheetUrl){
+	var factsheetUrl = factsheetUrl.replace(FigisMap.geoServerBase + "/","/");
+	console.log(factsheetUrl);
         if(!factsheetUrl){
             factsheetUrl = FigisMap.geoServerBase + "/fishery/vme/10/en";
-		}
+	}
 		
         var tbarDiv = Ext.get('logo') || Ext.get('topBar');
         var mainDiv = Ext.get('main') || Ext.get('main_e');

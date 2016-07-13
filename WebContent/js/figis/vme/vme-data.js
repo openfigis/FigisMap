@@ -190,10 +190,9 @@ VMEData.utils = {
  */
 VMEData.templates = {
 		/** VMEData.templates.searchResult
-		 * displays search results with utiities to display human readable fields
-	     */
-		searchResult: 
-			new Ext.XTemplate(
+		 * displays search results with utilities to display human readable fields
+	     	 */
+		searchResult: new Ext.XTemplate(
 				'<tpl for=".">'+
 					'<div class="search-result">' +
 						'<em>Name: </em><span class="searchResultValue">{localname}</span><br/>'+				
@@ -202,34 +201,35 @@ VMEData.templates = {
 						//'<em>Year: </em><span class="searchResultValue">{year}</span> <br/> '+
 						//'<em>Management Body/Authority(ies): </em><span class="searchResultValue">{owner}</span><br/>'+
 						'<em>Management Body/Authority: </em><span class="searchResultValue">{owner}</span><br/>'+
-                        '<a onclick="VMESearch.clickOnFeature(\'{geographicFeatureId}\',{year},false)">'+
-                        '<img title="More information" src="assets/figis/vme/img/icons/buttoninfo.png" />'+
-                        '</a> '+
-                        '<a onclick="VMESearch.clickOnFeature(\'{geographicFeatureId}\',{year},true)">'+
-                       '<img title="Zoom to area" src="assets/figis/vme/img/icons/buttonzoom.png" />'+
-                        '</a> '+
-                        '<a onClick="FigisMap.factsheetRel(\'{[this.getFactsheetUrl(values)]}\');">'+
-                        '<img title="View fact sheet" src="assets/figis/vme/img/icons/buttonfactsheet.png" />'+
-                        '</a> '+
+                        
+						//buttons
+						'<a onclick="VMESearch.clickOnFeature(\'{geographicFeatureId}\',{year},false)">'+
+                        			'<img title="More information" src="assets/figis/vme/img/icons/buttoninfo.png" />'+
+                        			'</a> '+
+                        			'<a onclick="VMESearch.clickOnFeature(\'{geographicFeatureId}\',{year},true)">'+
+                        			'<img title="Zoom to area" src="assets/figis/vme/img/icons/buttonzoom.png" />'+
+                        			'</a> '+
+                        			'<a onClick="VMESearch.factsheetRel(\'{[this.getFactsheetUrl(values)]}\');">'+
+                        			'<img title="View fact sheet" src="assets/figis/vme/img/icons/buttonfactsheet.png" />'+
+                        			'</a> '+
 					'</div>'+
 				'</tpl>',
 				{
-					compiled:true,
-                    getFactsheetUrl: function(values){
+				compiled:true,
+                    		getFactsheetUrl: function(values){
 
-                        if(values.factsheetUrl){
-                            return(values.factsheetUrl);
-                        }else
-                        {
-                            return("fishery/vme/10/en");
-                        }
-                    },
-                    /**
-                     * Returns Validity String
-                     * "validityFrom - validityTo" or "from validityFrom"
-                     * 
-                     */
-                    getValidity: function(values, firstOnly){
+                        		if(values.factsheetUrl){
+                            			return(values.factsheetUrl);
+                        		}else{
+                            			return("fishery/vme/10/en");
+                        		}
+				},
+				/**
+                		 * Returns Validity String
+                 		* "validityFrom - validityTo" or "from validityFrom"
+                 		* 
+                 		*/
+                 		getValidity: function(values, firstOnly){
 						if(firstOnly === true){
 							return values.validityPeriodFrom ? values.validityPeriodFrom : "Not Found";
 						}else{
@@ -243,7 +243,7 @@ VMEData.templates = {
 								return("Not Found");
 							}
 						}
-                    }
+                    	      		     }
 				}
 			),			
 		vme_cl: 
