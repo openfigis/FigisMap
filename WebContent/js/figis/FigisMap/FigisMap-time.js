@@ -71,9 +71,15 @@ FigisMap.time.getSelectedYear= function(){
 /**
  * FigisMap.time.getSelectedYear returns the selected year in the slider
  */
-FigisMap.time.setSelectedYear= function(newyear){
-    if(newyear <= FigisMap.time.maxYear && newyear >= FigisMap.time.minYear && newyear != FigisMap.time.selectedYear){
-        FigisMap.time.selectedYear = newyear;
-    }
-    FigisMap.time.selectionHandler(newyear);
+FigisMap.time.setSelectedYear = function(newyear){
+	if(newyear){
+		if(newyear <= FigisMap.time.maxYear && newyear >= FigisMap.time.minYear && newyear != FigisMap.time.selectedYear){
+        		FigisMap.time.selectedYear = newyear;
+			FigisMap.time.selectionHandler(newyear);
+    		}
+	}else{
+		FigisMap.time.selectedYear = FigisMap.time.getFullYear();
+		FigisMap.time.selectionHandler(FigisMap.time.selectedYear);
+	}
+    
 };

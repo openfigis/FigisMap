@@ -553,18 +553,17 @@ VME.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, 
 	//populateZoomAreaOptions('FilterRFB');
 	
 	//time handlers
-	if(typeof year == "undefined") year = FigisMap.time.getSelectedYear();
 	FigisMap.time.incrementHandler = function(newyear){
 		VME.update();
-        Ext.get('yearCurrent').update(FigisMap.time.selectedYear);
+        	Ext.get('yearCurrent').update(FigisMap.time.selectedYear);
 	}
 	FigisMap.time.decrementHandler = function(newyear){
 		VME.update();
-        Ext.get('yearCurrent').update(FigisMap.time.selectedYear);
+        	Ext.get('yearCurrent').update(FigisMap.time.selectedYear);
 	}
 	FigisMap.time.selectionHandler = function(newyear){
 		if(newyear <= FigisMap.time.maxYear && newyear >= FigisMap.time.minYear && newyear != FigisMap.time.selectedYear){
-        Ext.get('yearCurrent').update(FigisMap.time.selectedYear);
+        		Ext.get('yearCurrent').update(FigisMap.time.selectedYear);
 		}
 		if(newyear == FigisMap.time.minYear){
 			Ext.get('yearLess').addClass('nobackground');
@@ -577,6 +576,11 @@ VME.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, 
 			Ext.get('yearMore').removeClass('nobackground');
 			Ext.get('yearLess').removeClass('nobackground');
 		}
+	}
+	//year
+	if(typeof year == "undefined"){
+		FigisMap.time.setSelectedYear();
+		year = FigisMap.time.getSelectedYear();
 	}
 	
 	//are we in a embedded Iframe
