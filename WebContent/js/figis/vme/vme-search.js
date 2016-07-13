@@ -1,5 +1,5 @@
 /*
-	side-panel.js
+	vme-search.js
 	Search module for VME using Extjs
 	Authors:
 		Lorenzo Natali. Geo-Solutions
@@ -46,9 +46,9 @@ VMESearch.factsheetUrl={};
  * Data view for search results. uses SearchResultStore and searchResult template
  */
 VMESearch.form.widgets.SearchResults = new Ext.DataView({
-	store: Vme.data.stores.SearchResultStore,
-	tpl: Vme.data.templates.searchResult,
-	pageSize:Vme.data.constants.pageSize,
+	store: VMEData.stores.SearchResultStore,
+	tpl: VMEData.templates.searchResult,
+	pageSize:VMEData.constants.pageSize,
 	singleSelect: true,
 	//height:440,
 	autoScroll:true,
@@ -57,8 +57,8 @@ VMESearch.form.widgets.SearchResults = new Ext.DataView({
 	itemCls: 'x-view-item',
 	overClass:'x-view-over',
 	selectedClass: 'x-view-selected',
-	emptyText: '<div style="color:white;">' + FigisMap.label('SEARCH_NO_RES') + '</div>',
-	loadingText:'<div style="color:white;">' + FigisMap.label('SEARCH_LOADING') + '</div>',
+	emptyText: '<div style="color:white;">' + VME.label('SEARCH_NO_RES') + '</div>',
+	loadingText:'<div style="color:white;">' + VME.label('SEARCH_LOADING') + '</div>',
 	listeners: {
     /*
       click: 
@@ -100,7 +100,7 @@ VMESearch.clickOnFeature =function(geographicFeatureId,rec_year,zoom){
                 if (!jsonData.features || jsonData.features.length <= 0 || !jsonData.features[0].geometry){
                     Ext.MessageBox.show({
                         title: "Info",
-                        msg: FigisMap.label("SIDP_NOGEOMETRY"),
+                        msg: VME.label("SIDP_NOGEOMETRY"),
                         buttons: Ext.Msg.OK,
                         icon: Ext.MessageBox.INFO,
                         scope: this
@@ -173,7 +173,7 @@ VMESearch.clickOnFeature =function(geographicFeatureId,rec_year,zoom){
             failure: function ( result, request ) {
                 Ext.MessageBox.show({
                     title: "Info",
-                    msg: FigisMap.label("SIDP_NOGEOMETRY"),
+                    msg: VME.label("SIDP_NOGEOMETRY"),
                     buttons: Ext.Msg.OK,
                     icon: Ext.MessageBox.INFO,
                     scope: this
@@ -203,18 +203,18 @@ VMESearch.form.panels.SearchForm = new Ext.FormPanel({
     id:'SearchForm',
 	items: [
 		/*{
-			fieldLabel: FigisMap.label("SEARCH_TEXT_LBL"),
+			fieldLabel: VME.label("SEARCH_TEXT_LBL"),
 			xtype: 'textfield',
 			name : 'text',
 			ref:'../text',
-			emptyText: FigisMap.label("SEARCH_TEXT_EMP")
+			emptyText: VME.label("SEARCH_TEXT_EMP")
 		},*/{
-			fieldLabel: FigisMap.label('SEARCH_RFMO_LBL'),//+' [<a href="#">?</a>]',
+			fieldLabel: VME.label('SEARCH_RFMO_LBL'),//+' [<a href="#">?</a>]',
 			name: 'authority',
 			ref:'../RFMO',
 			id: "RFMOCombo",
-			emptyText:  FigisMap.label('SEARCH_RFMO_EMP'),
-			store: Vme.data.stores.rfmoStore,
+			emptyText:  VME.label('SEARCH_RFMO_EMP'),
+			store: VMEData.stores.rfmoStore,
 			allowBlank:true,
 			forceSelection:true,
 			triggerAction: 'all',
@@ -222,16 +222,16 @@ VMESearch.form.panels.SearchForm = new Ext.FormPanel({
             valueField : 'id',
 			displayField: 'acronym'
 		},{
-			fieldLabel: FigisMap.label('SEARCH_TYPE_LBL'),//+' [<a href="#">?</a>]',
+			fieldLabel: VME.label('SEARCH_TYPE_LBL'),//+' [<a href="#">?</a>]',
 			name: 'vme_type',
 			ref: '../AreaType',
-			emptyText:  FigisMap.label('SEARCH_TYPE_EMP'),
-            value:   FigisMap.label('SEARCH_TYPE_EMP'),            
+			emptyText:  VME.label('SEARCH_TYPE_EMP'),
+            value:   VME.label('SEARCH_TYPE_EMP'),            
 			allowBlank:true,
 			forceSelection:true,
 			triggerAction: 'all',
 			mode: 'local',
-			store:  Vme.data.stores.areaTypeStore,
+			store:  VMEData.stores.areaTypeStore,
 			valueField : 'id',
 			displayField: 'displayText',
 			listAlign: ['tr-br?', [17,0]],
@@ -246,24 +246,24 @@ VMESearch.form.panels.SearchForm = new Ext.FormPanel({
 			}
 		},
 		{
-			fieldLabel: FigisMap.label('SEARCH_YEAR_LBL'),//+'[<a href="#">?</a>]',
+			fieldLabel: VME.label('SEARCH_YEAR_LBL'),//+'[<a href="#">?</a>]',
 			id: "id_selectYear",
 			name: 'year',
 			ref:'../year', 
-			emptyText: FigisMap.label('SEARCH_YEAR_EMP'),
+			emptyText: VME.label('SEARCH_YEAR_EMP'),
 			allowBlank:true,
 			forceSelection:true,
 			typeAhead: true,
 			triggerAction: 'all',
 			mode: 'local',
-			store:  Vme.data.stores.yearStore,
+			store:  VMEData.stores.yearStore,
 			displayField: 'id',
             valueField: 'id'
 		}
 	],
 
 	buttons: [{
-			text: FigisMap.label('SIDP_CLEAR'),
+			text: VME.label('SIDP_CLEAR'),
 			ref: '../Clear',
 			cls:'figisButton',
 			handler: function(){
@@ -272,7 +272,7 @@ VMESearch.form.panels.SearchForm = new Ext.FormPanel({
 			}
 			
 		},{
-			text: FigisMap.label('SIDP_SEARCH'),
+			text: VME.label('SIDP_SEARCH'),
 			ref: '../Search',
 			cls: 'figisButton',
 			
@@ -322,17 +322,17 @@ VMESearch.search = function(advanced){
 	if(dIndex > -1){
         var rfbCheckboxValue = Ext.getCmp(value+"_RFB").acronym;
         VME.setRFBCheckBoxValue(rfbCheckboxValue);
-        
-	var r = RFMStore.getAt(dIndex);	
-	var rfbName = r.data.acronym;
-        
-        VME.refreshLayers(rfbName);
+
+		var r = RFMStore.getAt(dIndex);	
+		var rfbName = r.data.acronym;
+		
+		VME.refreshLayers(rfbName);
 
 		//vector source
 		var layer = "fifao:RFB_COMP_CLIP";
 		var sourceUrl = FigisMap.rnd.vars.wfs + layer;
 		var cqlFilter = "RFB=" + "'" + rfbName + "'";
-        var vectorSource = FigisMap.rnd.configureVectorSource(sourceUrl, cqlFilter);
+		var vectorSource = FigisMap.rnd.configureVectorSource(sourceUrl, cqlFilter);
 		vectorSource.loadFeatures();
 		console.log(vectorSource);
 			
@@ -343,7 +343,7 @@ VMESearch.search = function(advanced){
 						
 				Ext.MessageBox.show({
 					title: "Info",
-					msg: FigisMap.label("SIDP_NOFEATURES"),
+					msg: VME.label("SIDP_NOFEATURES"),
 					buttons: Ext.Msg.OK,
 					icon: Ext.MessageBox.WARNING,
 					scope: this
@@ -407,7 +407,7 @@ VMESearch.search = function(advanced){
 			// ZOOM TO WRAPDATELINE FEATURES
 			bounds = fixedZoomTo ? fixedZoomTo.zoomExtent : [left, bottom, right, top];
 			var defaultProj = VME.getProjection();
-			var mapProj = VM.myMap.getView().getProjection();
+			var mapProj = VME.myMap.getView().getProjection();
 		
 			var repro_bbox = ol.proj.transformExtent(bounds,
 					new ol.proj.get("EPSG:4326"),
@@ -444,21 +444,23 @@ VMESearch.search = function(advanced){
 		}
 		vmeSearch(advanced);
 		vmeLoader.hide();
+		
+		vectorSource.on("change", function(e){
+			console.log("adding features");
+			loadFeaturesCallback();
+		});
+	
+		vectorSource.loadFeatures();
 	}
 	
-	vectorSource.on("change", function(e){
-		console.log("adding features");
-		loadFeaturesCallback();
-	});
 	
-	vectorSource.loadFeatures();
 };
 
 function vmeSearch(advanced){
 	// ///////////////////
 	// Perform search
 	// ///////////////////
-	var store = Vme.data.stores.SearchResultStore;
+	var store = VMEData.stores.SearchResultStore;
 	store.resetTotal();
 	store.removeAll();
 	store.baseParams={};
@@ -469,7 +471,7 @@ function vmeSearch(advanced){
 	fields.text = document.getElementById('searchtext').value;
 	var params = {
 		start: 0,          
-		rows: Vme.data.constants.pageSize
+		rows: VMEData.constants.pageSize
 	};
 	
 	for (var key in fields){
@@ -534,7 +536,7 @@ VMESearch.rfbZoomTo = function(acronym){
 			
 			Ext.MessageBox.show({
 				title: "Info",
-				msg: FigisMap.label("SIDP_NOFEATURES"),
+				msg: VME.label("SIDP_NOFEATURES"),
 				buttons: Ext.Msg.OK,
 				icon: Ext.MessageBox.WARNING,
 				scope: this
@@ -626,7 +628,7 @@ VMESearch.rfbZoomTo = function(acronym){
 		// /////////////////////////////////////////////////////
 			
 		var RFBValue = features[0].getProperties().RFB;            
-		var RFBComboStore = Vme.data.stores.rfmoStore;
+		var RFBComboStore = VMEData.stores.rfmoStore;
 		var RFBRecord = RFBComboStore.getAt(RFBComboStore.find('acronym', "CCAMLR"));
 		var RFBId = RFBRecord.get('acronym');
 		if(RFBValue == RFBId){
@@ -684,13 +686,13 @@ VMESearch.form.panels.SearchPanel = new Ext.Panel({
                     layout:'fit',
 					items:[VMESearch.form.widgets.SearchResults],
 					bbar : new Ext.ux.LazyPagingToolbar({
-							store: Vme.data.stores.SearchResultStore,
-							pageSize: Vme.data.constants.pageSize
+							store: VMEData.stores.SearchResultStore,
+							pageSize: VMEData.constants.pageSize
 					})	
 			}],
 			bbar:[{
 				xtype: 'button',
-				text: FigisMap.label('SEARCH_BACK_FORM'),
+				text: VME.label('SEARCH_BACK_FORM'),
 				iconCls: 'back-search-icon',
 				handler: function(){VMESearch.form.panels.SearchPanel.layout.setActiveItem('searchForm');}
 			}]
@@ -756,7 +758,7 @@ var sidePanel = new Ext.Panel({
 		{
             id: 'legendPanel',
 			layout:'fit',
-			//title:FigisMap.label('SIDP_MAP'),
+			//title:VME.label('SIDP_MAP'),
 			//iconCls:'map-icon',			
 			renderHidden:true,
 			defaults:{
@@ -764,7 +766,7 @@ var sidePanel = new Ext.Panel({
 			},
 			items:[{	
 				id:'layerswitcherpanel',
-				//title:FigisMap.label('SIDP_LAYERS'),
+				//title:VME.label('SIDP_LAYERS'),
 				iconCls: 'layers-icon',
 				autoScroll: true,
 				html:'<div id="layerswitcher"></div>'
@@ -773,7 +775,7 @@ var sidePanel = new Ext.Panel({
 		},
 		{
             id: 'searchPanel',
-			//title:FigisMap.label('SIDP_SEARCH'),
+			//title:VME.label('SIDP_SEARCH'),
 			iconCls: 'search-icon',
 			items:[VMESearch.form.panels.SearchPanel]
 		}
@@ -796,7 +798,7 @@ var selectRFB = new Ext.Panel({
 });
  
 
-Vme.data.stores.rfmoStore.on('load',function(store, records, options){
+VMEData.stores.rfmoStore.on('load',function(store, records, options){
     
     var items = [];
     

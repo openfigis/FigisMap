@@ -29,6 +29,14 @@ VME.overlayGroups = [
 ];
 
 
+/**
+ * Convenience method to get a label given a key string
+ * @param key
+ */
+VME.label = function(key){
+	return FigisMap.label(key, VMELabels);
+}
+
 
 /**
  * VME baseMapParams
@@ -53,7 +61,7 @@ VME.baseMapParams = function(year){
 		{layer: FigisMap.fifao.vme_oara, handler: function(e){}}
 	];
 
-	this.staticLabels = VMEData.staticLabels;
+	this.staticLabels = VMELabels.staticLabels;
 
 	this.options = {
 		labels: true,
@@ -285,7 +293,11 @@ VME.zoomTo = function(settings,geom,zoom,closest) {
 		//check 
 		var projcode = curr_proj.getCode().split(":")[1];
 		var valid = VME.checkValidBbox(projcode,settings); //TODO OL3
-
+		console.log(settings);
+		console.log(geom);
+		console.log(valid);
+		console.log(zoom);
+		console.log(closest);
 		if(valid){
 			if(!geom){
 				bbox = ol.proj.transformExtent(bbox,
@@ -361,7 +373,7 @@ VME.reset = function(){
 * @param year
 */
 VME.resetByYear = function(year){
-	document.getElementById("FilterRFB").text = FigisMap.label('SELECT_AN_AREA');
+	document.getElementById("FilterRFB").text = VME.label('SELECT_AN_AREA');
 	document.getElementById("FilterRFB").value = "";
 	document.getElementById("SelectRFB").value = "";
     
@@ -619,13 +631,13 @@ VME.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, 
             VME.refreshLayers(rfb); //TODO OL3
         
 		var l = document.getElementById('legendLegendTitle');
-		if ( l ) l.innerHTML = FigisMap.label( 'Legend', pars );
+		if ( l ) l.innerHTML = VME.label( 'Legend', pars );
 		l = document.getElementById('legendMembersTitle');
 		if ( l ) {
 			if ( document.getElementById('MemberCountries').innerHTML == '' ) {
 				l.style.display = 'none';
 			} else {
-				l.innerHTML = FigisMap.label('List of Members');
+				l.innerHTML = VME.label('List of Members');
 				l.style.display = '';
 			}
 		}
@@ -1190,11 +1202,11 @@ VME.populateRfbOptions = function(id) {
 	for ( var i = 0; i < rfbs.length; i++ ) {
 		opt = document.createElement('OPTION');
 		opt.value = rfbs[i];
-		opt.text = FigisMap.label( opt.value );
+		opt.text = VME.label( opt.value );
 		opts.push( opt );
 	}
 	opt = document.createElement('OPTION');
-	opt.text = FigisMap.label('SELECT_AN_RFB');
+	opt.text = VME.label('SELECT_AN_RFB');
 	opt.value = '';
 	opt = new Array( opt );
 	opts = opt.concat( opts.sort( function(a,b) { return a.text > b.text ? 1 : ( a.text < b.text ? -1 : 0 ); } ) );
@@ -1222,11 +1234,11 @@ VME.populateZoomAreaOptions = function(id) {
 	for ( var i in georeferences_data ) {
 		opt = document.createElement('OPTION');
 		opt.value = i;
-		opt.text = FigisMap.label( opt.value );
+		opt.text = VME.label( opt.value );
 		opts.push( opt );
 	}
 	opt = document.createElement('OPTION');
-	opt.text = FigisMap.label('SELECT_AN_AREA');
+	opt.text = VME.label('SELECT_AN_AREA');
 	opt.value = '';
 	opt = new Array( opt );
 	opts = opt.concat( opts.sort( function(a,b) { return a.text > b.text ? 1 : ( a.text < b.text ? -1 : 0 ); } ) );

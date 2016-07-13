@@ -1,290 +1,1525 @@
-﻿// unicode glyph:  - don't remove, needed for Windows bug
+/*
+	vme-data.js
+	data model and stores for VME using Extjs
+	Authors: Lorenzo Natali. Geo-Solutions
+	
+	Status: Beta.	
+*/
 
 var VMEData = new Object();
 
+/**
+ * Ext.ux.LazyJSonStore: lazyStore to load without 
+ * knowing the total size of result list. Useful for
+ * paged queries when the total number of records is 
+ * not available/required
+ *
+ */
+Ext.ux.LazyJsonStore = Ext.extend(Ext.data.JsonStore,{
+	resetTotal:function (){
+		this.tot = null;
+	
+	},
+	loadRecords : function(o, options, success){
+		if (this.isDestroyed === true) {
+			return;
+		}
+		if(!o || success === false){
+			if(success !== false){
+				this.fireEvent('load', this, [], options);
+			}
+			if(options.callback){
+				options.callback.call(options.scope || this, [], options, false, o);
+			}
+			return;
+		}
+		this.crs = this.reader.jsonData.crs;
+		this.bbox =  this.reader.jsonData.bbox;
+		this.featurecollection = this.reader.jsonData;
+		//custom total workaround
+		var estimateTotal = function(o,options,store){
+			var current = o.totalRecords + options.params[store.paramNames.start] ;
+			var currentCeiling = options.params[store.paramNames.start] + options.params[store.paramNames.limit];
+			if(current < currentCeiling){
+				store.tot = current;
+				return current;
+			}else{
+				
+				return  store.tot || 100000000000000000; 
+			}
 
-VMEData.staticLabels = {
-	'(NO SPECIES SELECTED)'	: { en: '(No species selected)' },
-	'200 NMI ARCS'		: '200 nmi arcs',
-	'FAO FISHING AREAS'	: { en:'FAO fishing areas', fr:'Zones de pêche de la FAO'},
-	'ALL FAO AREAS'		: { en:'FAO areas and their sub-divisions' },
-	'COORDINATES GRID'	: { en:'Coordinates Grid' },
-	FAO_DIV			: { en:'FAO divisions'},
-	FAO_MAJOR		: { en:'FAO major fishing areas', fr:'Principales zones de pêche de la FAO'},
-	FAO_SUB_AREA		: { en:'FAO sub areas'},
-	FAO_SUB_DIV		: { en:'FAO sub divisions'},
-	GFCM_SUB_AREA		: { en:'GFCM geographical sub-areas'},
-	ICCAT_SMU		: { en:'ICCAT management unit'},
-	INTERSECTING		: { en:'Intersecting: ', fr:'Intersection :'},
-	MEMBERS			: 'Members',
-	COUNTRY_BOUNDS		: 'Countries - Union of countries',
-	PAC_TUNA_REP		: { en:'Pacific tuna reporting area'},
-	RFB_COMP		: { en:'RFB Area of competence', fr:'Zone de compétence du ORP'},
-	RFB_MARINE_NOBORDER	: { en:'Area of competence'},
-	RFB_INLAND_NOBORDER	: { en:'Area of competence'},
-	RFB_UNSPECIFIED_NOBORDER: { en:"Area of competence without specified limits"},
-	SPECIES_DIST		: { en:'Species distribution'},
-	COUNTRY_ISO3_AGO	: { en:"Angola"},
-	COUNTRY_ISO3_AIA	: { en:"Anguilla"},
-	COUNTRY_ISO3_ALB	: { en:"Albania"},
-	COUNTRY_ISO3_DZA	: { en:"Algeria"},
-	COUNTRY_ISO3_AUT	: { en:"Austria"},
-	COUNTRY_ISO3_ARE	: { en:"United Arab Emirates"},
-	COUNTRY_ISO3_ARG	: { en:"Argentina"},
-	COUNTRY_ISO3_ARM	: { en:"Tajikistan"},
-	COUNTRY_ISO3_ASM	: { en:"American Samoa"},
-	COUNTRY_ISO3_ATG	: { en:"Antigua and Barbuda"},
-	COUNTRY_ISO3_AUS	: { en:"Australia"},
-	COUNTRY_ISO3_BDI	: { en:"Burundi"},
-	COUNTRY_ISO3_BEL	: { en:"Belgium"},
-	COUNTRY_ISO3_BEN	: { en:"Benin"},
-	COUNTRY_ISO3_BFA	: { en:"Burkina Faso"},
-	COUNTRY_ISO3_BGD	: { en:"Bangladesh"},
-	COUNTRY_ISO3_BHR	: { en:"Bahrain"},
-	COUNTRY_ISO3_BHS	: { en:"Bahamas"},
-	COUNTRY_ISO3_BLR	: { en:"Belarus"},
-	COUNTRY_ISO3_BLZ	: { en:"Belize"},
-	COUNTRY_ISO3_BOL	: { en:"Bolivia"},
-	COUNTRY_ISO3_BRA	: { en:"Brazil"},
-	COUNTRY_ISO3_BRB	: { en:"Barbados"},
-	COUNTRY_ISO3_BRN	: { en:"Brunei Darussalam"},
-	COUNTRY_ISO3_BWA	: { en:"Botswana"},
-	COUNTRY_ISO3_BIH	: { en:"Bosnia and Herzegovina"},
-	COUNTRY_ISO3_BGR	: { en:"Bulgaria"},
-	COUNTRY_ISO3_CAF	: { en:"Central Africa Rep"},
-	COUNTRY_ISO3_CAN	: { en:"Canada"},
-	COUNTRY_ISO3_CHL	: { en:"Chile"},
-	COUNTRY_ISO3_CHN	: { en:"China"},
-	COUNTRY_ISO3_CIV	: { en:"Côte D'Ivoire"},
-	COUNTRY_ISO3_CMR	: { en:"Cameroon"},
-	COUNTRY_ISO3_COD	: { en:"Dem Rep of Congo"},
-	COUNTRY_ISO3_COG	: { en:"Congo"},
-	COUNTRY_ISO3_COK	: { en:"Cook Islands"},
-	COUNTRY_ISO3_COL	: { en:"Colombia"},
-	COUNTRY_ISO3_COM	: { en:"Comoros"},
-	COUNTRY_ISO3_CPV	: { en:"Cape Verde"},
-	COUNTRY_ISO3_CRI	: { en:"Costa Rica"},
-	COUNTRY_ISO3_HRV	: { en:"Croatia"},
-	COUNTRY_ISO3_CUB	: { en:"Cuba"},
-	COUNTRY_ISO3_CYP	: { en:"Cyprus"},
-	COUNTRY_ISO3_CZE	: { en:"Czech Republic"},
-	COUNTRY_ISO3_DEU	: { en:"Germany"},
-	COUNTRY_ISO3_DMA	: { en:"Dominica"},
-	COUNTRY_ISO3_DNK	: { en:"Denmark"},
-	COUNTRY_ISO3_DOM	: { en:"Dominican Rep"},
-	COUNTRY_ISO3_ECU	: { en:"Ecuador"},
-	COUNTRY_ISO3_EGY	: { en:"Egypt"},
-	COUNTRY_ISO3_ERI	: { en:"Eritrea"},
-	COUNTRY_ISO3_ESP	: { en:"Spain"},
-	COUNTRY_ISO3_EST	: { en:"Estonia"},
-	COUNTRY_ISO3_ETH	: { en:"Ethiopia"},
-	COUNTRY_ISO3_EUR	: { en:"EU"},
-	COUNTRY_ISO3_FIN	: { en:"Finland"},
-	COUNTRY_ISO3_FJI	: { en:"Fiji"},
-	COUNTRY_ISO3_FRA	: { en:"France"},
-	COUNTRY_ISO3_FRO	: { en:"Faroe Islands (Denmark)"},
-	COUNTRY_ISO3_FSM	: { en:"Micronesia"},
-	COUNTRY_ISO3_GAB	: { en:"Gabon"},
-	COUNTRY_ISO3_GBR	: { en:"United Kingdom"},
-	COUNTRY_ISO3_GHA	: { en:"Ghana"},
-	COUNTRY_ISO3_GIN	: { en:"Guinea"},
-	COUNTRY_ISO3_GMB	: { en:"Gambia"},
-	COUNTRY_ISO3_GNB	: { en:"Guinea-Bissau"},
-	COUNTRY_ISO3_GNQ	: { en:"Equatorial Guinea"},
-	COUNTRY_ISO3_GRC	: { en:"Greece"},
-	COUNTRY_ISO3_GRD	: { en:"Grenada"},
-	COUNTRY_ISO3_GRL	: { en:"Greenland (Denmark)"},
-	COUNTRY_ISO3_GTM	: { en:"Guatemala"},
-	COUNTRY_ISO3_GUF	: { en:"French Guiana"},
-	COUNTRY_ISO3_GUM	: { en:"Guam"},
-	COUNTRY_ISO3_GUY	: { en:"Guyana"},
-	COUNTRY_ISO3_HND	: { en:"Honduras"},
-	COUNTRY_ISO3_HTI	: { en:"Haiti"},
-	COUNTRY_ISO3_HUN	: { en:"Hungary"},
-	COUNTRY_ISO3_IDN	: { en:"Indonesia"},
-	COUNTRY_ISO3_IND	: { en:"India"},
-	COUNTRY_ISO3_IRL	: { en:"Ireland"},
-	COUNTRY_ISO3_IRN	: { en:"Islamic Republic of Iran"},
-	COUNTRY_ISO3_IRQ	: { en:"Iraq"},
-	COUNTRY_ISO3_ISL	: { en:"Iceland"},
-	COUNTRY_ISO3_ISR	: { en:"Israel"},
-	COUNTRY_ISO3_ITA	: { en:"Italy"},
-	COUNTRY_ISO3_JAM	: { en:"Jamaica"},
-	COUNTRY_ISO3_JPN	: { en:"Japan"},
-	COUNTRY_ISO3_KEN	: { en:"Kenya"},
-	COUNTRY_ISO3_KGZ	: { en:"Armenia"},
-	COUNTRY_ISO3_KHM	: { en:"Cambodia"},
-	COUNTRY_ISO3_KIR	: { en:"Kiribati"},
-	COUNTRY_ISO3_KNA	: { en:"Saint Kitts and Nevis"},
-	COUNTRY_ISO3_KOR	: { en:"Rep of Korea"},
-	COUNTRY_ISO3_KWT	: { en:"Kuwait"},
-	COUNTRY_ISO3_LAO	: { en:"Lao People Dem Rep"},
-	COUNTRY_ISO3_LBR	: { en:"Liberia"},
-	COUNTRY_ISO3_LCA	: { en:"Saint Lucia"},
-	COUNTRY_ISO3_LKA	: { en:"Sri Lanka"},
-	COUNTRY_ISO3_LBN	: { en:"Lebanon"},
-	COUNTRY_ISO3_LSO	: { en:"Lesotho"},
-	COUNTRY_ISO3_LTU	: { en:"Lithuania"},
-	COUNTRY_ISO3_LUX	: { en:"Luxembourg"},
-	COUNTRY_ISO3_LVA	: { en:"Latvia"},
-	COUNTRY_ISO3_LBY	: { en:"Libyan Arab Jamahiriya"},
-	COUNTRY_ISO3_MAR	: { en:"Morocco"},
-	COUNTRY_ISO3_MDG	: { en:"Madagascar"},
-	COUNTRY_ISO3_MDV	: { en:"Maldives"},
-	COUNTRY_ISO3_MEX	: { en:"Mexico"},
-	COUNTRY_ISO3_MHL	: { en:"Marshall islands"},
-	COUNTRY_ISO3_MLI	: { en:"Mali"},
-	COUNTRY_ISO3_MMR	: { en:"Myanmar"},
-	COUNTRY_ISO3_MNP	: { en:"Northern Mariana Islands"},
-	COUNTRY_ISO3_MOZ	: { en:"Mozambique"},
-	COUNTRY_ISO3_MRT	: { en:"Mauritania"},
-	COUNTRY_ISO3_MSR	: { en:"Montserrat"},
-	COUNTRY_ISO3_MNG	: { en:"Mongolia"},
-	COUNTRY_ISO3_MNE	: { en:"Montenegro"},
-	COUNTRY_ISO3_MCO	: { en:"Monaco"},
-	COUNTRY_ISO3_MUS	: { en:"Mauritius"},
-	COUNTRY_ISO3_MWI	: { en:"Malawi"},
-	COUNTRY_ISO3_MYS	: { en:"Malaysia"},
-	COUNTRY_ISO3_NAM	: { en:"Namibia"},
-	COUNTRY_ISO3_NCL	: { en:"New Caledonia"},
-	COUNTRY_ISO3_NER	: { en:"Niger"},
-	COUNTRY_ISO3_NGA	: { en:"Nigeria"},
-	COUNTRY_ISO3_NIC	: { en:"Nicaragua"},
-	COUNTRY_ISO3_NIU	: { en:"Niue"},
-	COUNTRY_ISO3_NLD	: { en:"Netherlands"},
-	COUNTRY_ISO3_NOR	: { en:"Norway"},
-	COUNTRY_ISO3_NPL	: { en:"Nepal"},
-	COUNTRY_ISO3_NRU	: { en:"Nauru"},
-	COUNTRY_ISO3_NZL	: { en:"New Zealand"},
-	COUNTRY_ISO3_OMN	: { en:"Oman"},
-	COUNTRY_ISO3_PAK	: { en:"Pakistan"},
-	COUNTRY_ISO3_PAN	: { en:"Panama"},
-	COUNTRY_ISO3_PCN	: { en:"Pitcairn Island"},
-	COUNTRY_ISO3_PER	: { en:"Peru"},
-	COUNTRY_ISO3_PHL	: { en:"Philippines"},
-	COUNTRY_ISO3_PLW	: { en:"Palau"},
-	COUNTRY_ISO3_PNG	: { en:"Papua New Guinea"},
-	COUNTRY_ISO3_POL	: { en:"Poland"},
-	COUNTRY_ISO3_PRT	: { en:"Portugal"},
-	COUNTRY_ISO3_PRY	: { en:"Paraguay"},
-	COUNTRY_ISO3_PYF	: { en:"French Polynesia"},
-	COUNTRY_ISO3_QAT	: { en:"Qatar"},
-	COUNTRY_ISO3_ROU	: { en:"Romania"},
-	COUNTRY_ISO3_RUS	: { en:"Russian Federation"},
-	COUNTRY_ISO3_RWA	: { en:"Rwanda"},
-	COUNTRY_ISO3_SAU	: { en:"Saudi Arabia"},
-	COUNTRY_ISO3_SDN	: { en:"Sudan"},
-	COUNTRY_ISO3_SEN	: { en:"Senegal"},
-	COUNTRY_ISO3_SGP	: { en:"Singapore"},
-	COUNTRY_ISO3_SLB	: { en:"Solomon Islands"},
-	COUNTRY_ISO3_SLE	: { en:"Sierra Leone"},
-	COUNTRY_ISO3_SLV	: { en:"El Salvador"},
-	COUNTRY_ISO3_SMR	: { en:"San Marino"},
-	COUNTRY_ISO3_SOM	: { en:"Somalia"},
-	COUNTRY_ISO3_SPM	: { en:"France (in relation to Saint Pierre and Miquelon)"},
-	COUNTRY_ISO3_STP	: { en:"Sao Tome And Principe"},
-	COUNTRY_ISO3_SLE	: { en:"Sierra Leone"},
-	COUNTRY_ISO3_SUR	: { en:"Suriname"},
-	COUNTRY_ISO3_SWE	: { en:"Sweden"},
-	COUNTRY_ISO3_SWZ	: { en:"Swaziland"},
-	COUNTRY_ISO3_SVK	: { en:"Slovakia"},
-	COUNTRY_ISO3_SVN	: { en:"Slovenia"},
-	COUNTRY_ISO3_SLB	: { en:"Solomon Islands"},
-	COUNTRY_ISO3_CHE	: { en:"Switzerland"},
-	COUNTRY_ISO3_SYC	: { en:"Seychelles"},
-	COUNTRY_ISO3_SYR	: { en:"Syrian Arab Republic"},
-	COUNTRY_ISO3_TCA	: { en:"Turks and Caicos Islands"},
-	COUNTRY_ISO3_TCD	: { en:"Chad"},
-	COUNTRY_ISO3_TGO	: { en:"Togo"},
-	COUNTRY_ISO3_THA	: { en:"Thailand"},
-	COUNTRY_ISO3_TJK	: { en:"Kyrgyzstan"},
-	COUNTRY_ISO3_TKL	: { en:"Tokelau"},
-	COUNTRY_ISO3_TON	: { en:"Tonga"},
-	COUNTRY_ISO3_TTO	: { en:"Trinidad and Tobago"},
-	COUNTRY_ISO3_TUV	: { en:"Tuvalu"},
-	COUNTRY_ISO3_TUN	: { en:"Tunisia"},
-	COUNTRY_ISO3_TUR	: { en:"Turkey"},
-	COUNTRY_ISO3_TWN	: { en:"Taiwan Province of China"},
-	COUNTRY_ISO3_UKX	: { en:"United Kingdom (in relation to Other Territories)"},
-	COUNTRY_ISO3_TZA	: { en:"United Rep of Tanzania"},
-	COUNTRY_ISO3_UGA	: { en:"Uganda"},
-	COUNTRY_ISO3_UKR	: { en:"Ukraine"},
-	COUNTRY_ISO3_URY	: { en:"Uruguay"},
-	COUNTRY_ISO3_USA	: { en:"United States of America"},
-	COUNTRY_ISO3_VCT	: { en:"Saint Vincent and the Grenadines"},
-	COUNTRY_ISO3_VGB	: { en:"British Virgin Islands (UK)"},
-	COUNTRY_ISO3_VEN	: { en:"Venezuela"},
-	COUNTRY_ISO3_VNM	: { en:"Viet Nam"},
-	COUNTRY_ISO3_VUT	: { en:"Vanuatu"},
-	COUNTRY_ISO3_WLF	: { en:"Wallis and Futuna"},
-	COUNTRY_ISO3_WSM	: { en:"Samoa"},
-	COUNTRY_ISO3_YEM	: { en:"Yemen"},
-	COUNTRY_ISO3_ZAF	: { en:"South Africa"},
-	COUNTRY_ISO3_ZMB	: { en:"Zambia"},
-	COUNTRY_ISO3_ZWE	: { en:"Zimbabwe"},
-	//SIDE PANEL
-	SIDP_MAP			: {en:"Map"},
-	SIDP_LAYERS			: {en:"Layers"},
-	SIDP_LEGEND			: {en:"Legend"},
-	SIDP_SEARCH			: {en:"Search"},
-	SIDP_CLEAR			: {en:"Clear"},
-	SIDP_NOGEOMETRY     : {en:"Area isn't defined yet!"},    
-	SIDP_NOFEATURES     : {en:"The server did not return any feature !"},
-    //ZOOMTO RFB LABELS
-    ZOOMTO_RFB_LBL		: {en:"RFB ZoomTo"},
-    //ZOOMTO RFB EMPTY
-    ZOOMTO_RFB_EMP		: {en:"Select RFB..."},
-    // SEARCH NO RESULT LABEL
-    ZOOMTO_NO_RES		: {en:'RFB not found'},
-    ZOOMTO_LOADING		: {en:'Loading'},
-	//SEARCH FIELDS LABELS
-	SEARCH_TEXT_LBL		: {en:"Free text search"},
-	SEARCH_RFMO_LBL		: {en:"By Management Body/Authority(ies)"},
-	SEARCH_TYPE_LBL		: {en:"By Area Type"},
-	SEARCH_STAT_LBL		: {en:"By Status"},
-	SEARCH_CRIT_LBL		: {en:"By VME Criteria"},
-	SEARCH_YEAR_LBL		: {en:"By Year"},
-	//SEARCH EMPTY TEXT
-	SEARCH_TEXT_EMP		: {en:"Free text"},
-	SEARCH_RFMO_EMP		: {en:"Select..."},
-	SEARCH_TYPE_EMP		: {en:"Select..."},
-	SEARCH_STAT_EMP		: {en:"Select..."},
-	SEARCH_CRIT_EMP		: {en:"Select..."},
-	SEARCH_YEAR_EMP		: {en:"Select..."},
-	// SEARCH NO RESULT LABEL
-	SEARCH_NO_RES		: {en:'Nothing to display'},
-	SEARCH_LOADING		: {en:'Loading'},
-	SEARCH_BACK_FORM	: {en:'&laquo; Back to search'},
-	//VME AREA TYPES
-	VME_TYPE_VME		: { en:"VME"},
-	VME_TYPE_RISK		: { en:"Risk Area"},
-	VME_TYPE_BPA		: { en:"Benthic protected area"},
-	VME_TYPE_CLOSED		: { en:"Closed area"},
-	VME_TYPE_OTHER		: { en:"Other types of managed areas"},
-	//VME STATUSES 
-	VME_STATUS_RSK		: { en:"Risk"},
-	VME_STATUS_ENS		: { en:"Established"},
-	VME_STATUS_UNDEST	: { en:"Under establishment"},
-	VME_STATUS_VOL		: { en:"Voluntary"},
-	VME_STATUS_EXP		: { en:"Exploratory"},
-	VME_STATUS_POT		: { en:"Potential"},
-	VME_STATUS_TEMP		: { en:"Temporary"},
-	//VME CRITERIA 
-	VME_CRITERIA_UNIQUE	: { en:"Uniqueness or rarity"},
-	VME_CRITERIA_FUNCT	: { en:"Functional significance of the habitat"},
-	VME_CRITERIA_FRAG	: { en:"Fragility"},
-	VME_CRITERIA_LIFE	: { en:"Life-history traits"},
-	VME_CRITERIA_STRUCT	: { en:"Structural complexity"},
-	VME_CRITERIA_NOTS	: { en:"Not specified"},
+		};
+		o.totalRecords = estimateTotal(o,options,this);
+		//end of custom total workaround
+		
+		var r = o.records, t = o.totalRecords || r.length;
+		if(!options || options.add !== true){
+			if(this.pruneModifiedRecords){
+				this.modified = [];
+			}
+			for(var i = 0, len = r.length; i < len; i++){
+				r[i].join(this);
+			}
+			if(this.snapshot){
+				this.data = this.snapshot;
+				delete this.snapshot;
+			}
+			this.clearData();
+			this.data.addAll(r);
+			this.totalLength = t;
+			this.applySort();
+			this.fireEvent('datachanged', this);
+		}else{
+			this.totalLength = Math.max(t, this.data.length+r.length);
+			this.add(r);
+		}
+		this.fireEvent('load', this, r, options);
+		if(options.callback){
+			options.callback.call(options.scope || this, r, options, true);
+		}
+	}
 	
-	//SUB_TITLE           : { en:"The Vulnerable Marine Ecosystems Database (VME-DB)<br />gathers information on VME areas stored in harmonized<br />way and disseminated through maps and fact sheets."},
-	SUB_TITLE           : { en:"Global inventory of fisheries measures adopted in ABNJ <br />to prevent significant adverse impacts of high-seas <br />bottom fisheries on vulnerable marine ecosystems (VMEs) and associated information"},
+});
+
+
+
+
+
 	
-	LEGEND_NOTE_SIOFA	: "The Agreement is subject to ratification, acceptance or approval by the signatories.<br />The signatories and the participants that have deposited their instruments can be found <a href=\"http://www.fao.org/Legal/treaties/035s-e.htm\" target=\"_blank\">here</a>.",
-	LEGEND_NOTE_SPRFMO	: "The Convention is subject to ratification, acceptance or approval by the signatories<br />The signatories and the participants that have deposited their instruments can be found <a href=\"http://www.southpacificrfmo.org/status-of-the-convention\" target=\"_blank\">here</a>.",
-	LEGEND_NOTE_CACFAC	: "<br><i>In December 2009 the following countries were officially invited by the Director General to become member of the Commission: Armenia, Azerbaijan, People's Republic China, Georgia, Islamic Republic of Iran, Kazakhstan, Kyrgyzstan, Russian Federation, Tajikistan, Turkey, Turkmenistan, Uzbekistan, Afghanistan, Mongolia and Ukraine.</i>",
-	SELECT_AN_RFB		: '(Select a competent authority)',
-    SELECT_AN_AREA      : '(Select an area)',
-	DISCLAIMER			: "<strong>Disclaimer:</strong> The designations employed and the presentation of material in the map(s) are for illustration only and do not imply the expression of any opinion whatsoever on the part of FAO concerning the legal or constitutional status of any country, territory or sea area, or concerning the delimitation of frontiers or boundaries.",
-	defined			: true
+	
+/**
+ * Ext.ux.LazyPagingToolbar
+ * Paging toolbar for lazy stores like Ext.ux.LazyJsonStore
+ */
+Ext.ux.LazyPagingToolbar = Ext.extend(Ext.PagingToolbar,{
+		
+		displayInfo: true,
+		displayMsg: "",
+		emptyMsg: "",
+		afterPageText:"",
+		beforePageText:"",
+		onLoad : function(store, r, o){
+			if(!this.rendered){
+				this.dsLoaded = [store, r, o]; 
+				return;
+			}
+			var p = this.getParams();
+			this.cursor = (o.params && o.params[p.start]) ? o.params[p.start] : 0;
+			var d = this.getPageData(), ap = d.activePage, ps = d.pages;
+
+			this.afterTextItem.setText(String.format(this.afterPageText, d.pages));
+			this.inputItem.setValue(ap);
+			this.first.setDisabled(ap == 1);
+			this.prev.setDisabled(ap == 1);
+			this.next.setDisabled(ap >= ps);
+			this.last.setDisabled(ap >= ps);
+			this.refresh.enable();
+			this.updateInfo();
+			this.fireEvent('change', this, d);
+		},
+		listeners:{
+			beforerender: function(){
+				this.refresh.setVisible(false);
+				this.last.setVisible(false);
+			},
+			change: function (total,pageData){
+				if(pageData.activePage>pageData.pages){
+					this.movePrevious();
+					this.next.setDisabled(true);
+				}
+				
+			}
+		}
+});
+
+VMEData.utils = {
+		generateDownloadLink :function(ows,types,filters,format,otherparams){
+			try{
+				var cql_filter = filters.join(";");
+			}catch(e){
+				cql_filter =filters;
+			}
+			try{
+				var typeName = types.join(",");
+			}catch(e){
+				typeName = types;
+			}
+			var addParams = "";
+			for (var name in otherparams){
+				addParams += "&" + name + "=" + encodeURIComponent( otherparams[name] );
+			}
+			return ows+"?service=WFS&version=1.0.0&request=GetFeature" 
+				+"&typeName="+ encodeURIComponent(typeName)
+				+ "&outputFormat=" + encodeURIComponent( format )
+				+ (cql_filter ? "&cql_filter=" + encodeURIComponent( cql_filter ):"")
+				+ addParams;
+									
+		
+		},
+		generateFidFilter:function(fids){
+			if(fids ==undefined) return ;
+			var len = fids.length;
+			if(!len) return ;
+			
+			var filter = "IN ('" +fids[0]+"'";
+			for (var i=1; i<len ;i++){
+				filter += ",'" +fids[i]+ "'";
+			} 
+			filter += ")";
+			return filter;
+		
+		},
+		generateVMEFilter:function(vme_id){
+			if (vme_id ==undefined) return ;
+			return "VME_ID = '" +vme_id +"'";
+		},
+		surfaceUoMConverter: function(values, uom){
+			if(uom == "ha"){
+				var hectares = values.surface/10000;
+				return Math.round(hectares);
+			}else if(uom == "skm"){
+				var skm = values.surface/1000000;
+				return Math.round(skm);
+			}
+		}		
+	}
+
+
+/** 
+ * VMEData.templates contains templates and base Extjs Stores, models to load Vme data
+ */
+VMEData.templates = {
+		/** VMEData.templates.searchResult
+		 * displays search results with utiities to display human readable fields
+	     */
+		searchResult: 
+			new Ext.XTemplate(
+				'<tpl for=".">'+
+					'<div class="search-result">' +
+						'<em>Name: </em><span class="searchResultValue">{localname}</span><br/>'+				
+						//'<em>Validity: </em><span class="searchResultValue">{[this.getValidity(values)]}</span> <br/> '+	
+						'<em>Measure first applied in: </em><span class="searchResultValue">{[this.getValidity(values, true)]}</span> <br/> '+	
+						//'<em>Year: </em><span class="searchResultValue">{year}</span> <br/> '+
+						//'<em>Management Body/Authority(ies): </em><span class="searchResultValue">{owner}</span><br/>'+
+						'<em>Management Body/Authority: </em><span class="searchResultValue">{owner}</span><br/>'+
+                        '<a onclick="VMESearch.clickOnFeature(\'{geographicFeatureId}\',{year},false)">'+
+                        '<img title="More information" src="assets/figis/vme/img/icons/buttoninfo.png" />'+
+                        '</a> '+
+                        '<a onclick="VMESearch.clickOnFeature(\'{geographicFeatureId}\',{year},true)">'+
+                       '<img title="Zoom to area" src="assets/figis/vme/img/icons/buttonzoom.png" />'+
+                        '</a> '+
+                        '<a onClick="FigisMap.factsheetRel(\'{[this.getFactsheetUrl(values)]}\');">'+
+                        '<img title="View fact sheet" src="assets/figis/vme/img/icons/buttonfactsheet.png" />'+
+                        '</a> '+
+					'</div>'+
+				'</tpl>',
+				{
+					compiled:true,
+                    getFactsheetUrl: function(values){
+
+                        if(values.factsheetUrl){
+                            return(values.factsheetUrl);
+                        }else
+                        {
+                            return("fishery/vme/10/en");
+                        }
+                    },
+                    /**
+                     * Returns Validity String
+                     * "validityFrom - validityTo" or "from validityFrom"
+                     * 
+                     */
+                    getValidity: function(values, firstOnly){
+						if(firstOnly === true){
+							return values.validityPeriodFrom ? values.validityPeriodFrom : "Not Found";
+						}else{
+							if(values.validityPeriodFrom){
+								if(values.validityPeriodTo && values.validityPeriodTo != 9999){
+									return values.validityPeriodFrom + " - " + values.validityPeriodTo;
+								}else{
+									return "from "+ values.validityPeriodFrom;
+								}
+							}else{
+								return("Not Found");
+							}
+						}
+                    }
+				}
+			),			
+		vme_cl: 
+			new Ext.XTemplate(
+				'<tpl for=".">'+
+                    '<tpl if="[xindex] &gt; \'1\'">'+
+                        '<hr/>'+
+                    '</tpl>'+
+					'<div class="popup-result" style="text-align:left;">' +
+						'<h3>{localname}</h3>'+
+						'<em>Management Body/Authority: </em><span class="own">{owner}</span><br/>'+
+						//'<em>Measure first applied in: </em><span>{[this.getValidity(values, true)]}</span> <br/> '+
+                        '<em>Closed since </em><span>{validityPeriodFrom}</span> {[this.checkUntilYear(values)]}{[this.checkYearReview(values)]}'+
+                        //'<em>Measure: </em><span>{measure}</span> <a  target="_blank" href="{pdfURL}"><img title="Download pdf" src="assets/figis/vme/img/icons/download_pdf.png"></a><br/> '+
+                        '<em>Measure: </em>{[this.formatMeasure(values)]}'+
+						//'<em>Validity: </em><span>{[this.getValidity(values)]}</span> <br/> '+
+						//'<em>Year: </em>{year}<br/> '+
+						//'<em>Management Body/Authority: </em><span class="own">{owner}</span><br/>'+
+						//'<em>Geographical reference: </em><span class="geo_ref" >{geo_ref}</span> <br/>'+
+						'<em>Area Type: </em><span>{vmeType}</span> <br/> '+
+                        '<em>Surface: </em><span>{[VMEData.utils.surfaceUoMConverter(values, "skm")]}</span><span> km&#178;</span> <br/> '+
+						//'<em>Start Date: </em><span>{validityPeriodFrom}</span> <br/> '+
+                        //'<em>End Date: </em><span>{validityPeriodTo}</span> <br/> '+                        
+						// '<em>UN Criteria: </em>{criteria}<br/> '+
+						//'<em>Vme ID:</em><span class="own"> {vme_id}</span><br/>'+
+                        '<br/>' +
+						'<div style="text-align:right;float:right;">' +
+							'<a  target="_blank" href="{[this.getDownloadLink(values)]}"><img title="Download as shapefile" src="assets/figis/vme/img/icons/download.png"></a>' +
+							//'{[this.getDownloadFDS(values)]}' +
+							'&nbsp;&nbsp;<a onClick="'+
+								'myMap.zoomToExtent(OpenLayers.Bounds.fromString( \'{[this.getBBOX(values)]}\'));'+
+                                //'FigisMap.ol.refreshFilters(\'{owner_acronym}\');'+
+                               // 'setRFBCheckBoxValue(\'{owner_acronym}\');'+
+                                //'FigisMap.ol.clearPopupCache();'+
+								'FigisMap.ol.emulatePopupFromVert({[this.getVert(values.geometry)]})'+
+							'"><img title="Zoom to area" src="assets/figis/vme/img/icons/buttonzoom.png"></a>' +
+                            '&nbsp;&nbsp;<a href="javascript:void(0);" onClick="FigisMap.factsheetRel(\'{[this.getFactsheetUrl(values)]}\');"><img title="View fact sheet" src="assets/figis/vme/img/icons/buttonfactsheet.png" /></a>' +
+
+							//'<br/>{[this.addProtectedLinks(values)]}' +
+                        '</div>'+
+						'<div style="text-align:left;">' +
+							'<u><a href="javascript:void(0);" onClick="FigisMap.factsheetRel(\'{[this.getFactsheetUrl(values)]}\');" >Access the VME Factsheet</a><br/><a href="javascript:void(0);" onClick="FigisMap.infoSourceLayers(\'{[this.getFactsheet(values)]}\',true);" >Access the Regional Factsheet</a></u>' +
+                        '</div>'+                        
+                    '</div>'+
+				'</tpl>',
+				{
+					compiled:true,
+                    getFactsheet: function(values){
+                        return VMESearch.factsheetUrl[values.owner_acronym];
+                    },
+                    checkUntilYear:function(values){
+                        var untilValue = values.validityPeriodTo.split("-")
+                        if(untilValue[0] === "9999"){
+                            return ""; 
+                        }else{
+                            return "<em>until</em> <span>"+values.validityPeriodTo+"</span>";
+                        }
+                    },
+                    checkYearReview:function(values){
+                        if(values.reviewYear === 0 || values.reviewYear === null){
+                            return "<br/>"; 
+                        }else{
+                            return ", <em>review in</em> <span>"+values.reviewYear+"</span><br/>";
+                        }
+                    },
+                    formatMeasure:function(values){
+                        var pdf = values.pdfURL;
+                        var measureArray = values.measure.split("__");
+                        var html="";
+                        
+                        for (var i = 0;i<measureArray.length;i++){
+                            if (pdf == ""){
+                                html += '</em><span>' + measureArray[i] + '</span> <a  target="_blank" href="' + pdf + '"></a><br/>';
+                            }else{
+                                html += '</em><span>' + measureArray[i] + '</span> <a  target="_blank" href="' + pdf + '"><img title="Download pdf" src="assets/figis/vme/img/icons/download_pdf.png"></a><br/>';
+                            }
+                        }
+                        return html;
+                    },
+					getBBOX:function(values){
+                        if (values.bbox.left == -180)
+                            values.bbox.left = 180
+						var projcode = "EPSG:4326";
+						if(myMap.getProjection() == projcode ){
+							bbox = values.bbox;
+							return bbox.toArray(); 
+						}else{
+							var geom = values.bbox;
+							var repro_geom = geom.clone().transform(new ol.proj.get(projcode), myMap.getView().getProjection());
+                            //var repro_bbox = repro_geom.getBounds();
+                            return repro_geom.toArray();
+						
+						}
+					},
+					getVert: function(geom){
+                        var vert = {};
+                        var projcode = "EPSG:4326";
+                        var repro_geom = geom.clone().transform(
+                            new OpenLayers.Projection(projcode),
+                            myMap.getProjectionObject()
+                        );                        
+                        if(getProjection() == "4326"){
+                            vert = "{x: " + geom.getVertices()[0].x +", y:" + geom.getVertices()[0].y + "}";
+                            return vert;
+                        }else{
+                            var checkWrapDateLine = repro_geom.getVertices()[0].x * (-1);
+                            var getVerticesX = geom.getVertices()[0].x == 180 ? checkWrapDateLine : repro_geom.getVertices()[0].x;
+                            vert = "{x: " + getVerticesX +", y:" + repro_geom.getVertices()[0].y + "}";
+                            //vert = "{x: " + repro_geom.getVertices()[0].x +", y:" + repro_geom.getVertices()[0].y + "}";
+                            return vert;
+                        }                      
+					},
+                    /**
+                     * Returns Validity String
+                     * "validityFrom - validityTo" or "from validityFrom"
+                     * 
+                     */
+                    getValidity: function(values, firstOnly){
+						if(firstOnly === true){
+							return values.validityPeriodFrom ? values.validityPeriodFrom : "Not Found";
+						}else{
+							if(values.validityPeriodFrom){
+								if(values.validityPeriodTo && values.validityPeriodTo != 9999){
+									return values.validityPeriodFrom + " - " + values.validityPeriodTo;
+								}else{
+									return "from "+ values.validityPeriodFrom;
+								}
+							}else{
+								return("Not Found");
+							}
+						}
+                    },
+                    /**
+                     * Returns the link to the factsheet
+                     */
+                    getFactsheetUrl: function(values){
+
+                        if(values.factsheetUrl){
+                            return(values.factsheetUrl);
+                        }else
+                        {
+                            //return("fishery/vme/10/en");
+                            //return("http://figisapps.fao.org/fishery/vme/10/en");
+                            return(FigisMap.geoServerBase + "/fishery/vme/10/en");
+                        }
+                    },
+					/**
+					 * Download all vme areas
+					 */
+					getDownloadLink: function(values){
+						return VMEData.utils.generateDownloadLink(
+							FigisMap.rnd.vars.ows,
+							FigisMap.fifao.vme_cl,
+							VMEData.utils.generateVMEFilter(values.vme_id),
+							"shape-zip",
+							{format_options:"filename:VME-DB_"+values.vme_id+".zip"}
+						);
+						//return +"?service=WFS&version=1.0.0&request=GetFeature&typeName=" + FigisMap.fifao.vme+ "&outputFormat=shape-zip" +
+						//	"&cql_filter=" + encodeURIComponent( "YEAR = '" + values.year + "' AND VME_ID = '" +values.vme_id +"'" )
+							
+					},
+					/**
+					 * Download all vme areas + encoutners & sd for this vme
+					 */
+					getDownloadFDS:function(values){
+						/*if(!FigisMap.rnd.status.logged){
+							return "";
+						}*/
+						var filter = VMEData.utils.generateVMEFilter(values.vme_id);
+						filter =filter +";"+ filter + ";" + filter;
+						return '<a class="zipmlink" target="_blank" href="'+
+							VMEData.utils.generateDownloadLink(
+								FigisMap.rnd.vars.ows,
+                                //Remove encounters and ...
+								//[FigisMap.fifao.vme,FigisMap.fifao.vme_en,FigisMap.fifao.vme_sd],
+                                [FigisMap.fifao.vme_cl],
+								filter,
+								"shape-zip",
+								{format_options:"filename:VME-DB_"+values.vme_id+"_DS.zip"}
+							)
+							+'">Download full Data Set</a>' ;
+					},
+					addProtectedLinks: function(values){
+						/*if(!FigisMap.rnd.status.logged){
+							return "";
+						}*/
+						return  '<a class="rellink" onClick=\'Ext.MessageBox.show({title: "Info",msg: "Related Encounters and Survey Data not implemented yet",buttons: Ext.Msg.OK,icon: Ext.MessageBox.INFO,scope: this}); \'>Related</a>';
+					}
+				}
+			),
+		vme_oa: 
+			new Ext.XTemplate(
+                //OLD POPUP 
+				/*'<tpl for=".">'+
+                    '<tpl if="[xindex] &gt; \'1\'">'+
+                        '<hr/>'+
+                    '</tpl>'+
+					'<div class="popup-result" style="text-align:left;">' +
+						'<h3>{localname}</h3>'+
+						'<em>Management Body/Authority: </em><span class="own">{owner}</span><br/>'+
+						//'<em>Measure first applied in: </em><span>{[this.getValidity(values, true)]}</span> <br/> '+
+                        '<em>Closed since </em><span>{validityPeriodFrom}</span> <em>until</em> <span>{validityPeriodTo}, </span><em>review in <span>{review_date}</span></em><br/> '+
+                        //'<em>Measure: </em><span>{measure}</span> <a  target="_blank" href="{pdfURL}"><img title="Download pdf" src="assets/figis/vme/img/icons/download_pdf.png"></a><br/> '+
+                        '<em>Measure: </em>{[this.formatMeasure(values)]}'+
+						//'<em>Validity: </em><span>{[this.getValidity(values)]}</span> <br/> '+
+						//'<em>Year: </em>{year}<br/> '+
+						//'<em>Management Body/Authority: </em><span class="own">{owner}</span><br/>'+
+						//'<em>Geographical reference: </em><span class="geo_ref" >{geo_ref}</span> <br/>'+
+						'<em>Area Type: </em><span>{vmeType}</span> <br/> '+
+                        '<em>Surface: </em><span>{[this.toHectares(values)]}</span><em> (ha)</em> <br/> '+
+						//'<em>Start Date: </em><span>{validityPeriodFrom}</span> <br/> '+
+                        //'<em>End Date: </em><span>{validityPeriodTo}</span> <br/> '+                        
+						// '<em>UN Criteria: </em>{criteria}<br/> '+
+						//'<em>Vme ID:</em><span class="own"> {vme_id}</span><br/>'+
+						
+						'<div style="text-align:right;">' +
+							'<a  target="_blank" href="{[this.getDownloadLink(values)]}"><img title="Download as shapefile" src="assets/figis/vme/img/icons/download.png"></a>' +
+							//'{[this.getDownloadFDS(values)]}' +
+							'&nbsp;&nbsp;<a onClick="'+
+								'myMap.zoomToExtent(OpenLayers.Bounds.fromString( \'{[this.getBBOX(values)]}\'));'+
+                                //'FigisMap.ol.refreshFilters(\'{owner_acronym}\');'+
+                                //'FigisMap.ol.clearPopupCache();'+
+								'FigisMap.ol.emulatePopupFromVert({[this.getVert(values.geometry)]})'+
+							'"><img title="Zoom to area" src="assets/figis/vme/img/icons/buttonzoom.png"></a>' +
+                            '&nbsp;&nbsp;<a href="javascript:void(0);" onClick="FigisMap.factsheetRel(\'{[this.getFactsheetUrl(values)]}\');"><img title="View fact sheet" src="assets/figis/vme/img/icons/buttonfactsheet.png" /></a>' +
+
+							//'<br/>{[this.addProtectedLinks(values)]}' +
+                        '</div>'+
+                    '</div>'+
+				'</tpl>',*/
+				'<tpl for=".">'+
+					'<div class="popup-result" style="text-align:left;">' +
+						'<h3>{feature_localname}</h3>'+
+						'<em>Year: </em>{feature_year}<br/> '+
+						'<em>Management Body/Authority: </em><span class="own">{owner_acronym}</span><br/>'+
+						'<em>Geographical reference: </em><span class="geo_ref" >{feature_geo_ref}</span> <br/>'+
+                        '<em>Surface: </em><span>{[VMEData.utils.surfaceUoMConverter(values, "skm")]}</span><span> km&#178;</span> <br/> '+                         
+						//'<br/><br/>'+
+						'<br/>' +
+						'<div>'+
+						'<div style="text-align:right;float:right;">' +
+							'<a class="" target="_blank" href="{[this.getDownloadLink(values)]}"><img title="Download as shapefile" src="assets/figis/vme/img/icons/download.png"></a>' +
+							'<a class="" onClick="'+
+								'myMap.zoomToExtent(OpenLayers.Bounds.fromString( \'{[this.getBBOX(values)]}\'));'+
+                                //'FigisMap.ol.refreshFilters(\'{owner}\');'+   
+                                //'setRFBCheckBoxValue(\'{owner}\');'+
+								'FigisMap.ol.emulatePopupFromVert({[this.getVert(values.geometry)]})'+
+							'"><img title="Zoom to area" src="assets/figis/vme/img/icons/buttonzoom.png"></a>' +
+						'</div>'+
+						'<div style="text-align:left;">' +
+							'<u><a href="javascript:void(0);" onClick="FigisMap.infoSourceLayers(\'{[this.getFactsheet(values)]}\',true);" >Access the Regional Factsheet</a></u>' +
+                        '</div>'+                         
+						'</div>'+
+					'</div>'+
+				'</tpl>',                
+				{
+					compiled:true,
+                    getFactsheet: function(values){
+                        return VMESearch.factsheetUrl[values.owner_acronym];
+                    },                         
+                    formatMeasure:function(values){
+                        var pdf = values.pdfURL;
+                        var measureArray = values.measure.split("__");
+                        var html="";
+                        for (var i = 0;i<measureArray.length;i++){
+                            if (pdf == ""){
+                                html += '</em><span>' + measureArray[i] + '</span> <a  target="_blank" href="' + pdf + '"></a><br/>';
+                            }else{
+                                html += '</em><span>' + measureArray[i] + '</span> <a  target="_blank" href="' + pdf + '"><img title="Download pdf" src="assets/figis/vme/img/icons/download_pdf.png"></a><br/>';
+                            }
+                        }
+                        return html;
+                    },                            
+					getBBOX:function(values){
+                        if (values.bbox.left == -180)
+                            values.bbox.left = 180
+						var projcode = "EPSG:4326";
+						if(myMap.getProjection() == projcode ){
+							bbox = values.bbox;
+							return bbox.toArray(); 
+						}else{
+							var geom = values.bbox;
+							var repro_geom = geom.clone().transform(
+                                new OpenLayers.Projection(projcode),
+                                myMap.getProjectionObject()
+                            );
+						
+                            //var repro_bbox = repro_geom.getBounds();
+                            return repro_geom.toArray();
+						
+						}
+					},
+					getVert: function(geom){
+                        var vert = {};
+                        var projcode = "EPSG:4326";
+                        var repro_geom = geom.clone().transform(
+                            new OpenLayers.Projection(projcode),
+                            myMap.getProjectionObject()
+                        );                        
+                        if(getProjection() == "4326"){
+                            vert = "{x: " + geom.getVertices()[0].x +", y:" + geom.getVertices()[0].y + "}";
+                            return vert;
+                        }else{
+                            var checkWrapDateLine = repro_geom.getVertices()[0].x * (-1);
+                            var getVerticesX = geom.getVertices()[0].x == 180 ? checkWrapDateLine : repro_geom.getVertices()[0].x;
+                            vert = "{x: " + getVerticesX +", y:" + repro_geom.getVertices()[0].y + "}";
+                            //vert = "{x: " + repro_geom.getVertices()[0].x +", y:" + repro_geom.getVertices()[0].y + "}";
+                            return vert;
+                        }                      
+					},
+                    /**
+                     * Returns Validity String
+                     * "validityFrom - validityTo" or "from validityFrom"
+                     * 
+                     */
+                    getValidity: function(values, firstOnly){
+						if(firstOnly === true){
+							return values.validityPeriodFrom ? values.validityPeriodFrom : "Not Found";
+						}else{
+							if(values.validityPeriodFrom){
+								if(values.validityPeriodTo && values.validityPeriodTo != 9999){
+									return values.validityPeriodFrom + " - " + values.validityPeriodTo;
+								}else{
+									return "from "+ values.validityPeriodFrom;
+								}
+							}else{
+								return("Not Found");
+							}
+						}
+                    },
+                    /**
+                     * Returns the link to the factsheet
+                     */
+                    getFactsheetUrl: function(values){
+
+                        if(values.factsheetUrl){
+                            return(values.factsheetUrl);
+                        }else
+                        {
+                            return("fishery/vme/10/en");
+                        }
+                    },
+					/**
+					 * Download all vme areas
+					 */
+					getDownloadLink: function(values){
+						return VMEData.utils.generateDownloadLink(
+							FigisMap.rnd.vars.ows,
+							FigisMap.fifao.vme_oa,
+							VMEData.utils.generateVMEFilter(values.vme_id),
+							"shape-zip",
+							{format_options:"filename:VME-DB_"+values.vme_id+".zip"}
+						);
+						//return +"?service=WFS&version=1.0.0&request=GetFeature&typeName=" + FigisMap.fifao.vme+ "&outputFormat=shape-zip" +
+						//	"&cql_filter=" + encodeURIComponent( "YEAR = '" + values.year + "' AND VME_ID = '" +values.vme_id +"'" )
+							
+					},
+					/**
+					 * Download all vme areas + encoutners & sd for this vme
+					 */
+					getDownloadFDS:function(values){
+						/*if(!FigisMap.rnd.status.logged){
+							return "";
+						}*/
+						var filter = VMEData.utils.generateVMEFilter(values.vme_id);
+						filter =filter +";"+ filter + ";" + filter;
+						return '<a class="zipmlink" target="_blank" href="'+
+							VMEData.utils.generateDownloadLink(
+								FigisMap.rnd.vars.ows,
+                                //Remove encounters and ...
+								//[FigisMap.fifao.vme,FigisMap.fifao.vme_en,FigisMap.fifao.vme_sd],
+                                [FigisMap.fifao.vme_oa],
+								filter,
+								"shape-zip",
+								{format_options:"filename:VME-DB_"+values.vme_id+"_DS.zip"}
+							)
+							+'">Download full Data Set</a>' ;
+					},
+					addProtectedLinks: function(values){
+						/*if(!FigisMap.rnd.status.logged){
+							return "";
+						}*/
+						return  '<a class="rellink" onClick=\'Ext.MessageBox.show({title: "Info",msg: "Related Encounters and Survey Data not implemented yet",buttons: Ext.Msg.OK,icon: Ext.MessageBox.INFO,scope: this}); \'>Related</a>';
+					}
+				}
+			),            
+		encounters :
+			new Ext.XTemplate(
+				'<tpl for=".">'+
+					'<div class="search-result" style="text-align:left;">' +						
+						'<em>Taxa: </em><span>{taxa}</span> <br/> '+
+						'<em>Reporting Year: </em>{year}<br/> '+
+						'<em>Quantity: </em><span>{quantity} {unit}</span> <br/> '+
+						'<em>Vme ID:</em><span class="own"> {vme_id}</span><br/>'+
+						'<em>Management Body/Authority: </em><span class="own">{owner}</span><br/>'+
+						'<em>Geographical reference: </em><span class="geo_ref" >{geo_ref}</span> <br/>'+
+						'<br/>'+
+						
+						'<div style="text-align:right;">' +
+							'<a class="" target="_blank" href="{[this.getDownloadLink(values)]}"><img title="Download as shapefile" src="assets/figis/vme/img/icons/download.png"></a>' +
+							'<a class="" onClick="'+
+								'myMap.zoomToExtent(OpenLayers.Bounds.fromString( \'{[this.getBBOX(values)]}\'));'+
+								'FigisMap.ol.emulatePopupFromVert({[this.getVert(values.geometry)]})'+
+							'"><img title="Zoom to area" src="assets/figis/vme/img/icons/buttonzoom.png"></a>' +
+						
+						'</div>'+
+					'</div>'+
+				'</tpl>',
+				{
+					compiled:true,
+					getBBOX:function(values){
+						var projcode = "EPSG:4326";
+						if(myMap.getProjection() == projcode ){
+							bbox = values.bbox;
+							return bbox.toArray(); 
+						}else{
+							var geom = values.geometry;
+							var repro_geom = geom.clone().transform(
+							new OpenLayers.Projection(projcode),
+							myMap.getProjectionObject()
+						);
+						
+						var repro_bbox = repro_geom.getBounds();
+						return repro_bbox.toArray();
+						
+						}
+					},
+					getVert: function(geom){
+						vert  = geom.getVertices()[0];
+						
+						return "{x:"+vert.x+",y:"+vert.y+"}";
+						//return evt;
+					},
+					/**
+					 * Downloads the single point
+					 */
+					getDownloadLink: function(values){
+						return VMEData.utils.generateDownloadLink(
+							FigisMap.rnd.vars.ows,
+							FigisMap.fifao.vme_en,
+							VMEData.utils.generateFidFilter(values.id),
+							"shape-zip",
+							{format_options:"filename:VME-DB_ENC_"+values.vme_id+"_SP.zip"}
+						);
+						//return +"?service=WFS&version=1.0.0&request=GetFeature&typeName=" + FigisMap.fifao.vme+ "&outputFormat=shape-zip" +
+						//	"&cql_filter=" + encodeURIComponent( "YEAR = '" + values.year + "' AND VME_ID = '" +values.vme_id +"'" )
+							
+					},
+					/**
+					 * Download all points for this vme
+					 */
+					getDownloadFDS:function(values){
+						/*if(!FigisMap.rnd.status.logged){
+							return "";
+						}*/
+						
+						return '<a class="zipmlink" target="_blank" href="'+
+							VMEData.utils.generateDownloadLink(
+								FigisMap.rnd.vars.ows,
+								FigisMap.fifao.vme_en,
+								VMEData.utils.generateVMEFilter(values.vme_id),
+								"shape-zip",
+								{format_options:"filename:VME-DB_ENC_"+values.vme_id+".zip"}
+							)
+							+'">Download full Data Set</a>' ;
+					}
+				}
+			),
+		surveydata :
+			new Ext.XTemplate(
+				'<tpl for=".">'+
+					'<div class="search-result"  style="text-align:left;">' +						
+						'<em>Taxa: </em><span>{taxa}</span> <br/> '+
+						'<em>Reporting Year: </em>{year}<br/> '+
+						'<em>Quantity: </em><span>{quantity} {unit}</span> <br/> '+
+						'<em>Vme ID:</em><span class="own"> {vme_id}</span><br/>'+
+						'<em>Management Body/Authority: </em><span class="own">{owner}</span><br/>'+
+						'<em>Geographical reference: </em><span class="geo_ref" >{geo_ref}</span> <br/>'+
+						'<br/>'+
+						
+						'<div style="text-align:right;">' +
+							'<a class="" target="_blank" href="{[this.getDownloadLink(values)]}"><img title="Download as shapefile" src="assets/figis/vme/img/icons/download.png"></a>' +
+							'<a class="" onClick="'+
+								'myMap.zoomToExtent(OpenLayers.Bounds.fromString( \'{[this.getBBOX(values)]}\'));'+
+								'FigisMap.ol.emulatePopupFromVert({[this.getVert(values.geometry)]})'+
+							'"><img title="Zoom to area" src="assets/figis/vme/img/icons/buttonzoom.png"></a>' +
+						'</div>'+
+					'</div>'+
+				'</tpl>',
+				{
+					compiled:true,
+					getBBOX:function(values){
+						var projcode = "EPSG:4326";
+						if(myMap.getProjection() == projcode ){
+							bbox = values.bbox;
+							return bbox.toArray(); 
+						}else{
+							var geom = values.geometry;
+							var repro_geom = geom.clone().transform(
+							new OpenLayers.Projection(projcode),
+							myMap.getProjectionObject()
+						);
+						
+						var repro_bbox = repro_geom.getBounds();
+						return repro_bbox.toArray();
+						
+						}
+					},
+					getVert: function(geom){
+						vert  = geom.getVertices()[0];
+						
+						return "{x:"+vert.x+",y:"+vert.y+"}";
+						//return evt;
+					},
+					/**
+					 * Downloads the single point
+					 */
+					getDownloadLink: function(values){
+						return VMEData.utils.generateDownloadLink(
+							FigisMap.rnd.vars.ows,
+							FigisMap.fifao.vme_sd,
+							VMEData.utils.generateFidFilter(values.id),
+							"shape-zip",
+							{format_options:"filename:VME-DB_SD_"+values.vme_id+"_SP.zip"}
+						);
+						//return +"?service=WFS&version=1.0.0&request=GetFeature&typeName=" + FigisMap.fifao.vme+ "&outputFormat=shape-zip" +
+						//	"&cql_filter=" + encodeURIComponent( "YEAR = '" + values.year + "' AND VME_ID = '" +values.vme_id +"'" )
+							
+					},
+					/**
+					 * Download all points for this vme
+					 */
+					getDownloadFDS:function(values){
+						/*if(!FigisMap.rnd.status.logged){
+							return "";
+						}*/
+						
+						return '<a class="zipmlink" target="_blank" href="'+
+							VMEData.utils.generateDownloadLink(
+								FigisMap.rnd.vars.ows,
+								FigisMap.fifao.vme_sd,
+								VMEData.utils.generateVMEFilter(values.vme_id),
+								"shape-zip",
+								{format_options:"filename:VME-DB_SD_"+values.vme_id+".zip"}
+							)
+							+'">Download full Data Set</a>' ;
+					}
+				}
+			),
+		aggregate :
+			new Ext.XTemplate(
+				'<tpl for=".">'+
+					'<div class="search-result" style="text-align:left">' +
+						'<em>Count: </em>{count}<br/>'+
+						'<em>Year: </em> <span class="status" >{year}</span><br/>' +
+						//'<em>Competent Authority: </em> <span class="status" >{owner}</span><br/>' +
+						'<em>Management Body/Authority: </em><span class="own">{owner}</span><br/>'+
+						'<em>Geographical reference: </em><span class="geo_ref" >{geo_ref}</span> <br/>'+
+					'</div>'+
+				'</tpl>',
+				{
+					compiled:true
+					
+				}
+			),
+		footprints :
+			new Ext.XTemplate(
+				'<tpl for=".">'+
+					'<div class="popup-result" style="text-align:left;">' +
+						'<h3>{localname}</h3>'+
+						'<em>Year: </em>{year}<br/> '+
+						'<em>Management Body/Authority: </em><span class="own">{owner}</span><br/>'+
+						'<em>Geographical reference: </em><span class="geo_ref" >{geo_ref}</span> <br/>'+
+                        '<em>Surface: </em><span>{[VMEData.utils.surfaceUoMConverter(values , "skm")]}</span><span> km&#178;</span> <br/> '+                         
+						//'<br/><br/>'+
+                        '<br/>' +
+						'<div>'+
+						'<div style="text-align:right;float:right;">' +
+							'<a class="" target="_blank" href="{[this.getDownloadLink(values)]}"><img title="Download as shapefile" src="assets/figis/vme/img/icons/download.png"></a>' +
+							'<a class="" onClick="'+
+								'myMap.zoomToExtent(OpenLayers.Bounds.fromString( \'{[this.getBBOX(values)]}\'));'+
+                                //'FigisMap.ol.refreshFilters(\'{owner}\');'+   
+                                //'setRFBCheckBoxValue(\'{owner}\');'+
+								'FigisMap.ol.emulatePopupFromVert({[this.getVert(values.geometry)]})'+
+							'"><img title="Zoom to area" src="assets/figis/vme/img/icons/buttonzoom.png"></a>' +
+						'</div>'+
+						'<div style="text-align:left;">' +
+							'<u><a href="javascript:void(0);" onClick="FigisMap.infoSourceLayers(\'{[this.getFactsheet(values)]}\',true);" >Access the Regional Factsheet</a></u>' +
+                        '</div>'+                         
+						'</div>'+
+					'</div>'+
+				'</tpl>',
+				{
+					compiled:true,           
+                    getFactsheet: function(values){
+                        return VMESearch.factsheetUrl[values.owner];
+                    },                                    
+					getBBOX:function(values){
+                        if (values.bbox.left == -180)
+                            values.bbox.left = 180
+						var projcode = "EPSG:4326";
+						if(myMap.getProjection() == projcode ){
+							bbox = values.bbox;
+							return bbox.toArray(); 
+						}else{
+							var geom = values.bbox;
+							var repro_geom = geom.clone().transform(
+                                new OpenLayers.Projection(projcode),
+                                myMap.getProjectionObject()
+                            );
+						
+                            //var repro_bbox = repro_geom.getBounds();
+                            return repro_geom.toArray();
+						
+						}
+					},
+					getVert: function(geom){
+                        var vert = {};
+                        var projcode = "EPSG:4326";
+                        var repro_geom = geom.clone().transform(
+                            new OpenLayers.Projection(projcode),
+                            myMap.getProjectionObject()
+                        );                        
+                        if(getProjection() == "4326"){
+                            vert = "{x: " + geom.getVertices()[0].x +", y:" + geom.getVertices()[0].y + "}";
+                            return vert;
+                        }else{
+                            var checkWrapDateLine = repro_geom.getVertices()[0].x * (-1);
+                            var getVerticesX = geom.getVertices()[0].x == 180 ? checkWrapDateLine : repro_geom.getVertices()[0].x;
+                            vert = "{x: " + getVerticesX +", y:" + repro_geom.getVertices()[0].y + "}";
+                            //vert = "{x: " + repro_geom.getVertices()[0].x +", y:" + repro_geom.getVertices()[0].y + "}";
+                            return vert;
+                        }                      
+					},
+					getDownloadLink: function(values){
+						return VMEData.utils.generateDownloadLink(
+							FigisMap.rnd.vars.ows,
+							FigisMap.fifao.vme_bfa,
+							VMEData.utils.generateVMEFilter([values.vme_id]),
+							"shape-zip"
+						);
+					}					
+				}
+			),
+		regarea :
+			new Ext.XTemplate(
+				'<tpl for=".">'+
+					'<div class="popup-result" style="text-align:left;">' +
+						'<h3>Name: {rfb}</h3>'+
+						//'<em>NAME: </em>{rfb}<br/> '+
+						//'<em>AREATYPE: </em><span class="own">{area_type}</span><br/>'+
+						'<em>Perimeter: </em><span class="geo_ref" >{SHAPE_LENG}</span> <br/>'+
+                        '<em>Area: </em><span class="geo_ref" >{SHAPE_AREA}</span> <br/>'+
+						//'<br/><br/>'+
+						
+						'<div>'+
+						'<div style="text-align:right;">' +
+							//'<a class="" target="_blank" href="{[this.getDownloadLink(values)]}"><img title="Download as shapefile" src="assets/figis/vme/img/icons/download.png"></a>' +
+							//'<a class="" onClick="'+
+							//	'myMap.zoomToExtent(OpenLayers.Bounds.fromString( \'{[this.getBBOX(values)]}\'));'+
+                            //    'FigisMap.ol.refreshFilters(\'{owner_acronym}\');'+   
+							//	'FigisMap.ol.emulatePopupFromVert({[this.getVert(values.geometry)]})'+
+							//'"><img title="Zoom to area" src="assets/figis/vme/img/icons/buttonzoom.png"></a>' +
+                            //'&nbsp;&nbsp;<a href="javascript:void(0);" onClick="FigisMap.factsheetRel(\'{[this.getFactsheetUrl(values)]}\');"><img title="View fact sheet" src="assets/figis/vme/img/icons/buttonfactsheet.png" /></a>' +                            
+                            '&nbsp;&nbsp;<a href="javascript:void(0);" onClick="alert(\'{rfb}\');"><img title="View fact sheet" src="assets/figis/vme/img/icons/buttonfactsheet.png" /></a>' +                            
+						'</div>'+                          
+						'</div>'+
+					'</div>'+
+				'</tpl>',
+				{
+					compiled:true,               
+					getBBOX:function(values){
+						var projcode = "EPSG:4326";
+						if(myMap.getProjection() == projcode ){
+							bbox = values.bbox;
+							return bbox.toArray(); 
+						}else{
+							var geom = values.geometry;
+							var repro_geom = geom.clone().transform(
+							new OpenLayers.Projection(projcode),
+							myMap.getProjectionObject()
+						);
+						
+						var repro_bbox = repro_geom.getBounds();
+						return repro_bbox.toArray();
+						
+						}
+					},
+					getVert: function(geom){
+						vert  = geom.getVertices()[0];
+						
+						return "{x:"+vert.x+",y:"+vert.y+"}";
+						//return evt;
+					},
+					getDownloadLink: function(values){
+						return VMEData.utils.generateDownloadLink(
+							FigisMap.rnd.vars.ows,
+							FigisMap.fifao.vme_bfa,
+							VMEData.utils.generateVMEFilter([values.vme_id]),
+							"shape-zip"
+						);
+					},
+                    /**
+                     * Returns the link to the factsheet
+                     */
+                    getFactsheetUrl: function(values){
+
+                        if(values.factsheetUrl){
+                            return(values.factsheetUrl);
+                        }else
+                        {
+                            return("fishery/vme/10/en");
+                        }
+                    }					
+				}
+			)
+	};
+
+VMEData.constants = { pageSize:8 }
+
+
+/**
+ * Models: base tipes for Vme for Extjs Stores 
+ *
+ */
+VMEData.models = {
+	//rfmos : [['CCAMLR','CCAMLR'],['NAFO','NAFO'],['NEAFC','NEAFC']],
+	//rfmosUrl : "http://figisapps.fao.org/figis/ws/vme/webservice/references/authority/en/list",
+	rfmosUrl : FigisMap.geoServerBase + "/figis/ws/vme/webservice/references/authority/en/list",
+	/*
+	areaTypes : [
+		[1, FigisMap.label('VME_TYPE_VME')],
+		[2, FigisMap.label('VME_TYPE_RISK')],
+		[3, FigisMap.label('VME_TYPE_BPA')],
+		[4, FigisMap.label('VME_TYPE_CLOSED')],
+		[5, FigisMap.label('VME_TYPE_OTHER')]
+	],
+	*/
+    //areaTypesUrl : "http://figisapps.fao.org/figis/ws/vme/webservice/references/type/en/list",
+    areaTypesUrl : FigisMap.geoServerBase + "/figis/ws/vme/webservice/references/type/en/list",
+	/*
+	VmeStatuses:[ 
+		[1, FigisMap.label("VME_STATUS_ENS")],
+		[2, FigisMap.label("VME_STATUS_UNDEST")],
+		[3, FigisMap.label("VME_STATUS_RSK")],
+		[4, FigisMap.label("VME_STATUS_VOL")],
+		[5, FigisMap.label("VME_STATUS_EXP")],
+		[6, FigisMap.label("VME_STATUS_POT")],
+		[7, FigisMap.label("VME_STATUS_TEMP")]
+		
+	],
+	*/
+    //VmeStatusesUrl : "http://figisapps.fao.org/figis/ws/vme/webservice/references/authority/en/list",
+    VmeStatusesUrl : FigisMap.geoServerBase + "/figis/ws/vme/webservice/references/authority/en/list",
+    //) : "http://figisapps.fao.org/figis/ws/vme/webservice/references/authority/en/list",
+	/*
+	VmeCriteria:[ 
+		[0, FigisMap.label("VME_CRITERIA_UNIQUE")],
+		[1, FigisMap.label("VME_CRITERIA_FUNCT")],
+		[2, FigisMap.label("VME_CRITERIA_FRAG")],
+		[3, FigisMap.label("VME_CRITERIA_LIFE")],
+		[4, FigisMap.label("VME_CRITERIA_STRUCT")],
+		[5, FigisMap.label("VME_CRITERIA_NOTS")]
+	],
+	*/
+    //VmeCriteriaUrl :"http://figisapps.fao.org/figis/ws/vme/webservice/references/criteria/en/list",
+    VmeCriteriaUrl :FigisMap.geoServerBase + "/figis/ws/vme/webservice/references/criteria/en/list",
+	
+	//years : (function(){var currentTime = new Date();var now=currentTime.getFullYear();var year=2000;var ret=[];while(year<=now){ret.push([now]);now--;}return ret;})(),
+    //yearsUrl :"http://figisapps.fao.org/figis/ws/vme/webservice/references/years/en/list",
+    yearsUrl :FigisMap.geoServerBase + "/figis/ws/vme/webservice/references/years/en/list",
+	
+    //searchUrl: "http://figisapps.fao.org/figis/ws/vme/webservice/search", // see options parameter for Ext.Ajax.request
+    searchUrl: FigisMap.geoServerBase + "/figis/ws/vme/webservice/search" // see options parameter for Ext.Ajax.request
+    
+    //factsheetCCAMLR : "http://figisapps.fao.org/figis/ws/vme/webservice/owner/CCAMLR/scope/Regulatory/vmes",
+    /*factsheetCCAMLR : FigisMap.geoServerBase + "/figis/ws/vme/webservice/owner/CCAMLR/scope/Regulatory/vmes",
+    
+    //factsheetGFCM   : "http://figisapps.fao.org/figis/ws/vme/webservice/owner/GFCM/scope/Regulatory/vmes",
+    factsheetGFCM   : FigisMap.geoServerBase + "/figis/ws/vme/webservice/owner/GFCM/scope/Regulatory/vmes",
+    
+    //factsheetNAFO   : "http://figisapps.fao.org/figis/ws/vme/webservice/owner/NAFO/scope/Regulatory/vmes",
+    factsheetNAFO   : FigisMap.geoServerBase + "/figis/ws/vme/webservice/owner/NAFO/scope/Regulatory/vmes",
+    
+    //factsheetNEAFC  : "http://figisapps.fao.org/figis/ws/vme/webservice/owner/NEAFC/scope/Regulatory/vmes",
+    factsheetNEAFC  : FigisMap.geoServerBase + "/figis/ws/vme/webservice/owner/NEAFC/scope/Regulatory/vmes",
+    
+    //factsheetSEAFO  : "http://figisapps.fao.org/figis/ws/vme/webservice/owner/SEAFO/scope/Regulatory/vmes",
+    factsheetSEAFO  : FigisMap.geoServerBase + "/figis/ws/vme/webservice/owner/SEAFO/scope/Regulatory/vmes",
+    
+    //factsheetWECAFC : "http://figisapps.fao.org/figis/ws/vme/webservice/owner/WECAFC/scope/Regulatory/vmes",
+    factsheetWECAFC : FigisMap.geoServerBase + "/figis/ws/vme/webservice/owner/WECAFC/scope/Regulatory/vmes",
+    
+    //factsheetSPRFMO : "http://figisapps.fao.org/figis/ws/vme/webservice/owner/SPRFMO/scope/Regulatory/vmes"
+    factsheetSPRFMO : FigisMap.geoServerBase + "/figis/ws/vme/webservice/owner/SPRFMO/scope/Regulatory/vmes",
+    
+    //factsheetNPFC : "http://figisapps.fao.org/figis/ws/vme/webservice/owner/NPFC/scope/Regulatory/vmes"
+    factsheetNPFC : FigisMap.geoServerBase + "/figis/ws/vme/webservice/owner/NPFC/scope/Regulatory/vmes"*/    
+};
+
+VMEData.extensions = {
+	FeatureInfo:{
+		VmeStore : Ext.extend(Ext.data.JsonStore,{
+			reader : new Ext.data.JsonReader({
+				root:'',
+				fields: [
+					{name: 'id', mapping: 'fid'},
+					{name: 'geometry', mapping: 'geometry'},
+                    {name: 'vme_id',     mapping: 'attributes.VME_ID'},
+					{name: 'status', 	 mapping: 'attributes.STATUS'},
+                    {name: 'year', mapping: 'attributes.year'},
+                    {name: 'feature_year', mapping: 'attributes.YEAR'},
+                    {name: 'VME_AREA_TIME', mapping: 'attributes.VME_AREA_TIME'},
+                    {name: 'SHAPE_AREA', mapping:'attributes.SHAPE_AREA'},
+                    {name: 'envelope', mapping: 'attributes.envelope'},
+					{name: 'localname',  mapping: 'attributes.localName'},
+					{name: 'factsheetUrl',  mapping: 'attributes.factsheetURL'},
+                    {name: 'pdfURL',  mapping: 'attributes.pdfURL'},
+					{name: 'bbox',		mapping: 'bounds'},
+					{name: 'vmeType', mapping: 'attributes.vmeType'},
+					{name: 'owner', mapping: 'attributes.owner'},
+                    {name: 'owner_acronym', mapping: 'attributes.OWNER'},
+                    {name: 'validityPeriodFrom', mapping: 'attributes.validityPeriodStart'},
+					{name: 'validityPeriodTo', mapping: 'attributes.validityPeriodEnd'},
+					{name: 'geo_ref', mapping: 'attributes.geoArea'},
+                    {name: 'feature_geo_ref', mapping: 'attributes.GEOREF'},
+                    {name: 'feature_localname',  mapping: 'attributes.LOCAL_NAME'},
+                    {name: 'reviewYear',  mapping: 'attributes.reviewYear'},
+                    {name: 'surface', mapping: 'attributes.SURFACE'},
+                    {name: 'measure', mapping: 'attributes.measure'}
+                    
+					/*{name: 'id', mapping: 'fid'},
+					{name: 'geometry', mapping: 'geometry'},
+                    {name: 'vme_id',     mapping: 'attributes.VME_ID'},
+					{name: 'status', 	 mapping: 'attributes.STATUS'},
+                    {name: 'year', mapping: 'attributes.year'},
+                    {name: 'VME_AREA_TIME', mapping: 'attributes.VME_AREA_TIME'},
+                    {name: 'SHAPE_AREA', mapping:'attributes.SHAPE_AREA'},
+                    {name: 'envelope', mapping: 'attributes.envelope'},
+					{name: 'localname',  mapping: 'attributes.localName'},
+					{name: 'factsheetUrl',  mapping: 'attributes.factsheetUrl'},
+					{name: 'bbox',		mapping: 'bounds'},
+					{name: 'vmeType', mapping: 'attributes.vmeType'},
+					{name: 'owner', mapping: 'attributes.owner'},
+                    {name: 'owner_acronym', mapping: 'attributes.OWNER'},
+                    {name: 'validityPeriodFrom', mapping: 'attributes.validityPeriodFrom'},
+					{name: 'validityPeriodTo', mapping: 'attributes.validityPeriodTo'},
+					{name: 'geo_ref', mapping: 'attributes.geoArea'},
+                    {name: 'surface', mapping: 'attributes.SURFACE'}*/
+				],
+				idProperty: 'fid'			
+			})
+		}),
+        
+		RfbStore : Ext.extend(Ext.data.JsonStore,{
+			reader : new Ext.data.JsonReader({
+				root:'',
+				fields: [
+					{name: 'id', mapping: 'fid'},
+					{name: 'geometry', mapping: 'geometry'},
+                    {name: 'rfb',     mapping: 'attributes.RFB'},                    
+                    {name: 'vme_id',     mapping: 'attributes.VME_ID'},
+                    {name: 'area_type',     mapping: 'attributes.AREATYPE'},
+                    {name: 'defrule',     mapping: 'attributes.DEFRULE'},
+                    {name: 'disporder',     mapping: 'attributes.DISPORDER'},
+                    {name: 'fill',     mapping: 'attributes.FILL'},
+                    {name: 'stroke',     mapping: 'attributes.STROKE'},
+                    {name: 'ancfeature',     mapping: 'attributes.ANCFEATURE'},
+                    {name: 'SHAPE_AREA', mapping:'attributes.SHAPE_AREA'},
+                    {name: 'SHAPE_LENG', mapping:'attributes.SHAPE_LENG'}
+				],
+				idProperty: 'fid'			
+			})
+		}),        
+		
+		EncountersStore : Ext.extend(Ext.data.JsonStore,{
+			reader : new Ext.data.JsonReader({
+				root:'',		
+				fields: [
+					{name: 'id', mapping: 'fid'},
+					{name: 'geometry', mapping: 'geometry'},
+					{name: 'object_id',  mapping: 'attributes.OBJECTID'},
+					{name: 'bbox',		mapping: 'bounds'},
+					{name: 'vme_id',     mapping: 'attributes.VME_ID'},
+					{name: 'aggregation', 	 mapping: 'attributes.AGREGATION'},
+					{name: 'year', mapping: 'attributes.YEAR'},
+					{name: 'taxa', mapping: 'attributes.TAXA'},
+					{name: 'quantity', mapping: 'attributes.QUANTITY'},
+					{name: 'unit', mapping: 'attributes.UNIT'},
+					{name: 'owner', mapping: 'attributes.OWNER'},
+					{name: 'geo_ref', mapping: 'attributes.geoArea'}
+				],
+				idProperty: 'fid'			
+			})
+		}),
+		SurveyDataStore : Ext.extend(Ext.data.JsonStore,{
+			reader : new Ext.data.JsonReader({
+				root:'',
+				fields: [
+		    	{name: 'id', mapping: 'fid'},
+					{name: 'geometry', mapping: 'geometry'},
+					{name: 'object_id',  mapping: 'attributes.OBJECTID'},
+					{name: 'bbox',		mapping: 'bounds'},
+					{name: 'vme_id',     mapping: 'attributes.VME_ID'},
+					{name: 'aggregation', 	 mapping: 'attributes.AGREGATION'},
+					{name: 'year', mapping: 'attributes.YEAR'},
+					{name: 'taxa', mapping: 'attributes.TAXA'},
+					{name: 'quantity', mapping: 'attributes.QUANTITY'},
+					{name: 'unit', mapping: 'attributes.UNIT'},
+					{name: 'owner', mapping: 'attributes.OWNER'},
+					{name: 'geo_ref', mapping: 'attributes.geoArea'}					
+				],
+				idProperty: 'fid'			
+			})
+		}),
+		AggregateDataStore : Ext.extend(Ext.data.JsonStore,{
+			reader : new Ext.data.JsonReader({
+				root:'',
+				fields: [
+				    {name: 'id', mapping: 'fid'},
+					{name: 'geometry', mapping: 'geometry'},
+					{name: 'resolution',  mapping: 'attributes.RESOLUTION'},
+					{name: 'bbox',		mapping: 'bounds'},
+					{name: 'vme_id',     mapping: 'attributes.VME_ID'},
+					{name: 'count', 	 mapping: 'attributes.COUNT'},
+					{name: 'year', mapping: 'attributes.YEAR'},
+					{name: 'owner', mapping: 'attributes.OWNER'},
+					{name: 'geo_ref', mapping: 'attributes.geoArea'}					
+				],
+				idProperty: 'fid'			
+			})
+		}),
+		FootprintStore : Ext.extend(Ext.data.JsonStore,{
+			reader : new Ext.data.JsonReader({
+				root:'',
+				fields: [
+					{name: 'id', mapping: 'fid'},
+					{name: 'geometry', mapping: 'geometry'},
+					{name: 'localname',  mapping: 'attributes.LOCAL_NAME'},
+					{name: 'bbox',		mapping: 'bounds'},
+					{name: 'vme_id',     mapping: 'attributes.VME_ID'},
+					{name: 'status', 	 mapping: 'attributes.STATUS'},
+					{name: 'year', mapping: 'attributes.YEAR'},
+					{name: 'type', mapping: 'attributes.VME_TYPE'},
+					{name: 'owner', mapping: 'attributes.OWNER'},
+					{name: 'obj_id', mapping: 'attributes.OBJECTID'},
+					{name: 'geo_ref', mapping: 'attributes.GEOREF'},
+                    {name: 'surface', mapping: 'attributes.SURFACE'}					
+				],
+				idProperty: 'fid'			
+			})
+		})	
+	},
+	WFS:{
+		/**
+		 * VMEData.extensions.WFS.WFSStore: WFS generic store 
+		 * you can replace fields to get the needed properties
+		 * (e.g. {name:'myprop',mapping: 'properties.myprop'
+		 * properties:
+		 * * typeName - the featureType  
+		 *
+		 */
+		WFSStore : Ext.extend(Ext.ux.LazyJsonStore,{
+			//combo:this,
+			
+			typeName: FigisMap.fifao.vme_cl,
+			reader: new Ext.data.JsonReader({
+				root:'features',
+				idProperty:'id', 
+				fields: [
+					{name: 'id', mapping: 'id'},
+					{name: 'geometry', mapping: 'geometry'},
+					{name: 'properties',  mapping: 'properties'},
+					{name: 'type',		mapping: 'type'}
+				]
+			}),
+			messageProperty: 'crs',
+			autoLoad: true,
+			
+			
+			proxy : new Ext.data.HttpProxy({
+				method: 'GET',
+				url: FigisMap.rnd.vars.ows
+
+			}),
+			
+			recordId: 'id',
+			paramNames:{
+				start: "startindex",
+				limit: "maxfeatures",
+				sort: "sortBy"
+			},
+			
+			baseParams:{
+				service:'WFS',
+				version:'1.0.0',
+				request:'GetFeature',
+				outputFormat:'json',
+				srs:'EPSG:4326'
+			},
+			listeners:{
+				beforeload: function(store,options){
+					if(!options.typeName){
+						store.setBaseParam( 'typeName',store.typeName);
+						
+					}
+				}
+			}
+		})
+	}
+};
+/*
+//Warning!!! this is OL2 old code
+//get georeferences
+var MarineAreas = new VMEData.extensions.WFS.WFSStore({typeName:'fifao:oceans_'});
+MarineAreas.load({
+	callback:function(records,options,success){
+		var georeferences = {};
+		var GeoJsonFormat = new OpenLayers.Format.GeoJSON();
+		records= this.reader.jsonData.features;
+		for (var i=0; i<records.length; i++){
+			var selectedRecord = records[i]; 
+			var geoJsonGeom= selectedRecord["geometry"];
+			var geom = GeoJsonFormat.read(geoJsonGeom, "Geometry");
+			var name = selectedRecord["properties"].AREA_N;
+			georeferences[name] = {
+				zoomExtent:geom.getBounds().toBBOX()
+			};
+			
+		}
+		console.log (JSON.stringify(georeferences));
+	}
+});
+*/
+/**
+ * Stores for data for Vme components
+ */
+VMEData.stores = {
+	rfmoStore:  new Ext.data.JsonStore({
+        //mode: "local",
+        url: VMEData.models.rfmosUrl,
+        autoLoad: true,
+        remoteSort: false,
+        idProperty: 'id',        
+        root: 'resultList',
+        fields: [ "id", "name", "acronym" ]// "lang"
+        //sortInfo: {field: "name", direction: "ASC"}             
+    }),
+
+	areaTypeStore: new Ext.data.JsonStore({
+        url: VMEData.models.areaTypesUrl,
+        autoLoad: true,
+        remoteSort: false,
+        root: 'resultList',
+        fields: [ "id", {name:"displayText", mapping:"name"} ] // "lang"
+    }),
+    
+	VmeStatusStore: new Ext.data.ArrayStore({
+        id: 0,
+        fields: [
+            'id',
+            'displayText'
+        ],
+		data: VMEData.models.VmeStatuses
+
+    }),
+    
+	VmeCriteriaStore: new Ext.data.JsonStore({
+        url: VMEData.models.VmeCriteriaUrl,
+        autoLoad: true,
+        remoteSort: false,
+        root: 'resultList',
+        fields: [ "id", {name:"displayText", mapping:"name"} ] // "lang"
+    }),
+
+	yearStore: new Ext.data.JsonStore({
+        url: VMEData.models.yearsUrl,
+        autoLoad: true,
+        remoteSort: false,
+        root: 'resultList',
+        fields: [ "id", {name:"year", mapping:"name"} ] // "lang"
+    }),
+    
+    // LIST OF RFB FACTSHEET URL
+    
+    /*rfbStoreCCAMLR: new Ext.data.JsonStore({
+        url: VMEData.models.factsheetCCAMLR,
+        autoLoad: false,
+        remoteSort: false,
+        root: 'vmeDto',                      
+        fields: ['vmeId',{name: "factsheetUrl", mapping: "factsheetUrl"}]          
+    }),
+    
+    rfbStoreGFCM: new Ext.data.JsonStore({
+        url: VMEData.models.factsheetGFCM,
+        autoLoad: false,
+        remoteSort: false,
+        root: 'vmeDto',                      
+        fields: ['vmeId',{name: "factsheetUrl", mapping: "factsheetUrl"}]          
+    }),
+
+    rfbStoreNAFO: new Ext.data.JsonStore({
+        url: VMEData.models.factsheetNAFO,
+        autoLoad: false,
+        remoteSort: false,
+        root: 'vmeDto',                      
+        fields: ['vmeId',{name: "factsheetUrl", mapping: "factsheetUrl"}]          
+    }),
+
+    rfbStoreNEAFC: new Ext.data.JsonStore({
+        url: VMEData.models.factsheetNEAFC,
+        autoLoad: false,
+        remoteSort: false,
+        root: 'vmeDto',                      
+        fields: ['vmeId',{name: "factsheetUrl", mapping: "factsheetUrl"}]          
+    }),
+
+    rfbStoreSEAFO: new Ext.data.JsonStore({
+        url: VMEData.models.factsheetSEAFO,
+        autoLoad: false,
+        remoteSort: false,
+        root: 'vmeDto',                      
+        fields: ['vmeId',{name: "factsheetUrl", mapping: "factsheetUrl"}]          
+    }),
+
+    rfbStoreWECAFC: new Ext.data.JsonStore({
+        url: VMEData.models.factsheetWECAFC,
+        autoLoad: false,
+        remoteSort: false,
+        root: 'vmeDto',                      
+        fields: ['vmeId',{name: "factsheetUrl", mapping: "factsheetUrl"}]          
+    }),
+
+    rfbStoreSPRFMO: new Ext.data.JsonStore({
+        url: VMEData.models.factsheetSPRFMO,
+        autoLoad: false,
+        remoteSort: false,
+        root: 'vmeDto',                      
+        fields: ['vmeId',{name: "factsheetUrl", mapping: "factsheetUrl"}]          
+    }),   
+
+    rfbStoreNPFC: new Ext.data.JsonStore({
+        url: VMEData.models.factsheetNPFC,
+        autoLoad: false,
+        remoteSort: false,
+        root: 'vmeDto',                      
+        fields: ['vmeId',{name: "factsheetUrl", mapping: "factsheetUrl"}]          
+    }),*/     
+                    
+	SearchResultStore:new Ext.ux.LazyJsonStore({
+
+		method:'GET',
+		
+		root:'resultList',
+		messageProperty: 'crs',
+		autoLoad: false,
+		fields: [
+			//{name: 'id', mapping: 'id'},
+			{name: 'localname',  mapping: 'localName'},
+			{name: 'factsheetUrl',		mapping: 'factsheetUrl'},
+			{name: 'vme_id',     mapping: 'vmeId'},
+			{name: 'year', mapping: 'year'},
+			{name: 'vmeType', mapping: 'vmeType'},
+			{name: 'owner', mapping: 'owner'},
+            {name: 'geoArea', mapping: 'geoArea'},
+            {name: 'envelope', mapping: 'envelope'},
+            {name: 'geographicFeatureId', mapping: 'geographicFeatureId'},
+            {name: 'validityPeriodFrom', mapping: 'validityPeriodFrom'},
+            {name: 'validityPeriodTo', mapping: 'validityPeriodTo'}
+			
+		],
+		
+		proxy : new Ext.data.HttpProxy({
+            timeout: 36000,
+            success: function (result) {
+            },            
+            failure: function (result) {
+                var dataView = VMESearch.form.widgets.SearchResults;
+                dataView.refresh();
+            },            
+            method: 'GET',
+            url: VMEData.models.searchUrl // see options parameter for Ext.Ajax.request
+        }),
+		
+		
+		recordId: 'fid',
+		paramNames:{
+			start: "start",
+			limit: "rows",
+			sort: "sortBy"
+		}
+	}),
+	
+	EncountersStore:new Ext.ux.LazyJsonStore({
+		//combo:this,
+		method:'GET',
+		
+		root:'features',
+		messageProperty: 'crs',
+		autoLoad: false,
+		fields: [
+			{name: 'id', mapping: 'fid'},
+			{name: 'geometry', mapping: 'geometry'},
+			{name: 'bbox',		mapping: 'properties.bbox'},
+			{name: 'vme_id',     mapping: 'properties.VME_ID'},
+			{name: 'taxa', 	 mapping: 'properties.TAXA'},
+			{name: 'QUANTITY', mapping: 'properties.QUANTITY'},
+			{name: 'unit', mapping: 'properties.UNIT'}
+
+		],
+		url: FigisMap.rnd.vars.ows,
+		recordId: 'fid',
+		paramNames:{
+			start: "startindex",
+			limit: "maxfeatures",
+			sort: "sortBy"
+		},
+		baseParams:{
+			service:'WFS',
+			version:'1.0.0',
+			request:'GetFeature',
+			typeName: 'fifao:Encounters2',
+			outputFormat:'json',
+			sortBy: 'VME_ID',
+			srs:'EPSG:4326'
+			
+		
+		},
+		listeners:{
+			beforeload: function(store){
+				
+			
+			}
+		}
+	}),
+	SurveyDataStore:new Ext.ux.LazyJsonStore({
+		//combo:this,
+		method:'GET',
+		
+		root:'features',
+		messageProperty: 'crs',
+		autoLoad: false,
+		fields: [
+			{name: 'id', mapping: 'fid'},
+			{name: 'geometry', mapping: 'geometry'},
+			{name: 'bbox',		mapping: 'properties.bbox'},
+			{name: 'vme_id',     mapping: 'properties.VME_ID'},
+			{name: 'taxa', 	 mapping: 'properties.TAXA'},
+			{name: 'QUANTITY', mapping: 'properties.QUANTITY'},
+			{name: 'unit', mapping: 'properties.UNIT'}
+
+		],
+		url: FigisMap.rnd.vars.ows,
+		recordId: 'fid',
+		paramNames:{
+			start: "startindex",
+			limit: "maxfeatures",
+			sort: "sortBy"
+		},
+		baseParams:{
+			service:'WFS',
+			version:'1.0.0',
+			request:'GetFeature',
+			typeName: 'fifao:SurveyData',
+			outputFormat:'json',
+			sortBy: 'VME_ID',
+			srs:'EPSG:4326'
+			
+		
+		},
+		listeners:{
+			beforeload: function(store){
+				
+			
+			}
+		}
+	})
+
 };
