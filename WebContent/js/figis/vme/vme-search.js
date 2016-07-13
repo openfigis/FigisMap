@@ -481,11 +481,12 @@ VMESearch.search = function(advanced){
 				VME.zoomTo(settings, repro_bbox, false, true);
 			}else{
 				VME.zoomTo(settings, repro_bbox, true, true);
-			}			
+			}
+			vmeSearch(advanced);
+			vmeLoader.hide();			
 		   
 		}
-		vmeSearch(advanced);
-		vmeLoader.hide();
+		
 		
 		vectorSource.on("change", function(e){
 			loadFeaturesCallback();
