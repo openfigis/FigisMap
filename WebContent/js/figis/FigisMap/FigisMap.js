@@ -772,13 +772,18 @@ FigisMap.ol.configureOverlayLayer = function(obj, boundsOrigin){
 /**
  * FigisMap.ol.getLayer
  * @param map
- * @param layername (layer name as in Geoserver 'namespace:layername')
+ * @param layerProperty value of the property (by default layer name as in Geoserver 'namespace:layername')
+ * @param by property name to use for searching default is false, in which case search is done by source "LAYERS" param (WMS)
  */
-FigisMap.ol.getLayer = function(map, layername){
+FigisMap.ol.getLayer = function(map, layerProperty, by){
+		
+	if(!by) byTitle = false;
+
 	var target = undefined;
 	for(var i=0;i<map.getLayerGroup().getLayersArray().length;i++){
 		var layer = map.getLayerGroup().getLayersArray()[i];
-		if(layer.getSource().getParams()["LAYERS"] === layername){
+		var condition  = by? (layer[by] === layerProperty) : (layer.getSource().getParams()["LAYERS"] === layerProperty);
+		if(condition){
 			target = map.getLayerGroup().getLayersArray()[i];
 			break;
 		}
@@ -1715,22 +1720,8 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 				showLegendGraphic: true
 			} );
 		}
-		
-		// marine areas
-		layers.push( {
-			layer		: FigisMap.fifao.lab,
-			label	: 'Oceans and sea names',
-			overlayGroup: overlayGroup,
-			cached		: true,
-			filter		: '*',
-			type		: 'auto',
-			style		: 'MarineAreasLabelled',
-			skipLegend	: true,
-			hideInSwitcher	: false,
-			showLegendGraphic: false
-		} );
 	}
-	
+
 	//continent land mask
 	//-------------------
 	if ( pars.landMask && ! layerTypes[ FigisMap.fifao.cnt ] && ! layerTypes[ FigisMap.fifao.CNT ] ) {
@@ -1747,6 +1738,25 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 			showLegendGraphic:false
 		} );
 	}
+
+	//marine labels
+	//-------------
+	if ( pars.basicsLayers ) {	
+		// marine areas
+		layers.push( {
+			layer		: FigisMap.fifao.lab,
+			label	: 'Oceans and sea names',
+			overlayGroup: overlayGroup,
+			cached		: true,
+			filter		: '*',
+			type		: 'auto',
+			style		: 'MarineAreasLabelled',
+			skipLegend	: true,
+			hideInSwitcher	: false,
+			showLegendGraphic: false
+		} );
+	}
+
 	
 	//add contextual layers if pars.contextLayers = true
 	//---------------------------------------------------

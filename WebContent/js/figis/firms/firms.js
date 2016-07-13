@@ -191,7 +191,6 @@ FV.baseMapParams.prototype.setZoom = function( z ) {
 	Gets layer Url
 */
 FV.baseMapParams.prototype.getLayerUrl = function( l ) {
-	console.log(FigisMap.rnd.vars.wfs);
 	return FigisMap.rnd.vars.wfs + 'firms:' + l + '_all_points';
 }
 

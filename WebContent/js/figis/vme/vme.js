@@ -444,14 +444,9 @@ VME.update = function(){
     FigisMap.ol.clearPopupCache(); //TODO OL3
     VME.refreshLayers(acronym);
 	
-	// //////////////////////////////
-	// Remove layer for hilighting
-	// //////////////////////////////
-	//TODO @eblondel what is that????
-	/*var hilayer = VME.myMap.getLayersByName("highlight")[0];
-	if(hilayer ){
-		VME.myMap.removeLayer(hilayer);
-	}*/
+
+	//remove highlight layer if any
+	VMESearch.resetHighlightVMELayer();
 }
 
 /** 

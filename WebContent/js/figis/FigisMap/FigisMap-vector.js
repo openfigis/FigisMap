@@ -1,4 +1,10 @@
 /**
+ * FigisMap OL3 vector module
+ * Description: Allows to configure vector source and layers, simple or clustered.
+ * Author: Emmanuel Blondel (emmanuel.blondel at fao.org)
+ */
+
+/**
  * FigisMap.rnd.configureVectorSource
  * An experimental function to configure a vector source
  * @param sourceUrl
@@ -37,14 +43,89 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 
 	if( !layer.id ) alert("Missing vector layer 'id'");
 	if( !layer.source ) alert("Missing vector layer 'source'");
-	if( !layer.title ) alert("Missing vector layer 'title'");
-	if( !layer.iconHandler ) alert("Missing vector layer 'iconHandler'");
 
 	//data access
 	var sourceFeatures = layer.source;
 
-	if( !!layer.cluster ) {
-	
+	//manage icon image caches
+	var cachedIcons = new Array();
+	var listenerKey = sourceFeatures.on('change', function(e) {
+  		if (sourceFeatures.getState() == 'ready') {
+
+			var features = sourceFeatures.getFeatures();
+			for(var i=0;i<features.length;i++){
+				var icon = layer.iconHandler(features[i]);
+				var isCached = false;
+				for(var j=0;j<cachedIcons.length;j++){
+					if(cachedIcons[j].src.endsWith(icon)){
+						isCached = true;
+						break;
+					}
+				}
+				if(!isCached){
+					var iconImage = new Image();
+					iconImage.src = icon;
+					cachedIcons.push(iconImage);
+				}
+			}
+
+    			ol.Observable.unByKey(listenerKey);
+     		}
+	});
+
+	//configure target layer (simple or clustered)
+	var targetLayer = null;
+
+	if( !layer.cluster ) {
+		//Simple Vector layer
+		//----------------------
+		targetLayer = new ol.layer.Vector({
+			id: layer.id,
+			title : layer.title,
+			source : sourceFeatures,
+			style : function(feature, resolution){
+					var styles = new Array();
+					var icons = new Array();
+					var featureIcon = (layer.iconHandler)? layer.iconHandler(feature) : null;
+					if(icons.indexOf(featureIcon) == -1 && featureIcon != null){
+
+						icons.push( featureIcon );
+						styles.push( new ol.style.Style({
+							image : new ol.style.Icon({
+								anchor : [ 0.5,1 ],
+								anchorXUnits : 'fraction',
+								anchorYUnits : 'fraction',
+								opacity : 0.75,
+								src : featureIcon
+							}),
+							text : null
+						}) );						
+					}
+
+
+					if(layer.style){
+						if(layer.style instanceof ol.style.Style) styles.push(layer.style);
+					}else{
+						//default style with same color pattern as in OL2
+						styles.push( new ol.style.Style({
+							fill: new ol.style.Fill({
+      								color: "rgba(238,153,0,0.4)" //'#ee9900' with opacity 0.4
+      							}),
+      							stroke: new ol.style.Stroke({
+        							color: '#ee9900',
+      								width: 1
+      							})
+						}) );
+					}
+					return styles;
+
+			}
+		});	
+
+
+	}else {
+		//Clustered Vector layer
+		//----------------------
 		
 		if (!layer.clusterOptions.hasOwnProperty('singlecount')) layer.clusterOptions.singlecount = true;
 
@@ -55,7 +136,7 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 		
 
 		// Animated cluster layer
-		var clusterLayer = new ol.layer.AnimatedCluster({
+		targetLayer = new ol.layer.AnimatedCluster({
 			id : layer.id,
 			title : layer.title,
 			source : clusterFeatures,
@@ -70,8 +151,9 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 
 				for(var i=0;i<features.length;i++){
 					var feature = features[i];
+				
 					var featureIcon = (layer.clusterOptions.hasOwnProperty('icon') & size > 1)? layer.clusterOptions.icon : layer.iconHandler(feature);
-					if(icons.indexOf(featureIcon) == -1){
+					if(icons.indexOf(featureIcon) == -1 && featureIcon != null){
 
 						icons.push( featureIcon );
 						styles.push( new ol.style.Style({
@@ -98,102 +180,80 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 				return styles;
 			}
 		});
-
-		//manage icon image caches
-		var cachedIcons = new Array();
-		var listenerKey = sourceFeatures.on('change', function(e) {
-  			if (sourceFeatures.getState() == 'ready') {
-
-				var features = sourceFeatures.getFeatures();
-				for(var i=0;i<features.length;i++){
-					var icon = layer.iconHandler(features[i]);
-					var isCached = false;
-					for(var j=0;j<cachedIcons.length;j++){
-						if(cachedIcons[j].src.endsWith(icon)){
-							isCached = true;
-							break;
-						}
-					}
-					if(!isCached){
-						var iconImage = new Image();
-						iconImage.src = icon;
-						cachedIcons.push(iconImage);
-					}
-				}
-
-    				ol.Observable.unByKey(listenerKey);
-     			}
-		});
-
-
-		//adding layer.id to layer object
-		clusterLayer.id = layer.id;
+	}
 		
-		//adding layer.icon to layer object (for inheriting in layerswitcher)
-		clusterLayer.legendGraphic = layer.icon;
-		clusterLayer.showLegendGraphic = layer.showLegendGraphic ? layer.showLegendGraphic : false;
+	if(targetLayer){
+	
+		//adding layer.id to layer object
+		targetLayer.id = layer.id;
+			
+		//adding layer legendGraphic params to layer object (for inheriting in layerswitcher)
+		targetLayer.legendGraphic = layer.icon;
+		targetLayer.showLegendGraphic = layer.showLegendGraphic ? layer.showLegendGraphic : false;
 
+		//add layer
 		if ( overlays ) {
-			overlays.getLayers().push(clusterLayer);
+			overlays.getLayers().push(targetLayer);
 		} else {
-			map.addLayer(clusterLayer);
+			map.addLayer(targetLayer);
 		}
 
-		// Select interaction to spread cluster out and select features
-		var selectCluster = new ol.interaction.SelectCluster({
-			pointRadius : 15,
-			radiusFactor: 1.3,
-			spiral : true,
-			circleMaxObjects : 10,
-			animate : layer.clusterOptions.animate ? layer.clusterOptions.animate : false,
-			// Feature style when it springs apart
-			featureStyle : function(feature, resolution){
+		//in case of cluster, add SelectCluster interaction
+		if(!!layer.cluster){
 
-				var features = feature.get('features');
-				var feat = undefined;
-				if(features) feat = features[0];
+			// Select interaction to spread cluster out and select features
+			var selectCluster = new ol.interaction.SelectCluster({
+				pointRadius : 15,
+				radiusFactor: 1.3,
+				spiral : true,
+				circleMaxObjects : 10,
+				animate : layer.clusterOptions.animate ? layer.clusterOptions.animate : false,
+				// Feature style when it springs apart
+				featureStyle : function(feature, resolution){
 
-				var fill = new ol.style.Fill({
-					color: 'rgba(255,255,255,0.4)'
- 				});
-				var stroke = new ol.style.Stroke({
-					color: '#3399CC',
-					width: 1.6
-				});
+					var features = feature.get('features');
+					var feat = undefined;
+					if(features) feat = features[0];
 
-				//use directly cached image
-				var iconImg = null;
-				for(var i=0;i<cachedIcons.length;i++){
-					if(cachedIcons[i].src.endsWith(layer.iconHandler(feat))){
-						iconImg = cachedIcons[i];
-						break;				
-					}				
+					var fill = new ol.style.Fill({
+						color: 'rgba(255,255,255,0.4)'
+					});
+					var stroke = new ol.style.Stroke({
+						color: '#3399CC',
+						width: 1.6
+					});
+
+					//use directly cached image
+					var iconImg = null;
+					for(var i=0;i<cachedIcons.length;i++){
+						if(cachedIcons[i].src.endsWith(layer.iconHandler(feat))){
+							iconImg = cachedIcons[i];
+							break;				
+						}				
+					}
+				
+					var styles = [
+						new ol.style.Style({
+								image : new ol.style.Icon({
+								anchor : [ 0.5, 1 ],
+								anchorXUnits : 'fraction',
+								anchorYUnits : 'fraction',
+								opacity : 0.75,
+								img: iconImg,
+								imgSize: [iconImg.width, iconImg.height]
+							}),
+								fill: fill,
+								stroke: stroke
+						})
+					];
+
+					return styles;
 				}
-			
-				var styles = [
-   					new ol.style.Style({
-     						image : new ol.style.Icon({
-							anchor : [ 0.5, 1 ],
-							anchorXUnits : 'fraction',
-							anchorYUnits : 'fraction',
-							opacity : 0.75,
-							img: iconImg,
-							imgSize: [iconImg.width, iconImg.height]
-						}),
-     						fill: fill,
-     						stroke: stroke
-   					})
- 				];
-
-				return styles;
-			}
 
 
-		});
-		map.addInteraction(selectCluster);
-		
-	} else {
-		alert("Only Cluster vector layers are currently supported by FigisMap");
+			});
+			map.addInteraction(selectCluster);	
+		}
 	}
 }
 
@@ -205,30 +265,11 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
  * @param layer
  */
 FigisMap.rnd.updateVectorLayer = function(map, layer) {
-
 	var source = layer.source;
-	if( layer.cluster ) {
-		source = FigisMap.rnd.configureClusterSource(layer, source);
-	}	
-
-
-	var layers = map.getLayers().getArray();
-	if( layers.length > 0 ) {
-		if(layers[0] instanceof ol.layer.Group)	{
-			layers = map.getLayerGroup().getLayersArray();
-		}
-		for(var i=0;i<layers.length;i++){
-			if(layers[i].id){
-				if(layers[i].id === layer.id) {
-					map.getLayerGroup().getLayersArray()[i].setSource(source);
-					//map.getLayerGroup().getLayersArray()[i].getSource().changed();
-					break;
-				}
-			}
-		}
-	}
+	if( layer.cluster ) source = FigisMap.rnd.configureClusterSource(layer, source);	
+	var olLayer = FigisMap.ol.getLayer(map, layer.id, "id");
+	if(olLayer) olLayer.setSource(source);
 }
-
 
 /**
  * FigisMap.rnd.addVectorLayerLegend

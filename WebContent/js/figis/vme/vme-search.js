@@ -67,19 +67,64 @@ VMESearch.form.widgets.SearchResults = new Ext.DataView({
       }*/
     }
 });
+
+/**
+ * VMESearch.configureHighlightVMESource configures a source for Highlight VME layer
+ * @param feature object of class {ol.Feature}
+ * @return an object of class {ol.source.Vector}
+ */
+VMESearch.configureHighlightVMESource = function(feature){
+	var vectorSource = new ol.source.Vector({});
+	if(feature) vectorSource.addFeature(feature);
+	return vectorSource;
+}
+
+
+/**
+ * VMESearch.addHighlightVMELayer adds highlight VME layer 
+ * @param source object of class {ol.source.Vector}
+ */
+VMESearch.addHighlightVMELayer = function(source){
+
+	//configure and add vector layer
+	FigisMap.rnd.addVectorLayer(VME.myMap, VME.myMap.getLayers().getArray()[2],{
+		id: "highlight",
+		title: undefined, //implicit way to hide in layerswitcher
+		source: source,
+		style: new ol.style.Style({
+			fill: new ol.style.Fill({
+      				color: "rgba(238,153,0,0)"
+      			}),
+      			stroke: new ol.style.Stroke({
+        			color: '#ee9900',
+      				width: 2
+      			})
+		})	
+	});
+	
+}
+
+
+/**
+ * VMESearch.removeHighlightVMELayer resets highlight vector layer
+ */
+VMESearch.resetHighlightVMELayer = function(){
+	var highlightLayer = FigisMap.ol.getLayer(VME.myMap, "highlight", by = "id");
+	if(highlightLayer){			
+		var emptySource = VMESearch.configureHighlightVMESource();
+		highlightLayer.setSource(emptySource);
+	}
+}
+
+
 /**
 * clickOnResult
 */
 VMESearch.clickOnFeature =function(geographicFeatureId,rec_year,zoom){
-          
-        //TODO OL3
-	/*var layer = myMap.getLayersByName("highlight")[0];
-	create layer
-	if(layer){
-		myMap.removeLayer(layer,false);
-	}*/	
 
-        var layerName = FigisMap.fifao.vme_cl.split(':',2)[1];
+	//remove highlight layer if any
+	VMESearch.resetHighlightVMELayer();
+
         var typename = FigisMap.fifao.vme;
         var CQL_FILTER = "VME_AREA_TIME = '"+geographicFeatureId+"'";
 
@@ -106,62 +151,62 @@ VMESearch.clickOnFeature =function(geographicFeatureId,rec_year,zoom){
                         scope: this
                     });  
                 }else{
+
+		    //grab geojson geomtry
                     var geoJsonGeom = jsonData.features[0].geometry;
-                    var projcode = "EPSG:4326";
-                    var GeoJsonFormat = new OpenLayers.Format.GeoJSON();
-    
-                    var geom = GeoJsonFormat.read(geoJsonGeom, "Geometry");
                     
-                    layer = new OpenLayers.Layer.Vector("highlight",{
-                            displayInLayerSwitcher: false
-                    });
-                    var repro_geom = geom.clone().transform(
-                        new OpenLayers.Projection(projcode),
-                        myMap.getProjectionObject()
+
+		    //configure vector source from geometry
+		    var GeoJsonFormat = new ol.format.GeoJSON()
+                    var geom = GeoJsonFormat.readGeometry(geoJsonGeom);
+		    
+        	    var repro_geom = geom.transform(
+                        new ol.proj.get("EPSG:4326"),
+                        VME.myMap.getView().getProjection()
                     );
-                    layer.addFeatures(new OpenLayers.Feature.Vector(repro_geom));
-                    myMap.addLayer(layer);
-                    var bounds = geom.clone().getBounds();
-                    var repro_bbox = repro_geom.getBounds();
+		    var sfProps = jsonData.features[0];
+		    sfProps.geometry = repro_geom;
+		    var sf = new ol.Feature(sfProps);
+		    var vectorSource = VMESearch.configureHighlightVMESource(sf);
+		    //configure highlight VME layer if not yet existing
+ 		    var highlightLayer = FigisMap.ol.getLayer(VME.myMap, "highlight", by = "id");
+		    if(highlightLayer){
+			//update existing 'Highlight' VME layer
+			highlightLayer.setSource(vectorSource);
+		    }else{
+			//instantiate 'Highlight' VME layer
+			VMESearch.addHighlightVMELayer(vectorSource);
+		    }			
+
+                    var bounds = geom.getExtent();
+                    var repro_bbox = repro_geom.getExtent();
                     
-                    // uncomment when work on the line 6 
-                    //myMap.getLayersByName("Area types")[0].setVisibility(false);
                     
                     if(Ext.isIE){
-                      myMap.zoomOut(); 
+                      VME.myMap.zoomOut(); 
                     }
                     
                     var settings = {
-                      zoomExtent: bounds.toBBOX(20)
-                    };
+                      zoomExtent: bounds
+		    };
                     
-					VME.zoomTo(settings,repro_bbox,zoom,false);
+		    VME.zoomTo(settings,repro_bbox,zoom,false);
                     
-                    //myMap.paddingForPopups.right = 240; //TODO: use this to center the popup when the search panel is opened!!! 
-														  //but if do this we are problem on dateline (popup disappears)
+		    //Note: use this to center the popup when the search panel is opened!!! but if do this we are problem on dateline (popup disappears)
+                    //myMap.paddingForPopups.right = 240; 	
                     
                     //var year = selectedRecord.get("year");
                     var year = Ext.getCmp("id_selectYear").getValue() || rec_year;
-                    /*
-                    var slider = Ext.getCmp('years-slider');
-                    slider.setValue(year,true);
-                    Ext.getCmp('years-min-field').setValue(year);
-                    */
-                    FigisMap.ol.setSelectedYear(year);
-                    //TODO try use slider.updateVme();
-
+		    FigisMap.time.setSelectedYear(year);
+    
                     // start refresh legend
                     var nameRFB = jsonData.features[0].properties.OWNER;
                     VME.refreshLayers(nameRFB);
-                    // end
-                    
-                    // uncomment when work on the line 6
-                    //myMap.getLayersByName("Area types")[0].setVisibility(true);
-                    
-                    FigisMap.ol.clearPopupCache();
+                                        
+                    FigisMap.ol.clearPopupCache(); //TODO OL3
                     
                     if(!zoom){            
-                        if(getProjection() == "4326"){
+                        if(VME.getProjection() == "4326"){
                             FigisMap.ol.emulatePopupFromGeom(geom);
                         }else{
                             FigisMap.ol.emulatePopupFromGeom(repro_geom);
@@ -311,11 +356,8 @@ VMESearch.search = function(advanced){
     
 	FigisMap.ol.clearPopupCache(); //TODO OL3
 
-	// TODO OL3 remove highlight layer on new search
-	/*var layer = myMap.getLayersByName("highlight")[0];
-	if(layer){
-	myMap.removeLayer(layer,false);
-	}*/	        
+	//remove highlight layer if any
+	VMESearch.resetHighlightVMELayer();	        
         
 	var dIndex = RFMStore.find("id", value); 
     	
@@ -334,8 +376,8 @@ VMESearch.search = function(advanced){
 		var cqlFilter = "RFB=" + "'" + rfbName + "'";
 		var vectorSource = FigisMap.rnd.configureVectorSource(sourceUrl, cqlFilter);
 		vectorSource.loadFeatures();
-		console.log(vectorSource);
 			
+		//loadFeatures callback
 		var loadFeaturesCallback = function(){		
 			var features = vectorSource.getFeatures();
 			if(!features || features.length < 1){
@@ -446,7 +488,6 @@ VMESearch.search = function(advanced){
 		vmeLoader.hide();
 		
 		vectorSource.on("change", function(e){
-			console.log("adding features");
 			loadFeaturesCallback();
 		});
 	
@@ -509,24 +550,21 @@ VMESearch.rfbZoomTo = function(acronym){
 	////////////////////////////////////////////////////
 	// Retrieve RFB areas extent to perform a VME.zoomTo. //
 	////////////////////////////////////////////////////
-    var rfbName = acronym;
+    	var rfbName = acronym;
     
-   // perform CQL_FILTER
-    VME.refreshLayers(rfbName);
+   	// perform CQL_FILTER
+    	VME.refreshLayers(rfbName);
 
-    FigisMap.ol.clearPopupCache();   //TODO OL3  
+    	FigisMap.ol.clearPopupCache();   //TODO OL3  
 
-	// TODO OL3 remove highlight layer on new search
-	//var layer = myMap.getLayersByName("highlight")[0];
-	/*if(layer){
-		myMap.removeLayer(layer,false);
-	*/	   
+	//remove highlight layer if any
+	VMESearch.resetHighlightVMELayer();	   
     
 	//vector source
 	var layer = "fifao:RFB_COMP_CLIP";
 	var sourceUrl = FigisMap.rnd.vars.wfs + layer;
 	var cqlFilter = "RFB=" + "'" + rfbName + "'";
-    var vectorSource = FigisMap.rnd.configureVectorSource(sourceUrl, cqlFilter);
+    	var vectorSource = FigisMap.rnd.configureVectorSource(sourceUrl, cqlFilter);
 	
 	var loadFeaturesCallback = function(){	
 		
@@ -642,7 +680,6 @@ VMESearch.rfbZoomTo = function(acronym){
 	}
 	
 	vectorSource.on("change", function(e){
-		console.log("adding features");
 		loadFeaturesCallback();
 	});
 	
