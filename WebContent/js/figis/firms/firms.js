@@ -215,7 +215,8 @@ FV.baseMapParams.prototype.setLayer = function( l ) {
 				var specialCases = ["472","473","474"];
 				if(feature) if(specialCases.indexOf(feature.get('FIGIS_ID')) != -1) imgRef = 'fishery_production_system';			
 				return FigisMap.assetsRoot + 'firms/img/' + imgRef + '.png';
-			}, 
+			},
+			showLegendGraphic : true,
 			cluster: true,
 			clusterOptions: { distance: 30, animate: true, singlecount: false, icon: FigisMap.assetsRoot + 'firms/img/' + l + '_cluster.png' }
 		}

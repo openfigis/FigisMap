@@ -69,15 +69,15 @@ VME.baseMapParams = function(year){
 		baseMask: true,
 		hideBasicLayers: true,
 		layerSwitcherOptions: { 
-								target: "layerswitcher",
-								displayLegend: true ,
-								toggleLegendGraphic : true,
-								collapsableGroups : true,
-								overlayGroups : VME.overlayGroups,
-								groupInfoHandler : function(lyr) {
-									return VMEInfo.infoHandler(lyr.infoUrl, false);
-								},
-								defaultOverlayGroup: VME.overlayGroups[0]}
+			target: "layerswitcher",
+			displayLegend: true ,
+			toggleLegendGraphic : true,
+			collapsableGroups : true,
+			overlayGroups : VME.overlayGroups,
+			groupInfoHandler : function(lyr) {
+				return VMEInfo.infoHandler(lyr.infoUrl, false);
+			},
+			defaultOverlayGroup: VME.overlayGroups[0]}
 	};
 	
 	return this;

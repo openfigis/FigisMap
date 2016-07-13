@@ -286,7 +286,6 @@ ol.control.LayerSwitcher.prototype.renderLegendGraphic_ = function(lyr, idx, li)
 	if( this.displayLegend_ && lyr.get('type') != 'base' && lyr.showLegendGraphic){
    	
 		var imgSrc = (lyr.legendGraphic)? lyr.legendGraphic : false;
-		
 		if(imgSrc){
 			var legend = document.createElement('div');
 			var legendId = lyr.get('title').replace(' ', '-') + '_' + idx + "_legend";

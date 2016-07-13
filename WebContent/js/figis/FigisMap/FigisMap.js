@@ -763,7 +763,7 @@ FigisMap.ol.configureOverlayLayer = function(obj, boundsOrigin){
 		visible : ( obj.hidden )? false : true
 	});
 	FigisMap.ol.setLegendGraphic(layer);
-	layer.showLegendGraphic = obj.showLegendGraphic //to make the param accessible to layerswitcher
+	layer.showLegendGraphic = obj.showLegendGraphic ? obj.showLegendGraphic : false; //to make the param accessible to layerswitcher
 	layer.overlayGroup = (obj.overlayGroup)? obj.overlayGroup: {name:FigisMap.ol.overlaysLabel, infoUrl:false};
 
 	return layer;
@@ -1834,8 +1834,7 @@ FigisMap.rnd.sort4map = function( layers, p ) {
 	for (var i = 0; i < layers.length; ++i) {
 		var l = layers[i];
 		if (l.isMask && p.options.baseMask){
-			normalLayers = [l].concat(normalLayers);
-			continue;
+			normalLayers.push( l );
 		}
 		if ( l.layer == FigisMap.fifao.cbs ) {
 			countryLayers.push( l );
