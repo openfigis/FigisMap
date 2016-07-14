@@ -205,12 +205,10 @@ VMESearch.clickOnFeature =function(geographicFeatureId,rec_year,zoom){
                                         
                     FigisMap.ol.clearPopupCache(); //TODO OL3
                     
-                    if(!zoom){            
-                        if(VME.getProjection() == "4326"){
-                            FigisMap.ol.emulatePopupFromGeom(geom);
-                        }else{
-                            FigisMap.ol.emulatePopupFromGeom(repro_geom);
-                        }
+                    if(!zoom){ 
+			var coords = (VME.getProjection() == "4326")? geom.FirstCoordinate() : repro_geom.getFirstCoordinate();
+			console.log(coords);           
+                        FigisMap.rnd.emulatePopupForCoordinates(VME.myMap, coords);
                     }
                 }
           

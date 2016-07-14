@@ -57,10 +57,18 @@ VME.baseMapParams = function(year){
 	this.projection = VME.currentProjection();
 	this.base = baselayers;
 	
+	var contentHandler = function(feature, request){
+		var content = document.createElement("div");
+		console.log(request.responseXML.documentElement);
+		content.appendChild(request.responseXML.documentElement);
+		return content.innerHTML;
+	}
+
+
 	this.popups = [
-		{id: FigisMap.fifao.vme, strategy: "getfeatureinfo", contentHandler: function(e){}},
-		{id: FigisMap.fifao.vme_bfa, strategy: "getfeatureinfo",contentHandler: function(e){}},
-		{id: FigisMap.fifao.vme_oara, strategy: "getfeatureinfo",contentHandler: function(e){}}
+		{id: FigisMap.fifao.vme, strategy: "getfeatureinfo", contentHandler: contentHandler},
+		{id: FigisMap.fifao.vme_bfa, strategy: "getfeatureinfo",contentHandler: contentHandler},
+		{id: FigisMap.fifao.vme_oara, strategy: "getfeatureinfo",contentHandler: contentHandler}
 	];
 
 	this.staticLabels = VMELabels.staticLabels;

@@ -2387,6 +2387,10 @@ FigisMap.renderer = function(options) {
 		
 		//Testing popup & tooltip
 		if( pars.popups ) {
+
+			//array of GetFeatureInfo configs
+			var gfiConfigArray = new Array();			
+
 			for(var i = 0;i<pars.popups.length;i++){
 				var popupConfig = pars.popups[i];
 				if(popupConfig.strategy){
@@ -2400,13 +2404,19 @@ FigisMap.renderer = function(options) {
 							FigisMap.rnd.configureTooltipPopup(myMap, popupConfig);
 							break;
 						case "getfeatureinfo":
-							FigisMap.rnd.configurePopup(myMap, popupConfig);
+							gfiConfigArray.push(popupConfig);
 							break;
 					}
 				}else{
 					alert("Invalid popup. Missing 'strategy' property.");
-				}			
+				}
+		
 			}
+			
+			
+			//configure getfeatureinfo configs
+			console.log(gfiConfigArray);
+			FigisMap.rnd.configurePopup(myMap, gfiConfigArray);	
 		}
 
 		

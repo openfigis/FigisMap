@@ -463,8 +463,7 @@ FV.setViewerResource = function(id) {
 	FV.myMap.getView().setCenter(feature.getGeometry().getCoordinates());
 	
 	//open popup
-	var popup = FigisMap.rnd.getPopupOverlay(FV.myMap, FV.currentLayer());
-	FigisMap.rnd.showPopupForCoordinates(popup, feature, feature.getGeometry().getCoordinates());
+	FigisMap.rnd.emulatePopupForFeature(FV.myMap, FV.currentLayer(), feature);
 };
 
 FV.fsAutoMap = function( fid, ftitle, fpars ) {
