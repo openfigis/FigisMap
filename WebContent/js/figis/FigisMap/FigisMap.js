@@ -2386,10 +2386,7 @@ FigisMap.renderer = function(options) {
 		}
 		
 		//Testing popup & tooltip
-		if( pars.popups ) {
-
-			//array of GetFeatureInfo configs
-			var gfiConfigArray = new Array();			
+		if( pars.popups ) {			
 
 			for(var i = 0;i<pars.popups.length;i++){
 				var popupConfig = pars.popups[i];
@@ -2404,7 +2401,8 @@ FigisMap.renderer = function(options) {
 							FigisMap.rnd.configureTooltipPopup(myMap, popupConfig);
 							break;
 						case "getfeatureinfo":
-							gfiConfigArray.push(popupConfig);
+							if(typeof popupConfig.multiple == "undefined") popupConfig.multiple = false;
+							FigisMap.rnd.configurePopup(myMap, popupConfig);
 							break;
 					}
 				}else{
@@ -2412,11 +2410,7 @@ FigisMap.renderer = function(options) {
 				}
 		
 			}
-			
-			
-			//configure getfeatureinfo configs
-			console.log(gfiConfigArray);
-			FigisMap.rnd.configurePopup(myMap, gfiConfigArray);	
+				
 		}
 
 		

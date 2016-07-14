@@ -1,22 +1,23 @@
+//dependencies
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/figis/FigisMap/FigisMap-vector.js');
+
 /**
  * FigisMap.rnd.configurePopup
  * An function to configure a popup. At now the popup can be configured on a featured layer. 
  * It may be extended to other supports (map, getfeatureinfo)
  * 
  * Differences of popup behaviors:
- * - In case of "getfeature" strategy, config will be a single config Object, declared by FigisMap. The popup will
- *   be based on "GetFeature" operation made on a layer of class {ol.layer.Vector}
- *
- * - In case of "getfeatureinfo" strategy, FigisMap will set config as array of "getfeatureinfo" configs to manage
- *   one single popup overlay in case of multiple configs, and control that popup will be displayed only for the
- *   first popup config declared as FigisMap parameter, and with actual content. The popup is based on "GetFeatureInfo"
- *   operation made on a WMS layer
+ * - In case of "getfeature" strategy, the popup is based on "GetFeature" operation made on a layer of class {ol.layer.Vector}
+ * - In case of "getfeatureinfo" strategy, the popup is based on "GetFeatureInfo" operation made on a WMS layer
  *
  * Each popup config may have the following parameters
  * -> id (mandatory) id of the popup
  * -> strategy (mandatory) one of the following values:
  *		- "getfeature": in this case popup will be associated to a vector layer based on feature
  * 		- "getfeatureinfo": in this case popup will be associated to Tile layer on pixel getFeatureInfo request
+ * -> refs (optional) mandatory if strategy is equal to "getfeatureinfo"
+ * -> multiple (optional) default is false. If true, the popup will try to display content from all contentHandlers for
+ *    for the refs having a GetFeatureInfo non-empty response
  * -> resourceHandler (optional) the url of a web-resource to load asynchronously
  * -> contentHandler (mandatory) a function with the following arguments:
  * 		- feature: the GIS feature from which to extract property values
@@ -29,29 +30,30 @@
  */
 FigisMap.rnd.configurePopup = function(map, config) {
 	
+	if( !config.id ) alert("Missing popup config 'id'");	
+	if( !config.strategy ) alert("Missing popup config 'strategy'");
+	if( !config.contentHandler ) alert("Missing popup config 'contentHandler'");
+
 	//configure popup
-	var popup = new ol.Overlay.Popup({id: ((config instanceof Array)? "getfeatureinfo" : config.id)});
+	var popup = new ol.Overlay.Popup({id: config.id});
 	popup.config = config;
 	map.addOverlay(popup);
-	
 	
 	//display popup on singleclick depending on strategy "getfeature" or "getfeatureinfo"
 	if(config.strategy === "getfeature"){
 		//"getfeature" strategy (vector feature based)
 		//---------------------
 
-		if( !config.id ) alert("Missing popup config 'id'");
-		if( !config.strategy ) alert("Missing popup config 'strategy'");
-		if( !config.contentHandler ) alert("Missing popup config 'contentHandler'");
-
 		map.on('singleclick', function(evt) {
 	  		FigisMap.rnd.getFeatureEventHandler(evt, map, popup);	
 		});
 
-	}else{
+	}else if(config.strategy === "getfeatureinfo"){
 		//"getfeatureinfo" strategy (tile based)
 		//-------------------------
 		
+		if( !config.refs ) alert("Missing popup config 'refs'");
+
 		popup.gfiConfigs = config;
 
 		map.on('singleclick', function(evt) {
@@ -100,7 +102,7 @@ FigisMap.rnd.getFeatureEventHandler = function(evt, map, popup){
 	  
 	if (feature) {
 		var coords = feature.getGeometry().getCoordinates();
-		FigisMap.rnd.showPopupForCoordinates(popup, feature, coords);
+		FigisMap.rnd.showPopupForCoordinates(popup, feature, null, coords);
 	}
 }
 
@@ -111,68 +113,99 @@ FigisMap.rnd.getFeatureEventHandler = function(evt, map, popup){
  * @param popup
  */
 FigisMap.rnd.getFeatureInfoEventHandler = function(evt, map, popup){
+	console.log("=============================================");
+		
 	var coords = evt.coordinate;
   	var viewResolution = map.getView().getResolution();
 	var viewProjection = map.getView().getProjection().getCode()
-			
-	for(var i=0;i<popup.gfiConfigs.length;i++){
-		var gfiConfig = popup.gfiConfigs[i];
-		if( !gfiConfig.id ) alert("Missing popup config 'id'");
-		if( !gfiConfig.strategy ) alert("Missing popup config 'strategy'");
-		if( !gfiConfig.contentHandler ) alert("Missing popup config 'contentHandler'");
+		
 
-		var layer = FigisMap.ol.getLayer(map, gfiConfig.id);			
+	//prepare GetFeatureInfo Urls
+	var urls = new Array();
+	for(var i=0;i<popup.config.refs.length;i++){
+		var gfiConfig = popup.config.refs[i];
+		
+		if( !gfiConfig.id ) alert("Missing popup config 'id'");
+		
+		var layer = FigisMap.ol.getLayer(map, gfiConfig.id);	
 		var url = layer.getSource().getGetFeatureInfoUrl(
       			coords, viewResolution, viewProjection,
       			{'INFO_FORMAT': "application/vnd.ogc.gml"}
 		);
 		if (url){
-			gfiConfig.resourceHandler = function(feature){ return url; }
-			popup.config = gfiConfig;
-			var shown = FigisMap.rnd.showPopupForCoordinates(popup, null, coords);
-			if(shown) break;
+			popup.config.refs[i].resourceHandler = function(feature){return url};
+			urls.push(url);
 		}
-	}	
+	}
+
+	var i = 0;
+	var iterating = true;
+	var targetFeatures = new Array();
+	var targetXmlHttpRequests = new Array();
+	var getFeatureInfo = function() {
+		
+    		var xmlHttp = FigisMap.getXMLHttpRequest();
+		xmlHttp.onreadystatechange = function() {
+			if ( xmlHttp.readyState != 4 ) return void(0);
+			if ( xmlHttp.status == 200) {
+				FigisMap.debug('FigisMap.rnd.popup - async request: ', xmlHttp);
+				var features = FigisMap.ol.readFeatures(xmlHttp.responseXML);
+				if(features.length > 0){
+					targetFeatures = targetFeatures.concat(features);	
+					targetXmlHttpRequests.push(xmlHttp);
+					if(!popup.config.multiple) iterating = false;
+				}
+				
+				if(urls.length == 0){
+					if(targetFeatures.length > 0)
+						FigisMap.rnd.showPopupForCoordinates(popup, targetFeatures, targetXmlHttpRequests, coords);
+					
+				}
+
+				if (urls.length && iterating) {
+					i++;
+       				     	getFeatureInfo();
+        			}
+			}
+			
+		};
+    		xmlHttp.open('GET', urls.shift(), true);
+        	xmlHttp.send('');
+   	}
+	getFeatureInfo();
+
+	
 }
 
 
 /**
  * Show Popup for a feature
  * @param {ol.Overlay.Popup} the target popup overlay
- * @param {ol.Feature} the feature to be used for resource and content handling
+ * @param {ol.Feature} the feature(s) to be used for resource and content handling
+ * @param {Object} xmlHTTPRequest object to be used for resource and content handling
  * @param {ol.Coordinate} the coordinates where the popup should be opened
  */
-FigisMap.rnd.showPopupForCoordinates = function(popup, feature, coords) {
-
+FigisMap.rnd.showPopupForCoordinates = function(popup, feature, xmlHttp, coords) {
+	
 	var async = !!popup.config.resourceHandler;
 
 	if( async ) {
 		
-		var xmlHttp = FigisMap.getXMLHttpRequest();
+		xmlHttp = FigisMap.getXMLHttpRequest();
 		xmlHttp.onreadystatechange = function() {
 			if ( xmlHttp.readyState != 4 ) return void(0);
 			if (xmlHttp.status == 200) {
 				FigisMap.debug('FigisMap.rnd.popup - async request: ', xmlHttp);
-				var display = true
-				if(popup.config.strategy == "getfeatureinfo"){
-					var features = FigisMap.ol.readFeatures(xmlHttp.responseXML);
-					if(features.length == 0) display = false;
-				}
-				
-				if(display){
-					popup.show(coords, popup.config.contentHandler(feature, xmlHttp));
-					if( popup.config.onopen) popup.config.onopen(feature);
-				}
-				return display;
+				popup.show(coords, popup.config.contentHandler(feature, xmlHttp));
+				if( popup.config.onopen) popup.config.onopen(feature);
 			}
 		};
 		
 		xmlHttp.open('GET', popup.config.resourceHandler(feature), true);
 		xmlHttp.send('');
-	} else {
-		popup.show(coords, popup.config.contentHandler(feature, null));
+	} else {	
+		popup.show(coords, popup.config.contentHandler(feature, xmlHttp));
 		if( popup.config.onopen) popup.config.onopen(feature);
-		return true;	
 	}
 }
 
@@ -186,7 +219,7 @@ FigisMap.rnd.showPopupForCoordinates = function(popup, feature, coords) {
  */
 FigisMap.rnd.emulatePopupForFeature = function(map, id, feature){
 	var popup = FigisMap.rnd.getPopupOverlay(map, id);
-	FigisMap.rnd.showPopupForCoordinates(popup, feature, feature.getGeometry().getCoordinates());
+	FigisMap.rnd.showPopupForCoordinates(popup, feature, null, feature.getGeometry().getCoordinates());
 }
 
 /**

@@ -1047,7 +1047,7 @@ VMEData.models = {
 
 VMEData.extensions = {
 	FeatureInfo:{
-		VmeStore : Ext.extend(Ext.data.JsonStore,{
+		VMEStore : Ext.extend(Ext.data.JsonStore,{
 			reader : new Ext.data.JsonReader({
 				root:'',
 				fields: [
@@ -1098,7 +1098,46 @@ VMEData.extensions = {
 				idProperty: 'fid'			
 			})
 		}),
-        
+		BFAStore : Ext.extend(Ext.data.JsonStore,{
+			reader : new Ext.data.JsonReader({
+				root:'',
+				fields: [
+					{name: 'id', mapping: 'fid'},
+					{name: 'geometry', mapping: 'geometry'},
+					{name: 'localname',  mapping: 'attributes.LOCAL_NAME'},
+					{name: 'bbox',		mapping: 'bounds'},
+					{name: 'vme_id',     mapping: 'attributes.VME_ID'},
+					{name: 'status', 	 mapping: 'attributes.STATUS'},
+					{name: 'year', mapping: 'attributes.YEAR'},
+					{name: 'type', mapping: 'attributes.VME_TYPE'},
+					{name: 'owner', mapping: 'attributes.OWNER'},
+					{name: 'obj_id', mapping: 'attributes.OBJECTID'},
+					{name: 'geo_ref', mapping: 'attributes.GEOREF'},
+                    {name: 'surface', mapping: 'attributes.SURFACE'}					
+				],
+				idProperty: 'fid'			
+			})
+		}),
+		OARAStore : Ext.extend(Ext.data.JsonStore,{
+			reader : new Ext.data.JsonReader({
+				root:'',
+				fields: [
+					{name: 'id', mapping: 'fid'},
+					{name: 'geometry', mapping: 'geometry'},
+					{name: 'localname',  mapping: 'attributes.LOCAL_NAME'},
+					{name: 'bbox',		mapping: 'bounds'},
+					{name: 'vme_id',     mapping: 'attributes.VME_ID'},
+					{name: 'status', 	 mapping: 'attributes.STATUS'},
+					{name: 'year', mapping: 'attributes.YEAR'},
+					{name: 'type', mapping: 'attributes.VME_TYPE'},
+					{name: 'owner', mapping: 'attributes.OWNER'},
+					{name: 'obj_id', mapping: 'attributes.OBJECTID'},
+					{name: 'geo_ref', mapping: 'attributes.GEOREF'},
+                    {name: 'surface', mapping: 'attributes.SURFACE'}					
+				],
+				idProperty: 'fid'			
+			})
+		}),
 		RfbStore : Ext.extend(Ext.data.JsonStore,{
 			reader : new Ext.data.JsonReader({
 				root:'',
@@ -1115,84 +1154,6 @@ VMEData.extensions = {
                     {name: 'ancfeature',     mapping: 'attributes.ANCFEATURE'},
                     {name: 'SHAPE_AREA', mapping:'attributes.SHAPE_AREA'},
                     {name: 'SHAPE_LENG', mapping:'attributes.SHAPE_LENG'}
-				],
-				idProperty: 'fid'			
-			})
-		}),        
-		
-		EncountersStore : Ext.extend(Ext.data.JsonStore,{
-			reader : new Ext.data.JsonReader({
-				root:'',		
-				fields: [
-					{name: 'id', mapping: 'fid'},
-					{name: 'geometry', mapping: 'geometry'},
-					{name: 'object_id',  mapping: 'attributes.OBJECTID'},
-					{name: 'bbox',		mapping: 'bounds'},
-					{name: 'vme_id',     mapping: 'attributes.VME_ID'},
-					{name: 'aggregation', 	 mapping: 'attributes.AGREGATION'},
-					{name: 'year', mapping: 'attributes.YEAR'},
-					{name: 'taxa', mapping: 'attributes.TAXA'},
-					{name: 'quantity', mapping: 'attributes.QUANTITY'},
-					{name: 'unit', mapping: 'attributes.UNIT'},
-					{name: 'owner', mapping: 'attributes.OWNER'},
-					{name: 'geo_ref', mapping: 'attributes.geoArea'}
-				],
-				idProperty: 'fid'			
-			})
-		}),
-		SurveyDataStore : Ext.extend(Ext.data.JsonStore,{
-			reader : new Ext.data.JsonReader({
-				root:'',
-				fields: [
-		    	{name: 'id', mapping: 'fid'},
-					{name: 'geometry', mapping: 'geometry'},
-					{name: 'object_id',  mapping: 'attributes.OBJECTID'},
-					{name: 'bbox',		mapping: 'bounds'},
-					{name: 'vme_id',     mapping: 'attributes.VME_ID'},
-					{name: 'aggregation', 	 mapping: 'attributes.AGREGATION'},
-					{name: 'year', mapping: 'attributes.YEAR'},
-					{name: 'taxa', mapping: 'attributes.TAXA'},
-					{name: 'quantity', mapping: 'attributes.QUANTITY'},
-					{name: 'unit', mapping: 'attributes.UNIT'},
-					{name: 'owner', mapping: 'attributes.OWNER'},
-					{name: 'geo_ref', mapping: 'attributes.geoArea'}					
-				],
-				idProperty: 'fid'			
-			})
-		}),
-		AggregateDataStore : Ext.extend(Ext.data.JsonStore,{
-			reader : new Ext.data.JsonReader({
-				root:'',
-				fields: [
-				    {name: 'id', mapping: 'fid'},
-					{name: 'geometry', mapping: 'geometry'},
-					{name: 'resolution',  mapping: 'attributes.RESOLUTION'},
-					{name: 'bbox',		mapping: 'bounds'},
-					{name: 'vme_id',     mapping: 'attributes.VME_ID'},
-					{name: 'count', 	 mapping: 'attributes.COUNT'},
-					{name: 'year', mapping: 'attributes.YEAR'},
-					{name: 'owner', mapping: 'attributes.OWNER'},
-					{name: 'geo_ref', mapping: 'attributes.geoArea'}					
-				],
-				idProperty: 'fid'			
-			})
-		}),
-		FootprintStore : Ext.extend(Ext.data.JsonStore,{
-			reader : new Ext.data.JsonReader({
-				root:'',
-				fields: [
-					{name: 'id', mapping: 'fid'},
-					{name: 'geometry', mapping: 'geometry'},
-					{name: 'localname',  mapping: 'attributes.LOCAL_NAME'},
-					{name: 'bbox',		mapping: 'bounds'},
-					{name: 'vme_id',     mapping: 'attributes.VME_ID'},
-					{name: 'status', 	 mapping: 'attributes.STATUS'},
-					{name: 'year', mapping: 'attributes.YEAR'},
-					{name: 'type', mapping: 'attributes.VME_TYPE'},
-					{name: 'owner', mapping: 'attributes.OWNER'},
-					{name: 'obj_id', mapping: 'attributes.OBJECTID'},
-					{name: 'geo_ref', mapping: 'attributes.GEOREF'},
-                    {name: 'surface', mapping: 'attributes.SURFACE'}					
 				],
 				idProperty: 'fid'			
 			})

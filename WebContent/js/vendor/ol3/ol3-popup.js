@@ -79,6 +79,11 @@ ol.Overlay.Popup.prototype.show = function(coord, html) {
 	return this;
 };
 
+
+ol.Overlay.Popup.prototype.isOpened = function(){
+	return this.container.style.display == 'block';
+}
+
 /**
  * @private
  */

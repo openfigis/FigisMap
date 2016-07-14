@@ -6,11 +6,9 @@
  * 
  */
 
-FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/figis/FigisMap/FigisMap-time.js');
-FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/figis/FigisMap/FigisMap-vector.js');
-
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-popup.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/figis/FigisMap/FigisMap-popup.js');
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/figis/FigisMap/FigisMap-time.js');
 
 
 var VME = new Object();
@@ -57,18 +55,30 @@ VME.baseMapParams = function(year){
 	this.projection = VME.currentProjection();
 	this.base = baselayers;
 	
-	var contentHandler = function(feature, request){
+	var contentHandler = function(features, requests){
 		var content = document.createElement("div");
-		console.log(request.responseXML.documentElement);
-		content.appendChild(request.responseXML.documentElement);
-		return content.innerHTML;
+		var html = "";	
+		for(var i=0;i<features.length;i++){		
+			html += "=============================<br>";
+			html += features[i].getProperties()["VME_ID"] +"<br>";	
+		}
+		content.innerHTML = html;
+		return content.innerHTML; 
 	}
 
-
 	this.popups = [
-		{id: FigisMap.fifao.vme, strategy: "getfeatureinfo", contentHandler: contentHandler},
-		{id: FigisMap.fifao.vme_bfa, strategy: "getfeatureinfo",contentHandler: contentHandler},
-		{id: FigisMap.fifao.vme_oara, strategy: "getfeatureinfo",contentHandler: contentHandler}
+		//getfeatureinfo popup
+		{
+		id: "vmelayers",
+		strategy: "getfeatureinfo",
+		multiple: true,
+		refs: [
+			{id: FigisMap.fifao.vme},
+			{id: FigisMap.fifao.vme_bfa},
+			{id: FigisMap.fifao.vme_oara}
+		],
+		contentHandler : contentHandler
+		}
 	];
 
 	this.staticLabels = VMELabels.staticLabels;

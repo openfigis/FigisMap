@@ -1,19 +1,72 @@
 /*
-	vme-data.js
+	vme-popups.js
 	data model and stores for VME using Extjs
 	Authors: Lorenzo Natali. Geo-Solutions
 	
 	Status: Beta.	
 */
-function getQSParam(ParamName) {
-  QS=window.location.toString(); 
-  var indSta=QS.indexOf(ParamName); 
-  if (indSta==-1 || ParamName=="") return null; 
-  var indEnd=QS.indexOf('&amp;',indSta); 
-  if (indEnd==-1) indEnd=QS.length; 
-  var valore = unescape(QS.substring(indSta+ParamName.length+1,indEnd)); 
-  return valore; 
-}
+
+var VMEPopup = new Object();
+
+
+/**
+ * VMEPopup.getStore
+ */
+VMEPopup.getStore = function(layer){
+	var name = layer.params.LAYERS;
+  	var layernames = FigisMap.fifao;
+  	var featureInfoStores =VMEData.extensions.FeatureInfo;
+  	switch(name){
+    		case layernames.vme :
+      			return new featureInfoStores.VMEStore();    
+    		case layernames.vme_oara :
+      			return new featureInfoStores.OARAStore();
+    		case layernames.vme_bfa : 
+      			return new featureInfoStores.BFAStore();
+    		case layernames.vme_regarea : 
+     	}
+};
+
+
+/**
+ * VMEPopup.getTabTitle
+ */
+VMEPopup.getTabTitle=function(layer){
+	var name = layer.params.LAYERS;
+  	var layernames = FigisMap.fifao;
+  	var templates = VMEData.templates;
+  	switch(name){
+    		case layernames.vme :
+      			return "VME closed areas";
+    		case layernames.vme_oara :
+      			return "Other access regulated areas";      
+    		case layernames.vme_bfa : 
+      			return "Bottom fishing areas";
+    		case layernames.vme_regarea : 
+      			return "RFB Competence Areas";
+	}
+};
+
+
+/**
+ * VMEPopup.getTemplate
+ */
+VMEPopup.getTemplate = function(layer){
+	var name = layer.params.LAYERS;
+  	var layernames = FigisMap.fifao;
+  	var templates =VMEData.templates;
+  	switch(name){
+        	case layernames.vme_cl :
+      			return templates.vme;
+    		case layernames.vme_oa :
+      			return templates.vme_oara;      
+    		case layernames.vme_bfa : 
+      			return templates.vme_bfa;      
+    		case layernames.vme_regarea : 
+      			return templates.regarea; 
+       }
+};
+
 
 
 /**
@@ -119,99 +172,6 @@ FigisMap.ol.getFeatureInfoHandler =  function(e) {
 	  }
 	}
 };
-
-FigisMap.ol.getStore = function(layer){
-  var name = layer.params.LAYERS;
-  var layernames = FigisMap.fifao;
-  var featureInfoStores =Vme.data.extensions.FeatureInfo;
-  switch(name){
-    /* PRE WORKSHOP
-    case layernames.vme :
-      return new featureInfoStores.VmeStore();
-    case layernames.vme_fp : 
-      return new featureInfoStores.FootprintStore();*/
-      
-    case layernames.vme_cl :
-      return new featureInfoStores.VmeStore();    
-    case layernames.vme_oa :
-      return new featureInfoStores.VmeStore();
-    case layernames.vme_bfa : 
-      return new featureInfoStores.FootprintStore();
-
-    case layernames.vme_regarea : 
-      return new featureInfoStores.RfbStore();
-      
-    case layernames.vme_en : 
-      return new featureInfoStores.EncountersStore();
-    case layernames.vme_sd :   
-      return new featureInfoStores.SurveyDataStore();
-    case  layernames.vme_agg_en :  
-	  case  layernames.vme_agg_sd : 
-	     return new featureInfoStores.AggregateDataStore();
-  }
-  //return new Vme.data.extensions.FeatureInfo.VmeStore();
-};
-FigisMap.ol.getTabTitle=function(layer){
-  var name = layer.params.LAYERS;
-  var layernames = FigisMap.fifao;
-  var templates =Vme.data.templates;
-  switch(name){
-    /* PRE WORKSHOP
-    case layernames.vme :
-      return "VME Area";
-    case layernames.vme_fp : 
-      return "Footprints";*/
-
-    case layernames.vme_cl :
-      return "VME closed areas";
-    case layernames.vme_oa :
-      return "Other access regulated areas";      
-    case layernames.vme_bfa : 
-      return "Bottom fishing areas";
-
-    case layernames.vme_regarea : 
-      return "RFB Competence Areas";
-      
-    case layernames.vme_en : 
-      return "Encounters";
-    case layernames.vme_sd :   
-      return "Survey data";
-    case  layernames.vme_agg_en : 
-	   return "Encounters";	  
-	case  layernames.vme_agg_sd : 
-	   return "Survey data";
-  }
-};
-FigisMap.ol.getTemplate = function(layer){
-  var name = layer.params.LAYERS;
-  var layernames = FigisMap.fifao;
-  var templates =Vme.data.templates;
-  switch(name){
-    /* PRE WORKSHOP
-    case layernames.vme :
-      return templates.vme;
-    case layernames.vme_fp : 
-      return templates.footprints;*/
-      
-    case layernames.vme_cl :
-      return templates.vme_cl;
-    case layernames.vme_oa :
-      return templates.vme_oa;      
-    case layernames.vme_bfa : 
-      return templates.footprints;      
-
-    case layernames.vme_regarea : 
-      return templates.regarea; 
-      
-    case layernames.vme_en : 
-      return templates.encounters;
-    case layernames.vme_sd :   
-      return templates.surveydata;
-    case  layernames.vme_agg_en :  
-	  case  layernames.vme_agg_sd : 
-	     return  templates.aggregate;
-  }
-};
 /**
  *  FigisMap.ol.getFeatureInfoHandlerGML
  *  handler to parse GML response
@@ -230,6 +190,7 @@ FigisMap.ol.getFeatureInfoHandlerGML =  function(e) {
         */
         var count = 0;
         for(var i = 0 ; i<response.length ; i++){
+
             var inventoryIdentifier= response[i].attributes["VME_ID"];
             var year = FigisMap.ol.getSelectedYear();
             
@@ -548,85 +509,3 @@ FigisMap.ol.showPopup= function(e,response,layer){
 
 };
 
-/** 
- * FigisMap.ol.createPopupControl(layers)
- * create getFeatureInfo control to the map.
- *
- */
-FigisMap.ol.createPopupControl = function(vme){
-    FigisMap.ol.clearPopupCache();
-    var gml = true; //getQSParam('gml');
-		var info={controls : []};
-		var vmeLyr;
-		
-    var control;
-    for (var i = 0, len = info.controls.length; i < len; i++){
-        control = info.controls[i];
-        control.deactivate();  // TODO: remove when http://trac.openlayers.org/ticket/2130 is closed
-        control.destroy();
-	
-    }
-
-	var mask = new Ext.LoadMask(Ext.getBody(), {msg: "Please wait ..."});
-	mask.disable();
-	
-    for (vmeLyr=0; vmeLyr<vme.length; vmeLyr++){
-            
-      //VMSGetFeatureInfo FOR FIGIS-VME PROJECT
-      control = new OpenLayers.Control.WMSGetFeatureInfo({
-			  autoActivate: true,
-			  layers: [vme[vmeLyr]],
-			  queryVisible: true,
-			  maxFeatures: 10,
-			  infoFormat:  gml? "application/vnd.ogc.gml" :"text/html",
-			  //vendorParams: {"CQL_FILTER": "year = '" + FigisMap.ol.getSelectedYear() + "'"},
-			  eventListeners: {
-				  beforegetfeatureinfo: function(e) { 
-					var m = mask.el.isVisible();
-					if(mask.disabled){
-					    mask.enable();
-						mask.show();
-					}	
-					this.vendorParams = {"CQL_FILTER": e.object.layers[0].params.CQL_FILTER};
-				  }, 
-				  getfeatureinfo: function(e){
-					if(!mask.disabled){
-						mask.hide();
-						mask.disable();
-					}					
-					gml ? FigisMap.ol.getFeatureInfoHandlerGML(e) : FigisMap.ol.getFeatureInfoHandler(e);
-				  }
-			  }
-	    });
-		
-      info.controls.push(control);  
-    };
-    return info.controls;
-    
-};
-/** 
- * Emulate the popup control on a vertext of a geom
- */
-FigisMap.ol.emulatePopupFromGeom = function(geom){
-	var vert = FigisMap.ol.getVertFromGeom(geom);
-	FigisMap.ol.emulatePopupFromVert(vert);
-};
-/**
- * Get a evt with xy element from geometry to perform get feature info
- */
-FigisMap.ol.getVertFromGeom = function(geom){
-	return geom.getVertices()[0];
-	
-};
-/**
- * emulate click on GetFeatureInfo control
- */
-FigisMap.ol.emulatePopupFromVert=function(vert){
-    var lonlat =new OpenLayers.LonLat(vert.x,vert.y);
-	var evt = {
-		xy: myMap.getPixelFromLonLat( lonlat )
-	};
-	FigisMap.ol.clearPopupCache();
-	var cc = myMap.getControlsByClass('OpenLayers.Control.WMSGetFeatureInfo');
-	for(var i = 0 ;i < cc.length ; i++) {cc[i].getInfoForClick(evt);}
-};

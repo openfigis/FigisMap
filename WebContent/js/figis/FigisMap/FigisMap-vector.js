@@ -9,12 +9,16 @@
  * An experimental function to configure a vector source
  * @param sourceUrl
  * @param cqlfilter
+ * @param format (optional)
  * @return an object of class {ol.source.Vector}
  */
-FigisMap.rnd.configureVectorSource = function(sourceUrl, cqlfilter) {
+FigisMap.rnd.configureVectorSource = function(sourceUrl, cqlfilter, format) {
+	var vectorFormat = format? format : new ol.format.GeoJSON();
+	var sourceUrl = sourceUrl + ((!!cqlfilter)? ('&cql_filter='+cqlfilter) : '');
+	if(!format) sourceUrl = sourceUrl + '&outputFormat=json';
 	return new ol.source.Vector({
-		format : new ol.format.GeoJSON(),
-		url : sourceUrl + ((!!cqlfilter)? ('&cql_filter='+cqlfilter) : '')  + '&outputFormat=json'
+		format : vectorFormat,
+		url : sourceUrl
 	});
 }
 
