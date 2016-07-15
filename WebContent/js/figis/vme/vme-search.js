@@ -28,9 +28,12 @@ VMESearch.rfbZooms = {
 /**
  * VMESearch.loader widget
  */
-VMESearch.loader = function(){
-	return new Ext.LoadMask(Ext.getBody(), {msg: "Please wait ..."});
+VMESearch.loader = {};
+VMESearch.initLoader = function(){
+	VMESearch.loader = new Ext.LoadMask(Ext.getBody(), {msg: "Please wait ..."});
+	VMESearch.loader.hide();
 }
+VMESearch.initLoader();
 
 VMESearch.form={
 	panels:{},
@@ -206,9 +209,8 @@ VMESearch.clickOnFeature =function(geographicFeatureId,rec_year,zoom){
                     FigisMap.ol.clearPopupCache(); //TODO OL3
                     
                     if(!zoom){ 
-			var coords = (VME.getProjection() == "4326")? geom.FirstCoordinate() : repro_geom.getFirstCoordinate();
-			console.log(coords);           
-                        FigisMap.rnd.emulatePopupForCoordinates(VME.myMap, coords);
+			var coords = (VME.getProjection() == "4326")? ol.extent.getCenter(bounds) : ol.extent.getCenter(repro_bbox);          
+                        FigisMap.rnd.emulatePopupForCoordinates(VME.myMap, "vmelayers", coords);
                     }
                 }
           
@@ -342,7 +344,7 @@ VMESearch.form.panels.SearchForm = new Ext.FormPanel({
  */
 VMESearch.search = function(advanced){
 
-	var vmeLoader = VMESearch.loader();
+	VMESearch.loader.show();
 
 	// ///////////////////////////////////////////////////
 	// Retrieve Autority area extent to perform a VME.zoomTo.
@@ -379,7 +381,7 @@ VMESearch.search = function(advanced){
 		var loadFeaturesCallback = function(){		
 			var features = vectorSource.getFeatures();
 			if(!features || features.length < 1){
-				vmeLoader.hide();
+				VMESearch.loader.hide();
 						
 				Ext.MessageBox.show({
 					title: "Info",
@@ -481,7 +483,7 @@ VMESearch.search = function(advanced){
 				VME.zoomTo(settings, repro_bbox, true, true);
 			}
 			vmeSearch(advanced);
-			vmeLoader.hide();			
+			VMESearch.loader.hide();			
 		   
 		}
 		
@@ -544,7 +546,7 @@ function vmeSearch(advanced){
  */
 VMESearch.rfbZoomTo = function(acronym){
 
-	var vmeLoader = VMESearch.loader();
+	VMESearch.loader.show();
 
 	////////////////////////////////////////////////////
 	// Retrieve RFB areas extent to perform a VME.zoomTo. //
@@ -569,7 +571,7 @@ VMESearch.rfbZoomTo = function(acronym){
 		
 		var features = vectorSource.getFeatures();
 		if(!features || features.length < 1){
-			vmeLoader.hide();
+			VMESearch.loader.hide();
 			
 			Ext.MessageBox.show({
 				title: "Info",
@@ -675,7 +677,7 @@ VMESearch.rfbZoomTo = function(acronym){
 			VME.zoomTo(settings, repro_bbox, true, true);
 		}			
 			
-		vmeLoader.hide();
+		VMESearch.loader.hide();
 	}
 	
 	vectorSource.on("change", function(e){

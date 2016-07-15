@@ -151,15 +151,26 @@ FigisMap.rnd.getFeatureInfoEventHandler = function(evt, map, popup){
 				FigisMap.debug('FigisMap.rnd.popup - async request: ', xmlHttp);
 				var features = FigisMap.ol.readFeatures(xmlHttp.responseXML);
 				if(features.length > 0){
-					targetFeatures = targetFeatures.concat(features);	
+					for(var j=0;j<features.length;j++){
+						var f = features[j];	
+						f.layer = popup.config.refs[i].id;	
+						targetFeatures.push(f);
+					}	
 					targetXmlHttpRequests.push(xmlHttp);
 					if(!popup.config.multiple) iterating = false;
 				}
 				
 				if(urls.length == 0){
-					if(targetFeatures.length > 0)
-						FigisMap.rnd.showPopupForCoordinates(popup, targetFeatures, targetXmlHttpRequests, coords);
-					
+					if(targetFeatures.length > 0){
+						var fc = new Object();
+						for(var k=0;k<targetFeatures.length;k++){
+							var feature = targetFeatures[k];
+							var layer = feature.layer;
+							if(!fc[layer]) fc[layer] = new Array();
+							fc[layer].push(feature);
+						}
+						FigisMap.rnd.showPopupForCoordinates(popup, fc, targetXmlHttpRequests, coords);
+					}
 				}
 
 				if (urls.length && iterating) {
@@ -196,6 +207,7 @@ FigisMap.rnd.showPopupForCoordinates = function(popup, feature, xmlHttp, coords)
 			if ( xmlHttp.readyState != 4 ) return void(0);
 			if (xmlHttp.status == 200) {
 				FigisMap.debug('FigisMap.rnd.popup - async request: ', xmlHttp);
+				if( popup.config.beforeopen) popup.config.beforeopen(feature);	
 				popup.show(coords, popup.config.contentHandler(feature, xmlHttp));
 				if( popup.config.onopen) popup.config.onopen(feature);
 			}
@@ -203,7 +215,8 @@ FigisMap.rnd.showPopupForCoordinates = function(popup, feature, xmlHttp, coords)
 		
 		xmlHttp.open('GET', popup.config.resourceHandler(feature), true);
 		xmlHttp.send('');
-	} else {	
+	} else {
+		if( popup.config.beforeopen) popup.config.beforeopen(feature);	
 		popup.show(coords, popup.config.contentHandler(feature, xmlHttp));
 		if( popup.config.onopen) popup.config.onopen(feature);
 	}
@@ -227,8 +240,8 @@ FigisMap.rnd.emulatePopupForFeature = function(map, id, feature){
  * @param map object of class {ol.Map}
  * @param feature a object of class {ol.Feature}
  */
-FigisMap.rnd.emulatePopupForCoordinates = function(map, coords){
-	var popup = FigisMap.rnd.getPopupOverlay(map, "getfeatureinfo");
+FigisMap.rnd.emulatePopupForCoordinates = function(map, id, coords){
+	var popup = FigisMap.rnd.getPopupOverlay(map, id);
 	var event = {coordinate: coords, map: map, pixel: [100,10], wasVirtual: true};
 	FigisMap.rnd.getFeatureInfoEventHandler(event, map, popup);
 }

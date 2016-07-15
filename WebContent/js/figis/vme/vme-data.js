@@ -132,57 +132,7 @@ Ext.ux.LazyPagingToolbar = Ext.extend(Ext.PagingToolbar,{
 		}
 });
 
-VMEData.utils = {
-		generateDownloadLink :function(ows,types,filters,format,otherparams){
-			try{
-				var cql_filter = filters.join(";");
-			}catch(e){
-				cql_filter =filters;
-			}
-			try{
-				var typeName = types.join(",");
-			}catch(e){
-				typeName = types;
-			}
-			var addParams = "";
-			for (var name in otherparams){
-				addParams += "&" + name + "=" + encodeURIComponent( otherparams[name] );
-			}
-			return ows+"?service=WFS&version=1.0.0&request=GetFeature" 
-				+"&typeName="+ encodeURIComponent(typeName)
-				+ "&outputFormat=" + encodeURIComponent( format )
-				+ (cql_filter ? "&cql_filter=" + encodeURIComponent( cql_filter ):"")
-				+ addParams;
-									
-		
-		},
-		generateFidFilter:function(fids){
-			if(fids ==undefined) return ;
-			var len = fids.length;
-			if(!len) return ;
-			
-			var filter = "IN ('" +fids[0]+"'";
-			for (var i=1; i<len ;i++){
-				filter += ",'" +fids[i]+ "'";
-			} 
-			filter += ")";
-			return filter;
-		
-		},
-		generateVMEFilter:function(vme_id){
-			if (vme_id ==undefined) return ;
-			return "VME_ID = '" +vme_id +"'";
-		},
-		surfaceUoMConverter: function(values, uom){
-			if(uom == "ha"){
-				var hectares = values.surface/10000;
-				return Math.round(hectares);
-			}else if(uom == "skm"){
-				var skm = values.surface/1000000;
-				return Math.round(skm);
-			}
-		}		
-	}
+
 
 
 /** 
@@ -402,9 +352,7 @@ VMEData.templates = {
 						"shape-zip",
 						{format_options:"filename:VME-DB_"+values.vme_id+".zip"}
 					);
-					//return +"?service=WFS&version=1.0.0&request=GetFeature&typeName=" + FigisMap.fifao.vme+ "&outputFormat=shape-zip" +
-					//	"&cql_filter=" + encodeURIComponent( "YEAR = '" + values.year + "' AND VME_ID = '" +values.vme_id +"'" )
-							
+											
 				},
 				/**
 				 * Download all vme areas + encoutners & sd for this vme
@@ -435,7 +383,7 @@ VMEData.templates = {
 				}
 				}
 			),
-		vme_oa: 
+		vme_oara: 
 			new Ext.XTemplate(
                 //OLD POPUP 
 				/*'<tpl for=".">'+
@@ -631,186 +579,7 @@ VMEData.templates = {
 					}
 				}
 			),            
-		encounters :
-			new Ext.XTemplate(
-				'<tpl for=".">'+
-					'<div class="search-result" style="text-align:left;">' +						
-						'<em>Taxa: </em><span>{taxa}</span> <br/> '+
-						'<em>Reporting Year: </em>{year}<br/> '+
-						'<em>Quantity: </em><span>{quantity} {unit}</span> <br/> '+
-						'<em>Vme ID:</em><span class="own"> {vme_id}</span><br/>'+
-						'<em>Management Body/Authority: </em><span class="own">{owner}</span><br/>'+
-						'<em>Geographical reference: </em><span class="geo_ref" >{geo_ref}</span> <br/>'+
-						'<br/>'+
-						
-						'<div style="text-align:right;">' +
-							'<a class="" target="_blank" href="{[this.getDownloadLink(values)]}"><img title="Download as shapefile" src="assets/figis/vme/img/icons/download.png"></a>' +
-							'<a class="" onClick="'+
-								'myMap.zoomToExtent(OpenLayers.Bounds.fromString( \'{[this.getBBOX(values)]}\'));'+
-								'FigisMap.ol.emulatePopupFromVert({[this.getVert(values.geometry)]})'+
-							'"><img title="Zoom to area" src="assets/figis/vme/img/icons/buttonzoom.png"></a>' +
-						
-						'</div>'+
-					'</div>'+
-				'</tpl>',
-				{
-					compiled:true,
-					getBBOX:function(values){
-						var projcode = "EPSG:4326";
-						if(myMap.getProjection() == projcode ){
-							bbox = values.bbox;
-							return bbox.toArray(); 
-						}else{
-							var geom = values.geometry;
-							var repro_geom = geom.clone().transform(
-							new OpenLayers.Projection(projcode),
-							myMap.getProjectionObject()
-						);
-						
-						var repro_bbox = repro_geom.getBounds();
-						return repro_bbox.toArray();
-						
-						}
-					},
-					getVert: function(geom){
-						vert  = geom.getVertices()[0];
-						
-						return "{x:"+vert.x+",y:"+vert.y+"}";
-						//return evt;
-					},
-					/**
-					 * Downloads the single point
-					 */
-					getDownloadLink: function(values){
-						return VMEData.utils.generateDownloadLink(
-							FigisMap.rnd.vars.ows,
-							FigisMap.fifao.vme_en,
-							VMEData.utils.generateFidFilter(values.id),
-							"shape-zip",
-							{format_options:"filename:VME-DB_ENC_"+values.vme_id+"_SP.zip"}
-						);
-						//return +"?service=WFS&version=1.0.0&request=GetFeature&typeName=" + FigisMap.fifao.vme+ "&outputFormat=shape-zip" +
-						//	"&cql_filter=" + encodeURIComponent( "YEAR = '" + values.year + "' AND VME_ID = '" +values.vme_id +"'" )
-							
-					},
-					/**
-					 * Download all points for this vme
-					 */
-					getDownloadFDS:function(values){
-						/*if(!FigisMap.rnd.status.logged){
-							return "";
-						}*/
-						
-						return '<a class="zipmlink" target="_blank" href="'+
-							VMEData.utils.generateDownloadLink(
-								FigisMap.rnd.vars.ows,
-								FigisMap.fifao.vme_en,
-								VMEData.utils.generateVMEFilter(values.vme_id),
-								"shape-zip",
-								{format_options:"filename:VME-DB_ENC_"+values.vme_id+".zip"}
-							)
-							+'">Download full Data Set</a>' ;
-					}
-				}
-			),
-		surveydata :
-			new Ext.XTemplate(
-				'<tpl for=".">'+
-					'<div class="search-result"  style="text-align:left;">' +						
-						'<em>Taxa: </em><span>{taxa}</span> <br/> '+
-						'<em>Reporting Year: </em>{year}<br/> '+
-						'<em>Quantity: </em><span>{quantity} {unit}</span> <br/> '+
-						'<em>Vme ID:</em><span class="own"> {vme_id}</span><br/>'+
-						'<em>Management Body/Authority: </em><span class="own">{owner}</span><br/>'+
-						'<em>Geographical reference: </em><span class="geo_ref" >{geo_ref}</span> <br/>'+
-						'<br/>'+
-						
-						'<div style="text-align:right;">' +
-							'<a class="" target="_blank" href="{[this.getDownloadLink(values)]}"><img title="Download as shapefile" src="assets/figis/vme/img/icons/download.png"></a>' +
-							'<a class="" onClick="'+
-								'myMap.zoomToExtent(OpenLayers.Bounds.fromString( \'{[this.getBBOX(values)]}\'));'+
-								'FigisMap.ol.emulatePopupFromVert({[this.getVert(values.geometry)]})'+
-							'"><img title="Zoom to area" src="assets/figis/vme/img/icons/buttonzoom.png"></a>' +
-						'</div>'+
-					'</div>'+
-				'</tpl>',
-				{
-					compiled:true,
-					getBBOX:function(values){
-						var projcode = "EPSG:4326";
-						if(myMap.getProjection() == projcode ){
-							bbox = values.bbox;
-							return bbox.toArray(); 
-						}else{
-							var geom = values.geometry;
-							var repro_geom = geom.clone().transform(
-							new OpenLayers.Projection(projcode),
-							myMap.getProjectionObject()
-						);
-						
-						var repro_bbox = repro_geom.getBounds();
-						return repro_bbox.toArray();
-						
-						}
-					},
-					getVert: function(geom){
-						vert  = geom.getVertices()[0];
-						
-						return "{x:"+vert.x+",y:"+vert.y+"}";
-						//return evt;
-					},
-					/**
-					 * Downloads the single point
-					 */
-					getDownloadLink: function(values){
-						return VMEData.utils.generateDownloadLink(
-							FigisMap.rnd.vars.ows,
-							FigisMap.fifao.vme_sd,
-							VMEData.utils.generateFidFilter(values.id),
-							"shape-zip",
-							{format_options:"filename:VME-DB_SD_"+values.vme_id+"_SP.zip"}
-						);
-						//return +"?service=WFS&version=1.0.0&request=GetFeature&typeName=" + FigisMap.fifao.vme+ "&outputFormat=shape-zip" +
-						//	"&cql_filter=" + encodeURIComponent( "YEAR = '" + values.year + "' AND VME_ID = '" +values.vme_id +"'" )
-							
-					},
-					/**
-					 * Download all points for this vme
-					 */
-					getDownloadFDS:function(values){
-						/*if(!FigisMap.rnd.status.logged){
-							return "";
-						}*/
-						
-						return '<a class="zipmlink" target="_blank" href="'+
-							VMEData.utils.generateDownloadLink(
-								FigisMap.rnd.vars.ows,
-								FigisMap.fifao.vme_sd,
-								VMEData.utils.generateVMEFilter(values.vme_id),
-								"shape-zip",
-								{format_options:"filename:VME-DB_SD_"+values.vme_id+".zip"}
-							)
-							+'">Download full Data Set</a>' ;
-					}
-				}
-			),
-		aggregate :
-			new Ext.XTemplate(
-				'<tpl for=".">'+
-					'<div class="search-result" style="text-align:left">' +
-						'<em>Count: </em>{count}<br/>'+
-						'<em>Year: </em> <span class="status" >{year}</span><br/>' +
-						//'<em>Competent Authority: </em> <span class="status" >{owner}</span><br/>' +
-						'<em>Management Body/Authority: </em><span class="own">{owner}</span><br/>'+
-						'<em>Geographical reference: </em><span class="geo_ref" >{geo_ref}</span> <br/>'+
-					'</div>'+
-				'</tpl>',
-				{
-					compiled:true
-					
-				}
-			),
-		footprints :
+		vme_bfa :
 			new Ext.XTemplate(
 				'<tpl for=".">'+
 					'<div class="popup-result" style="text-align:left;">' +
@@ -1048,6 +817,16 @@ VMEData.models = {
 VMEData.extensions = {
 	FeatureInfo:{
 		VMEStore : Ext.extend(Ext.data.JsonStore,{
+			reader : new Ext.data.JsonReader({
+				root:'',
+				fields: [
+					{name: 'geometry', mapping: 'THE_GEOM'},
+					{name: 'feature_localname', mapping: 'LOCAL_NAME'}
+                    			],
+				idProperty: 'fid'			
+			})
+		}),
+		VMETRUEStore : Ext.extend(Ext.data.JsonStore,{
 			reader : new Ext.data.JsonReader({
 				root:'',
 				fields: [

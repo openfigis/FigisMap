@@ -13,10 +13,9 @@ var VMEPopup = new Object();
  * VMEPopup.getStore
  */
 VMEPopup.getStore = function(layer){
-	var name = layer.params.LAYERS;
   	var layernames = FigisMap.fifao;
   	var featureInfoStores =VMEData.extensions.FeatureInfo;
-  	switch(name){
+  	switch(layer){
     		case layernames.vme :
       			return new featureInfoStores.VMEStore();    
     		case layernames.vme_oara :
@@ -32,10 +31,9 @@ VMEPopup.getStore = function(layer){
  * VMEPopup.getTabTitle
  */
 VMEPopup.getTabTitle=function(layer){
-	var name = layer.params.LAYERS;
   	var layernames = FigisMap.fifao;
   	var templates = VMEData.templates;
-  	switch(name){
+  	switch(layer){
     		case layernames.vme :
       			return "VME closed areas";
     		case layernames.vme_oara :
@@ -52,10 +50,9 @@ VMEPopup.getTabTitle=function(layer){
  * VMEPopup.getTemplate
  */
 VMEPopup.getTemplate = function(layer){
-	var name = layer.params.LAYERS;
   	var layernames = FigisMap.fifao;
   	var templates =VMEData.templates;
-  	switch(name){
+  	switch(layer){
         	case layernames.vme_cl :
       			return templates.vme;
     		case layernames.vme_oa :
@@ -407,10 +404,9 @@ FigisMap.ol.getFeatureInfoHandlerGML =  function(e) {
 };
 FigisMap.ol.showPopup= function(e,response,layer){
     var popupKey = e.xy.x + "." + e.xy.y;
-	var store = FigisMap.ol.getStore(layer);
-	//var template = FigisMap.ol.getTemplate
+	var store = VMEPopup.getStore(layer);
 	store.loadData(response);
-	var name = FigisMap.ol.getTabTitle(layer);
+	var name = VMEPopup.getTabTitle(layer);
 	var dv = new Ext.DataView({
 		itemId: name,
 		title: name,
@@ -418,46 +414,12 @@ FigisMap.ol.showPopup= function(e,response,layer){
 		autoScroll:true,
 		border:false,
 		store: store,
-		tpl: FigisMap.ol.getTemplate(layer),
+		tpl: VMEPopup.getTemplate(layer),
 		singleSelect: true
 	});
-	var popup;
-	if (!(popupKey in FigisMap.popupCache)){
-	  popup = new GeoExt.Popup({
-		//title: 'Features Info',
-        border:false,
-		width: 400,
-		height: 300,
-		layout: "fit",
-		map: myMap,
-		unpinnable:false,
-		
-		items:[new Ext.TabPanel(
-			{
-				itemId:'tabPanel',
-				//deferredRender:false,
-				activeTab: 0,
-              tabPosition:'top',
-              enableTabScroll: true,                
-				border:false,
-				layoutOnTabChange:true
-				
-			}
-		)],
-		location: e.xy,
-		listeners: {
-			close: (function(key) {
-				return function(panel){
-					delete FigisMap.popupCache[key];
-				};
-			})(popupKey)
-		}
-	  });
-				FigisMap.ol.clearPopupCache();
-				FigisMap.popupCache[popupKey] = popup;
-	}else{
-		popup = FigisMap.popupCache[popupKey];
-	}
+	
+
+
 	var count =store.getCount();
 	if(count> 0){
 	  var oldItem,tp;

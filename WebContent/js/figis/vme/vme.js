@@ -37,6 +37,173 @@ VME.label = function(key){
 	return FigisMap.label(key, VMELabels);
 }
 
+VME.utils = {
+	generateDownloadLink :function(ows,types,filters,format,otherparams){
+		try{
+			var cql_filter = filters.join(";");
+		}catch(e){
+			cql_filter =filters;
+		}
+		try{
+			var typeName = types.join(",");
+		}catch(e){
+			typeName = types;
+		}
+		var addParams = "";
+		for (var name in otherparams){
+			addParams += "&" + name + "=" + encodeURIComponent( otherparams[name] );
+		}
+		return ows+"?service=WFS&version=1.0.0&request=GetFeature" 
+			+"&typeName="+ encodeURIComponent(typeName)
+			+ "&outputFormat=" + encodeURIComponent( format )
+			+ (cql_filter ? "&cql_filter=" + encodeURIComponent( cql_filter ):"")
+			+ addParams;
+								
+	
+	},
+	generateFidFilter:function(fids){
+		if(fids ==undefined) return ;
+		var len = fids.length;
+		if(!len) return ;
+		
+		var filter = "IN ('" +fids[0]+"'";
+		for (var i=1; i<len ;i++){
+			filter += ",'" +fids[i]+ "'";
+		} 
+		filter += ")";
+		return filter;
+	
+	},
+	generateVMEFilter:function(vme_id){
+		if (vme_id ==undefined) return ;
+		return "VME_ID = '" +vme_id +"'";
+	},
+	surfaceUoMConverter: function(feature, uom){
+		var surface = feature.getProperties()["SURFACE"];
+		if(uom == "ha"){
+			var hectares = surface/10000;
+			return Math.round(hectares);
+		}else if(uom == "sqkm"){
+			var sqkm = surface/1000000;
+			return Math.round(sqkm);
+		}
+	}		
+}
+
+
+
+VME.genericFeatureTemplate = function(feature, layer){
+	
+	var p = feature.getProperties();
+	var vmeId = p["VME_ID"];
+
+	var geom = feature.getGeometry();
+	var extent = geom.getExtent();
+	var trgGeom = (VME.getProjection() == "4326")? geom : geom.transform(new ol.proj.get("EPSG:4326"),VME.myMap.getView().getProjection());
+	var trgExtent = trgGeom.getExtent();
+
+	var downloadLink = VME.utils.generateDownloadLink(FigisMap.rnd.vars.ows,layer,VME.utils.generateVMEFilter(vmeId),"shape-zip",{format_options:"filename:VME-DB_"+vmeId+".zip"});
+
+	var tpl = '<div class="popup-result" style="text-align:left;border: 1px #ccc solid;border-width:1px 0px 0px 0px;">' +
+					'<h3>'+p["LOCAL_NAME"]+'</h3>'+
+					'<em>Year: </em>'+p["YEAR"]+'<br/> '+
+					'<em>Management Body/Authority: </em><span class="own">'+p["OWNER"]+'</span><br/>'+
+					'<em>Geographical reference: </em><span class="geo_ref" >'+((p["GEOREF"])? p["GEOREF"]:"")+'</span> <br/>'+
+                    			'<em>Surface: </em>'+VME.utils.surfaceUoMConverter(feature, "sqkm")+'</span><span> km&#178;</span> <br/> '+                         
+					'<br/>' +
+					'<div>'+
+						'<div style="text-align:right;float:right;">' +
+							'<a class="" target="_blank" href="'+downloadLink+'">'+
+								'<img title="Download as shapefile" src="assets/figis/vme/img/icons/download.png">'+
+							'</a>' +
+							'<a class="" onClick="VME.zoomTo({zoomExtent:['+extent+']},['+trgExtent+'],true,false);">'+
+								'<img title="Zoom to area" src="assets/figis/vme/img/icons/buttonzoom.png">'+
+							'</a>' +
+						'</div>'+
+						'<div style="text-align:left;">' +
+							'<u><a href="javascript:void(0);" onClick="VMEInfo.infoHandler(VMESearch.factsheetUrl[\''+p["OWNER"]+'\'], true)" >Access the Regional Factsheet</a></u>' +
+                        '</div>'+                         
+					'</div>'+
+			'</div>'; 
+	return tpl;
+}
+
+
+VME.contentHandler = function(features, requests){
+
+	var container = document.createElement("div");
+	container.className = "popup-container";
+	
+					
+	//tab header
+	//----------
+	var layers = Object.keys(features);
+	for(var i=0;i<layers.length;i++){
+		var layer = layers[i];
+		var tabTitle = "";
+		switch(layer){
+    			case FigisMap.fifao.vme :
+      				tabTitle = "VME closed areas";break;
+    			case FigisMap.fifao.vme_oara :
+      				tabTitle = "Other access regulated areas";break;     
+    			case FigisMap.fifao.vme_bfa : 
+      				tabTitle = "Bottom fishing areas";break;
+		}
+
+		var input = document.createElement("input");
+		input.id = "tab-"+i;
+		input.type = "radio";
+		input.name = "tab-group";
+		if(i==0) input.checked = "checked";
+
+		var label = document.createElement("label");
+		label.setAttribute("for",input.id);
+		label.className = "popup-label";
+		label.innerHTML = tabTitle;
+			
+		container.appendChild(input);
+		container.appendChild(label);
+	}
+
+	//add hidden tab
+	var label = document.createElement("label");
+	label.setAttribute("for",input.id);
+	label.style.width = "50%";
+	label.style.color = "transparent";
+	label.style.border = "1px solid #ccc";
+	label.style.borderWidth = "0px 0px 1px 0px";
+	label.style.margin = "1px";
+	label.innerHTML = "hidden";
+	container.appendChild(label);
+		
+	//tab content
+	//-----------
+	var content = document.createElement("div");
+	content.className = "popup-content";
+	for(var i=0;i<layers.length;i++){
+		var layer = layers[i];
+		var fc = features[layer];
+
+		var layerContent = document.createElement("div");
+		layerContent.id = "content-"+i;
+		layerContent.className = "tab-content";
+			
+		var layerResults = "";
+		for(var j=0;j<fc.length;j++){
+			var feature = fc[j];
+			layerResults += VME.genericFeatureTemplate(feature, layer);
+		}
+	
+		layerContent.innerHTML = layerResults;
+		content.appendChild(layerContent);
+	}
+	container.appendChild(content);
+
+	return container;
+}
+
+
+
 
 /**
  * VME baseMapParams
@@ -55,29 +222,25 @@ VME.baseMapParams = function(year){
 	this.projection = VME.currentProjection();
 	this.base = baselayers;
 	
-	var contentHandler = function(features, requests){
-		var content = document.createElement("div");
-		var html = "";	
-		for(var i=0;i<features.length;i++){		
-			html += "=============================<br>";
-			html += features[i].getProperties()["VME_ID"] +"<br>";	
-		}
-		content.innerHTML = html;
-		return content.innerHTML; 
-	}
 
 	this.popups = [
 		//getfeatureinfo popup
 		{
-		id: "vmelayers",
-		strategy: "getfeatureinfo",
-		multiple: true,
-		refs: [
-			{id: FigisMap.fifao.vme},
-			{id: FigisMap.fifao.vme_bfa},
-			{id: FigisMap.fifao.vme_oara}
-		],
-		contentHandler : contentHandler
+			id: "vmelayers",
+			strategy: "getfeatureinfo",
+			multiple: true,
+			refs: [
+				{id: FigisMap.fifao.vme},
+				{id: FigisMap.fifao.vme_bfa},
+				{id: FigisMap.fifao.vme_oara}
+			],
+			contentHandler : VME.contentHandler,
+			beforeopen : function(feature){
+				VMESearch.loader.show();
+			},
+			onopen : function(feature){
+				VMESearch.loader.hide();
+			}
 		}
 	];
 
@@ -330,21 +493,21 @@ VME.zoomTo = function(settings,geom,zoom,closest) {
 				//TODO OL3 'closest' parameter?
 				VME.myMap.zoomToExtent(bbox);
 			}else{
-                if(bboxproj == 'EPSG:3031'){
-                    // WORKAROUND TO FIX STRANGE BEHAVIOUR BOUNDS TRANSFORMATION FROM 4326 TO 3031. BOUND NOW IS HARCODED
-                    bbox = [-3465996.97,-3395598.49,5068881.53,4524427.45]; 
-                    VME.myMap.getView().setCenter(ol.extent.getCenter(bbox)); 
-                }else{
-                    VME.myMap.getView().setCenter(ol.extent.getCenter(bbox)); 
-                }
+                		if(bboxproj == 'EPSG:3031'){
+                   	 		// WORKAROUND TO FIX STRANGE BEHAVIOUR BOUNDS TRANSFORMATION FROM 4326 TO 3031. BOUND NOW IS HARCODED
+                   			bbox = [-3465996.97,-3395598.49,5068881.53,4524427.45]; 
+                    			VME.myMap.getView().setCenter(ol.extent.getCenter(bbox)); 
+                		}else{
+                    			VME.myMap.getView().setCenter(ol.extent.getCenter(bbox)); 
+                		}
 			}
 		}else{
 			var newproj = bboxproj.split(":")[1];
             
-            // uncomment this if default projection is 4326
+            		// uncomment this if default projection is 4326
 			/*bbox = ol.proj.transformExtent(bbox,
 				newproj == "4326" ? new ol.proj.get(newproj) : new ol.proj.get(curr_proj),
-                new ol.proj.get(bboxproj)
+                		new ol.proj.get(bboxproj)
 			);*/	
 
 			//TODO OL3
@@ -814,6 +977,22 @@ VME.draw = function(pars){
 	VME.lastExtent = null;
 	VME.lastCenter = null;
 	VME.lastZoom = null;
+
+	var VMELayer = FigisMap.ol.getLayer(VME.myMap, FigisMap.fifao.vme);
+	VMELayer.on("change:visible",function(e){
+		VME.toggleVMEs();
+	});
+
+	var BFALayer = FigisMap.ol.getLayer(VME.myMap, FigisMap.fifao.vme_bfa);
+	BFALayer.on("change:visible", function(e){
+		VME.toggleBFAs();
+	});
+
+	var OARALayer = FigisMap.ol.getLayer(VME.myMap, FigisMap.fifao.vme_oara);
+	OARALayer.on("change:visible", function(e){
+		VME.toggleOARAs();
+	});
+
 }
 
 
@@ -849,20 +1028,45 @@ function radioClick(radio){
 
 
 /**
+ * VME.toggleVMELayer
+ * @param layer
+ * @param el the button DOM element
+ * @param hiddenClass
+ * @param visibleClass
+ * Enables/Disables a VME layer
+**/
+VME.toggleVMELayer = function(layer, el, hiddenClass, visibleClass){
+
+	if(el){
+		if(el.className ==  hiddenClass){
+			FigisMap.ol.toggleLayer(VME.myMap, layer, true);
+			el.className = visibleClass;
+		}else if(el.className == visibleClass){
+			FigisMap.ol.toggleLayer(VME.myMap, layer, false);
+			el.className =  hiddenClass
+		}
+		FigisMap.ol.updateLayerSwitcher(VME.myMap);
+	}else{
+		var olLayer = FigisMap.ol.getLayer(VME.myMap,layer);
+		if(olLayer.getVisible()){
+			el = document.getElementsByClassName(hiddenClass)[0];
+			el.className = visibleClass;
+		}else{
+			el = document.getElementsByClassName(visibleClass)[0];
+			el.className = hiddenClass;
+
+		}
+	}
+
+}
+
+/**
 * function toggleVMEs
 * @param el the button DOM element
 * Enables/Disables 'vme:closures' layer in LayerSwitcher 
 **/	
 VME.toggleVMEs = function(el) {
-	var layer = FigisMap.fifao.vme;
-	if(el.className ==  "lblVMEs figisButtonVMEs"){
-		FigisMap.ol.toggleLayer(VME.myMap, layer, true);
-		el.className = "lblVMEs figisButtonToggleVMEs"
-	}else if(el.className == "lblVMEs figisButtonToggleVMEs"){
-		FigisMap.ol.toggleLayer(VME.myMap, layer, false);
-		el.className =  "lblVMEs figisButtonVMEs"
-	}
-	FigisMap.ol.updateLayerSwitcher(VME.myMap);
+	VME.toggleVMELayer(FigisMap.fifao.vme, el, "lblVMEs figisButtonVMEs", "lblVMEs figisButtonToggleVMEs");
 }
 
 /**
@@ -871,15 +1075,7 @@ VME.toggleVMEs = function(el) {
 * Enables/Disables 'vme:other_areas' layer in LayerSwitcher 
 **/	
 VME.toggleOARAs = function(el){
-	var layer = FigisMap.fifao.vme_oara;
-	if(el.className ==  "lblOARAs figisButtonOARAs"){
-		FigisMap.ol.toggleLayer(VME.myMap, layer, true);
-		el.className = "lblOARAs figisButtonToggleOARAs"
-	}else if(el.className == "lblOARAs figisButtonToggleOARAs"){
-		FigisMap.ol.toggleLayer(VME.myMap, layer, false);
-		el.className = "lblOARAs figisButtonOARAs"
-	}
-	FigisMap.ol.updateLayerSwitcher(VME.myMap);
+	VME.toggleVMELayer(FigisMap.fifao.vme_oara, el, "lblOARAs figisButtonOARAs", "lblOARAs figisButtonToggleOARAs");
 }
 
 /**
@@ -888,15 +1084,7 @@ VME.toggleOARAs = function(el){
 * Enables/Disables 'vme:bottom_fishing_areas' layer in LayerSwitcher 
 **/	
 VME.toggleBFAs = function(el){
-	var layer = FigisMap.fifao.vme_bfa;
-	if(el.className ==  "lblBFAs figisButtonBFAs"){
-		FigisMap.ol.toggleLayer(VME.myMap, layer, true);
-		el.className = "lblBFAs figisButtonToggleBFAs"
-	}else if(el.className == "lblBFAs figisButtonToggleBFAs"){
-		FigisMap.ol.toggleLayer(VME.myMap, layer, false);
-		el.className =  "lblBFAs figisButtonBFAs"
-	}
-	FigisMap.ol.updateLayerSwitcher(VME.myMap);
+	VME.toggleVMELayer(FigisMap.fifao.vme_bfa, el, "lblBFAs figisButtonBFAs", "lblBFAs figisButtonToggleBFAs");
 }
 
 /**
