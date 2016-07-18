@@ -425,11 +425,18 @@ VME.baseMapParams = function(year){
 				{id: FigisMap.fifao.vme_oara}
 			],
 			contentHandler : VME.contentHandler,
-			beforeopen : function(feature){
-				VMESearch.loader.show();
+			beforeevent : function(){
+				if(VMESearch.loader.disabled){
+					VMESearch.loader.enable();
+					VMESearch.loader.show();
+				}
 			},
-			onopen : function(feature){
-				VMESearch.loader.hide();
+			afterevent : function(feature){
+				if(!VMESearch.loader.disabled){
+					VMESearch.loader.hide();
+					VMESearch.loader.disable();
+				}
+
 			}
 		}
 	];

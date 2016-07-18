@@ -31,7 +31,7 @@ VMESearch.rfbZooms = {
 VMESearch.loader = {};
 VMESearch.initLoader = function(){
 	VMESearch.loader = new Ext.LoadMask(Ext.getBody(), {msg: "Please wait ..."});
-	VMESearch.loader.hide();
+	VMESearch.loader.disable();
 }
 VMESearch.initLoader();
 
@@ -344,7 +344,10 @@ VMESearch.form.panels.SearchForm = new Ext.FormPanel({
  */
 VMESearch.search = function(advanced){
 
-	VMESearch.loader.show();
+	if(VMESearch.loader.disabled){
+		VMESearch.loader.enable();
+		VMESearch.loader.show();
+	}
 
 	// ///////////////////////////////////////////////////
 	// Retrieve Autority area extent to perform a VME.zoomTo.
@@ -381,7 +384,10 @@ VMESearch.search = function(advanced){
 		var loadFeaturesCallback = function(){		
 			var features = vectorSource.getFeatures();
 			if(!features || features.length < 1){
-				VMESearch.loader.hide();
+				if(!VMESearch.loader.disabled){
+					VMESearch.loader.hide();
+					VMESearch.loader.disable();
+				}
 						
 				Ext.MessageBox.show({
 					title: "Info",
@@ -483,7 +489,11 @@ VMESearch.search = function(advanced){
 				VME.zoomTo(settings, repro_bbox, true, true);
 			}
 			vmeSearch(advanced);
-			VMESearch.loader.hide();			
+			if(!VMESearch.loader.disabled){
+				VMESearch.loader.hide();
+				VMESearch.loader.disable();
+			}
+			
 		   
 		}
 		
@@ -546,7 +556,11 @@ function vmeSearch(advanced){
  */
 VMESearch.rfbZoomTo = function(acronym){
 
-	VMESearch.loader.show();
+	if(VMESearch.loader.disabled){
+		VMESearch.loader.show();
+		VMESearch.loader.enable();
+	}
+
 
 	////////////////////////////////////////////////////
 	// Retrieve RFB areas extent to perform a VME.zoomTo. //
@@ -571,7 +585,10 @@ VMESearch.rfbZoomTo = function(acronym){
 		
 		var features = vectorSource.getFeatures();
 		if(!features || features.length < 1){
-			VMESearch.loader.hide();
+			if(!VMESearch.loader.disabled){
+				VMESearch.loader.hide();
+				VMESearch.loader.disable();
+			}
 			
 			Ext.MessageBox.show({
 				title: "Info",
@@ -677,7 +694,11 @@ VMESearch.rfbZoomTo = function(acronym){
 			VME.zoomTo(settings, repro_bbox, true, true);
 		}			
 			
-		VMESearch.loader.hide();
+		if(!VMESearch.loader.disabled){
+			VMESearch.loader.hide();
+			VMESearch.loader.disable();
+		}
+
 	}
 	
 	vectorSource.on("change", function(e){

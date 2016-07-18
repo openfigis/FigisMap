@@ -82,6 +82,9 @@ FigisMap.rnd.getPopupOverlay = function(map, id) {
  * @param popup
  */
 FigisMap.rnd.getFeatureEventHandler = function(evt, map, popup){
+	
+	if( popup.config.beforeevent) popup.config.beforeevent();
+
 	var feature = map.forEachFeatureAtPixel(evt.pixel,
 		function(feature, layer) {
 						
@@ -103,6 +106,8 @@ FigisMap.rnd.getFeatureEventHandler = function(evt, map, popup){
 	if (feature) {
 		var coords = feature.getGeometry().getCoordinates();
 		FigisMap.rnd.showPopupForCoordinates(popup, feature, null, coords);
+	}else{
+		if( popup.config.afterevent) popup.config.afterevent();	
 	}
 }
 
@@ -114,11 +119,12 @@ FigisMap.rnd.getFeatureEventHandler = function(evt, map, popup){
  */
 FigisMap.rnd.getFeatureInfoEventHandler = function(evt, map, popup){
 	console.log("=============================================");
-		
+	
+	if( popup.config.beforeevent) popup.config.beforeevent();
+
 	var coords = evt.coordinate;
   	var viewResolution = map.getView().getResolution();
-	var viewProjection = map.getView().getProjection().getCode()
-		
+	var viewProjection = map.getView().getProjection().getCode()	
 
 	//prepare GetFeatureInfo Urls
 	var urls = new Array();
@@ -145,7 +151,7 @@ FigisMap.rnd.getFeatureInfoEventHandler = function(evt, map, popup){
 		xmlHttp.onreadystatechange = function() {
 			if ( xmlHttp.readyState != 4 ) return void(0);
 			if ( xmlHttp.status == 200) {
-				FigisMap.debug('FigisMap.rnd.popup - async request: ', xmlHttp);
+				
 				var features = FigisMap.ol.readFeatures(xmlHttp.responseXML);
 				if(features.length > 0){
 					for(var j=0;j<features.length;j++){
@@ -222,6 +228,8 @@ FigisMap.rnd.getFeatureInfoEventHandler = function(evt, map, popup){
 							FigisMap.rnd.showPopupForCoordinates(popup, fc, targetXmlHttpRequests, coords);
 						}
 						
+					}else{
+						if( popup.config.afterevent) popup.config.afterevent();
 					}
 				}
 			}
@@ -254,7 +262,7 @@ FigisMap.rnd.showPopupForCoordinates = function(popup, feature, xmlHttp, coords)
 			if ( xmlHttp.readyState != 4 ) return void(0);
 			if (xmlHttp.status == 200) {
 				FigisMap.debug('FigisMap.rnd.popup - async request: ', xmlHttp);
-				if( popup.config.beforeopen) popup.config.beforeopen(feature);	
+				if( popup.config.afterevent) popup.config.afterevent();	
 				popup.show(coords, popup.config.contentHandler(feature, xmlHttp));
 				if( popup.config.onopen) popup.config.onopen(feature);
 			}
@@ -263,7 +271,7 @@ FigisMap.rnd.showPopupForCoordinates = function(popup, feature, xmlHttp, coords)
 		xmlHttp.open('GET', popup.config.resourceHandler(feature), true);
 		xmlHttp.send('');
 	} else {
-		if( popup.config.beforeopen) popup.config.beforeopen(feature);	
+		if( popup.config.afterevent) popup.config.afterevent();		
 		popup.show(coords, popup.config.contentHandler(feature, xmlHttp));
 		if( popup.config.onopen) popup.config.onopen(feature);
 	}
