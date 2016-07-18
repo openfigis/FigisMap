@@ -1251,6 +1251,147 @@ a.lblReset {
 .search-result .searchResultValue{
 	font-weight: normal;
 }
+
+
+
+/**
+* NEW POPUP STYLE OUT OF GEOEXT
+*/
+
+/**
+ * Custom OL3 css
+ */
+.ol-popup {
+	background: #FFFFFF;
+    	background-color: rgba(255, 255, 255, 0.8) !important;
+    	border-radius: 10px;
+    	box-shadow: 0px 8px 8px rgba(0, 0, 0, 0.5);
+    	border-width: 1px;
+    	border-style: solid;
+    	border-color: #999999;
+    	-moz-border-radius: 10px;
+    	-webkit-border-radius: 10px;
+    	-khtml-border-radius: 10px;
+    	border-radius: 10px;
+	padding:12px 6px 12px 6px;
+	width: 398px !important; height: 282px !important;
+	z-index:6000;
+}
+.ol-popup-content { min-width: none !important; overflow:hidden;}
+.ol-popup-closer { font-size:100% !important; }
+
+/**
+ * VME content Handler css
+ */
+
+.ol-popup-content > .popup-container{
+}
+
+.ol-popup-content > .popup-container input {
+	height: 2.25em;
+	visibility: hidden;
+}
+
+.ol-popup-content > .popup-container input.visible {
+  visibility: visible !important;
+}
+
+.ol-popup-content > .popup-container label { 
+	/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#dcdcdc+0,f6f6f6+50,ededed+100 */
+	background: #dcdcdc; /* Old browsers */
+	background: -moz-linear-gradient(top,  #dcdcdc 0%, #f6f6f6 50%, #ededed 100%); /* FF3.6-15 */
+	background: -webkit-linear-gradient(top,  #dcdcdc 0%,#f6f6f6 50%,#ededed 100%); /* Chrome10-25,Safari5.1-6 */
+	background: linear-gradient(to bottom,  #dcdcdc 0%,#f6f6f6 50%,#ededed 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#dcdcdc', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
+	border-radius: .25em .25em 0 0;
+	border: 1px #999999 solid;
+	color: #aaa;
+	font: normal 11px tahoma,arial,helvetica;
+	font-weight:bold;
+	display: block;
+	float: left;
+	padding: 8px 1.5em 8px 1.5em;
+	text-align: center;
+}
+
+.ol-popup-content > .popup-container input:hover + .popup-label {
+	background: #ddd;
+	color: #666; 
+}
+
+.ol-popup-content > .popup-container input:checked + .popup-label {
+	/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#ffffff+0,f6f6f6+50,ededed+100 */
+	background: #ffffff; /* Old browsers */
+	background: -moz-linear-gradient(top,  #ffffff 0%, #f6f6f6 50%, #ededed 100%); /* FF3.6-15 */
+	background: -webkit-linear-gradient(top,  #ffffff 0%,#f6f6f6 50%,#ededed 100%); /* Chrome10-25,Safari5.1-6 */
+	background: linear-gradient(to bottom,  #ffffff 0%,#f6f6f6 50%,#ededed 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
+	border-width:1px 1px 1px 1px;
+	border-bottom-color: #ededed;
+	color: #444;
+	position: relative;
+	z-index: 6;
+}
+
+.ol-popup-content > .popup-container > .popup-content {
+	min-height: 20em;
+	position: relative;
+	width: 100%;
+	z-index: 5;
+	outline-offset: 2px;
+    	outline: 1px solid #999999;
+    	border-width: 1px 0px 0px 0px;
+    	margin-top: 2px;
+}
+
+.ol-popup-content > .popup-container > .popup-content div.tab-content {
+	opacity: 0;
+	padding: 0;
+	position: absolute;
+	width:100%;
+	height: 260px;
+	overflow-x: auto;
+}
+
+.ol-popup-content > .popup-container input#tab-0:checked ~ .popup-content #content-0,
+.ol-popup-content > .popup-container input#tab-1:checked ~ .popup-content #content-1,
+.ol-popup-content > .popup-container input#tab-2:checked ~ .popup-content #content-2 {
+    	opacity: 1;
+    	z-index: 100;
+	overflow-y:auto;
+}
+
+/** popup tab liner */
+.popup-liner{
+	border: 1px solid #999999;
+	border-width: 0px 0px 1px 0px;
+}
+
+/** popup content */
+.popup-result{
+    	font-family: asap, sans-serif;
+    	font-size: 12px;
+    	font-weight: normal;
+    	line-height: 1.5;
+	margin:0;
+	padding: 6px 2px;
+	text-align: left;
+    	border: 1px #ccc solid;
+    	border-width: 1px 0px 0px 0px;
+}
+.popup-result h3{
+    	font-family: asap, sans-serif;
+    	font-size: 22px;
+    	font-weight: 400;
+    	padding: 0px;
+}
+.popup-result em{
+	font-weight: bold;
+}
+
+
+
+
 /**
  popup custom style
  **/
@@ -1274,24 +1415,6 @@ a.lblReset {
 .gx-popup.x-window-tc{   
     height: 18px;
     overflow: visible;
-}
-/** popup content */
-.popup-result h3{
-    font-family: asap, sans-serif;
-    font-size: 22px;
-    font-weight: 400;
-    padding: 0px;
-}
-.popup-result{
-    font-family: asap, sans-serif;
-    font-size: 12px;
-    font-weight: normal;
-    line-height: 1.5;
-	margin:0;
-	padding: 6px 2px;
-}
-.popup-result em{
-	font-weight: bold;
 }
 
 .x-view-over{background-color:rgba(219, 241, 255, 0.56);cursor:default;}

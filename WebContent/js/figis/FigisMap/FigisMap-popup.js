@@ -132,10 +132,7 @@ FigisMap.rnd.getFeatureInfoEventHandler = function(evt, map, popup){
       			coords, viewResolution, viewProjection,
       			{'INFO_FORMAT': "application/vnd.ogc.gml"}
 		);
-		if (url){
-			popup.config.refs[i].resourceHandler = function(feature){return url};
-			urls.push(url);
-		}
+		if (url) urls.push(url);
 	}
 
 	var i = 0;
@@ -160,23 +157,73 @@ FigisMap.rnd.getFeatureInfoEventHandler = function(evt, map, popup){
 					if(!popup.config.multiple) iterating = false;
 				}
 				
-				if(urls.length == 0){
+				if (urls.length > 0) {
+					if(iterating){
+						i++;
+       				     		getFeatureInfo();
+					}
+        			}else{
 					if(targetFeatures.length > 0){
+						//prepare output feature collection
 						var fc = new Object();
 						for(var k=0;k<targetFeatures.length;k++){
 							var feature = targetFeatures[k];
 							var layer = feature.layer;
-							if(!fc[layer]) fc[layer] = new Array();
-							fc[layer].push(feature);
+							if(!fc[layer]) fc[layer] = {features: new Array()};
+							fc[layer].features.push(feature);
 						}
-						FigisMap.rnd.showPopupForCoordinates(popup, fc, targetXmlHttpRequests, coords);
+						
+						//fetch/grab resources in case of specific feature resource Handlers		
+						var layers = Object.keys(fc);
+						var resourceUrls = new Array();
+						for(var k=0;k<layers.length;k++){
+							var layer = layers[k];
+							var layerRef = "";
+							for(var j=0;j<popup.config.refs.length;j++){
+								if(layer === popup.config.refs[j].id){
+									layerRef = popup.config.refs[j];
+									break;
+								}
+							}
+							
+							if(typeof layerRef.resourceHandler != "undefined"){
+								fc[layer].resources = new Array();
+								for(var j=0;j<fc[layer].features.length;j++){
+									var sf = fc[layer].features[j];
+									resourceUrls.push( {layer: layer, url: layerRef.resourceHandler(sf)});
+								}
+							}
+						}
+						
+						if(resourceUrls.length > 0){
+							var fetchResource = function(){
+								var xhr = FigisMap.getXMLHttpRequest();
+								var targetResource = resourceUrls.shift();
+								xhr.onreadystatechange = function() {
+									if ( xhr.readyState != 4 ) return void(0);
+									if ( xhr.status == 200) {
+										fc[targetResource.layer].resources.push(xhr);
+										if(resourceUrls.length > 0){
+											fetchResource();
+										}else{
+											FigisMap.rnd.showPopupForCoordinates(popup, fc, targetXmlHttpRequests, coords);
+										}
+									}else{
+										if(resourceUrls.length == 0) FigisMap.rnd.showPopupForCoordinates(popup, fc, targetXmlHttpRequests, coords);
+									}			
+								};
+								
+								xhr.open('GET', targetResource.url, true);
+								xhr.send('');
+							}
+							fetchResource();
+	
+						}else{
+							FigisMap.rnd.showPopupForCoordinates(popup, fc, targetXmlHttpRequests, coords);
+						}
+						
 					}
 				}
-
-				if (urls.length && iterating) {
-					i++;
-       				     	getFeatureInfo();
-        			}
 			}
 			
 		};

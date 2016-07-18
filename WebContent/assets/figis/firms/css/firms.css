@@ -119,9 +119,8 @@ body.embed #linkPanel { display: none; }
 
 /* FIRMS viewer popup */
 .ol-popup { padding: 0 !important; border: none !important; background-color:transparent !important; }
-.ol-popup-content { width: auto !important; height: auto !important; min-width: none !important; }
+.ol-popup-content { width: auto !important; height: auto !important; min-width: none !important;max-height: 400px !important; }
 .ol-popup-closer { font-size:100% !important; }
-.ol-popup-content { max-height: 400px !important; }
 
 .ol-loading-panel {
         /*background-image : url(../img/swiming_fish.gif) !important;*/
