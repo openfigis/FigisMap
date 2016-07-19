@@ -342,12 +342,6 @@ VME.contentHandler = function(features, requests){
 		container.appendChild(input);
 		container.appendChild(label);
 	}
-
-	//add hidden tab
-	var liner = document.createElement("div");
-	liner.id = "liner";
-	liner.className = "popup-liner";
-	container.appendChild(liner);
 		
 
 	//tab content

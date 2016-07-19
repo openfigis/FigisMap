@@ -1288,7 +1288,7 @@ a.lblReset {
 }
 
 .ol-popup-content > .popup-container input {
-	height: 2.25em;
+	height: 1.ç5em;
 	visibility: hidden;
 }
 
@@ -1310,7 +1310,7 @@ a.lblReset {
 	font-weight:bold;
 	display: block;
 	float: left;
-	padding: 8px 1.5em 8px 1.5em;
+	padding: 6px 1.5em 6px 1.5em;
 	text-align: center;
 }
 
@@ -1341,7 +1341,7 @@ a.lblReset {
 	outline-offset: 2px;
     	outline: 1px solid #999999;
     	border-width: 1px 0px 0px 0px;
-    	margin-top: 2px;
+    	margin-top: 16px;
 }
 
 .ol-popup-content > .popup-container > .popup-content div.tab-content {
@@ -1361,11 +1361,6 @@ a.lblReset {
 	overflow-y:auto;
 }
 
-/** popup tab liner */
-.popup-liner{
-	border: 1px solid #999999;
-	border-width: 0px 0px 1px 0px;
-}
 
 /** popup content */
 .popup-result{
