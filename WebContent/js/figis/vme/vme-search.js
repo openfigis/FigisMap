@@ -206,7 +206,7 @@ VMESearch.clickOnFeature =function(geographicFeatureId,rec_year,zoom){
                     var nameRFB = jsonData.features[0].properties.OWNER;
                     VME.refreshLayers(nameRFB);
                                         
-                    FigisMap.ol.clearPopupCache(); //TODO OL3
+                    VMEPopup.remove();
                     
                     if(!zoom){ 
 			var coords = (VME.getProjection() == "4326")? ol.extent.getCenter(bounds) : ol.extent.getCenter(repro_bbox);          
@@ -357,7 +357,7 @@ VMESearch.search = function(advanced){
 	var RFMStore = RFMOCombo.getStore();
 	var value = RFMOCombo.getValue();
     
-	FigisMap.ol.clearPopupCache(); //TODO OL3
+	VMEPopup.remove();
 
 	//remove highlight layer if any
 	VMESearch.resetHighlightVMELayer();	        
@@ -570,7 +570,7 @@ VMESearch.rfbZoomTo = function(acronym){
    	// perform CQL_FILTER
     	VME.refreshLayers(rfbName);
 
-    	FigisMap.ol.clearPopupCache();   //TODO OL3  
+    	VMEPopup.remove();
 
 	//remove highlight layer if any
 	VMESearch.resetHighlightVMELayer();	   

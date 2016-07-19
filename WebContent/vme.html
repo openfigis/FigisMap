@@ -9,31 +9,27 @@
 	<meta name="description" content="Map application to display areas of Vulnerable Marine Ecosystems." />
 	<meta name="author-corporate" content="FAO of the UN" />
 	<meta name="copyright" content="http://www.fao.org/corp/copyright/en/" />
-	<meta name="keywords" content="RFB, Regional Fishery Body, Map, FAO" />
+	<meta name="keywords" content="VME, Vulnerable Marine Ecosystem, Map, FAO" />
 	<title>Vulnerable Marine Ecosystems Database</title>
 	
-	
-	<!-- FigisMap -->
-	<link rel="stylesheet" type="text/css" href="js/figis/FigisMap/FigisMap.css"></link>
-	<script type="text/javascript" src="js/figis/FigisMap/FigisMap.js"></script>
-	
-	<!-- Extra dependencies -->
-	<link rel="stylesheet" type="text/css" href="vmelib/extjs/resources/css/ext-all.css" />
-	<link rel="stylesheet" type="text/css" href="vmelib/extjs/resources/css/xtheme-gray.css" />
-	<script type="text/javascript" src="vmelib/extjs/adapter/ext/ext-base.js"></script>
-	<script type="text/javascript" src="vmelib/extjs/ext-all.js"></script>
-	
-	<!-- VME viewer CSS -->
-	<link rel="stylesheet" href="assets/figis/vme/css/style.css" type="text/css" />
-	<link rel="stylesheet" href="assets/figis/vme/css/html.css" type="text/css" />
-	<link rel="stylesheet" href="assets/figis/vme/css/vme.css" type="text/css" />
-    	<link rel="stylesheet" href="assets/figis/vme/css/vmefonts.css" type="text/css" />
+	<!-- External dependencies -->
+	<link rel="stylesheet" type="text/css" href="js/vendor/extjs/resources/css/ext-all.css" />
+	<link rel="stylesheet" type="text/css" href="js/vendor/extjs/resources/css/xtheme-gray.css" />
+	<script type="text/javascript" src="js/vendor/extjs/adapter/ext/ext-base.js"></script>
+	<script type="text/javascript" src="js/vendor/extjs/ext-all.js"></script>
 	
     	<!-- proxy overriding configuration: allows to use a proxy for test purpose -->
     	<!-- script type="text/javascript" src="js/figis/vme/proxy-ovr.js" defer="defer"></script -->
 	
-	
-	<!-- VME viewer JS -->
+	<!-- FigisMap -->
+	<link rel="stylesheet" type="text/css" href="js/figis/FigisMap/FigisMap.css"></link>
+	<script type="text/javascript" src="js/figis/FigisMap/FigisMap.js"></script>
+
+	<!-- VME map viewer -->
+	<link rel="stylesheet" href="assets/figis/vme/css/style.css" type="text/css" />
+	<link rel="stylesheet" href="assets/figis/vme/css/html.css" type="text/css" />
+	<link rel="stylesheet" href="assets/figis/vme/css/vme.css" type="text/css" />
+    	<link rel="stylesheet" href="assets/figis/vme/css/vmefonts.css" type="text/css" />	
 	<script type="text/javascript" src="js/figis/vme/vme-georeferences.js"></script>
 	<script type="text/javascript" src="js/figis/vme/vme-factsheet.js"></script> 
 	<script type="text/javascript" src="js/figis/vme/vme-labels.js"></script>
@@ -119,7 +115,7 @@
         }
 </style>
 <!--[if lt IE 9]>
-    <link rel="stylesheet" href="theme/css/oldie.css" type="text/css" />
+    <link rel="stylesheet" href="assets/figis/vme/css/oldie.css" type="text/css" />
 
     <![endif]-->
 <script type="text/javascript">
