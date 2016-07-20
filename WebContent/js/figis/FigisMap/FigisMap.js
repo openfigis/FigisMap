@@ -697,6 +697,38 @@ FigisMap.ol.isValidExtent = function( bounds ) {
 	return true;
 };
 
+/**
+ * Convenience method to optimize the center of a map (e.g. Pacific view)
+ * @param map
+ * @param bounds
+ * @param projsToExclude
+ * @param force if true, eventual threshold rules to optimize center (such as for Mercator) will be ignored
+ */
+FigisMap.ol.optimizeCenter = function( myMap, bounds, projsToExclude, force){
+
+	if(!projsToExclude) projsToExclude = new Array();	
+
+	var proj = parseInt( myMap.getView().getProjection().getCode().replace(/^EPSG:/,'') );
+	
+	if(projsToExclude.indexOf(proj) == -1){
+		var nc = false;
+		if ( proj == 3031 ) {
+			// center to south pole in polar projection
+			nc = FigisMap.ol.reCenter( 4326, proj );
+		} else if ( proj == 900913 || proj == 3349 ) {
+			// center to Pacific centre in Mercator - only if larger than 35k km (whole world)
+			var nbw = Math.abs( bounds[0] - bounds[2]);
+			if ( nbw > 35000000 || force) {
+				nc = FigisMap.ol.reCenter( 4326, proj );
+				nc[1] = ( bounds[3] + bounds[1] )/2;			
+			}
+		} else if ( proj == 4326 ) {
+ 			nc = [ parseInt((bounds[2]+bounds[0])/2), parseInt((bounds[3]+bounds[1])/2) ];
+		}
+		if ( nc ) myMap.getView().setCenter( nc );
+	}
+}
+
 
 /**
  * FigisMap.ol.configureBaseLayer
@@ -2268,6 +2300,7 @@ FigisMap.renderer = function(options) {
 		});
 		if ( ! myMap.zoomToExtent ) myMap.zoomToExtent = function( boundsArray, validateExtent ) {  return FigisMap.ol.zoomToExtent( this, boundsArray, validateExtent) };
 		if ( ! myMap.zoomToMaxExtent ) myMap.zoomToMaxExtent = function() {  return FigisMap.ol.zoomToExtent( this, false, true ) };
+		if ( ! myMap.optimizeCenter ) myMap.optimizeCenter = function( boundsArray, projsToExclude, force) { return FigisMap.ol.optimizeCenter( this, boundsArray, projsToExclude, force) };
 		
 		// Managing OL controls
 		//---------------------
@@ -2510,8 +2543,9 @@ FigisMap.renderer = function(options) {
 			//bounds = myMap.getMaxExtent(); TODO OL3
 		}
 		if ( bounds ) {
-			var proj = parseInt( myMap.getView().getProjection().getCode().replace(/^EPSG:/,'') );
 			
+			var proj = parseInt( myMap.getView().getProjection().getCode().replace(/^EPSG:/,'') );
+
 			/* Fix for centering limitations to circularity in OL3 with 4326 */
 			if ( proj == 4326 ) {
 				while ( bounds[0]>180 ) {
@@ -2537,25 +2571,12 @@ FigisMap.renderer = function(options) {
 			}*/
 
 			//zoom to extent
-			//!OL2 myMap.zoomToExtent( nb, false );
 			myMap.zoomToExtent( nb, false );
+
+			//apply specific center rules
+			myMap.optimizeCenter(nb, [4326]);
 			
-			var nc = false;
-			if ( proj == 3031 ) {
-				// center to south pole in polar projection
-				nc = FigisMap.ol.reCenter( 4326, proj );
-			} else if ( proj == 900913 || proj == 3349 ) {
-				// center to Pacific centre in Mercator - only if larger than 35k km (whole world)
-				var nbw = Math.abs( nb[0] - nb[2]);
-				if ( nbw > 35000000 ) {
-					nc = FigisMap.ol.reCenter( 4326, proj );
-					nc[1] = ( nb[3] + nb[1] )/2;
-				}
-// 			} else if ( proj == 4326 ) {
-// 				nc = [ parseInt((nb[2]+nb[0])/2), parseInt((nb[3]+nb[1])/2) ];
-			}
-			if ( nc ) myMap.getView().setCenter( nc );
-			FigisMap.debug( 'FigisMap.renderer autoZoom values:', { bounds: bounds, boundsSize: ol.extent.getSize(bounds), nb: nb, nc : nc, mapSize: myMap.getSize() } );
+			FigisMap.debug( 'FigisMap.renderer autoZoom values:', { bounds: bounds, boundsSize: ol.extent.getSize(bounds), nb: nb, nc : myMap.getView().getCenter(), mapSize: myMap.getSize() } );
 		}
 	}
 	

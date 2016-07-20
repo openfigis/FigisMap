@@ -44,7 +44,7 @@ VME.label = function(key){
 VME.baseMapParams = function(year){
 	
 	var baselayers = FigisMap.defaults.baseLayers.slice();
-	if(!VME.myMap) baselayers.reverse();
+	baselayers.reverse();
 	
 	this.rfb = '';
 	this.target = 'map';
@@ -52,7 +52,6 @@ VME.baseMapParams = function(year){
 	this.legend = 'legend';
 	this.fullWindowMap = true;
 	this.base = baselayers;
-	
 
 	this.popups = [
 		//getfeatureinfo popup
@@ -321,84 +320,55 @@ VME.baseMapParams.prototype.setZoom = function( z ) {
 };
 
 
- 
+
 /**
-* function setZoom
-*
-**/
-VME.setZoom = function() {
-	var settings = FigisMap.ol.getSettings( document.getElementById("FilterRFB").value );
-	//Close popup when RFB change
-	VMEPopup.remove();
-	VME.zoomTo(settings);
+ * VME.getRFBZoomLevel
+ * @param acronym
+ * @return zoom level (integer)
+ */
+VME.getRFBZoomLevel = function(acronym){
+	var zoom;
+	switch(acronym){
+		case "CCAMLR": zoom = 2;break;
+		case "GFCM": zoom = 4;break;
+		case "NAFO": zoom = 2;break;
+		case "NEAFC": zoom = 2;break;
+		case "NPFC": zoom = 2;break;
+		case "SEAFO": zoom = 2;break;
+		case "SPRFMO": zoom = 1;break;
+	}
+	return zoom;
 }
 
-/**
-* function zoomTo
-*
-**/
-VME.zoomTo = function(settings,geom,zoom,closest) {
-	if (settings != null){
-		var bbox = geom ? geom : settings.zoomExtent.split(",");
-		var curr_proj = VME.myMap.getView().getProjection(); 
-		var bboxproj = settings.srs || "EPSG:3349";
-		
-		//check 
-		var projcode = curr_proj.getCode().split(":")[1];
-		var valid = VME.checkValidBbox(projcode,settings); //TODO OL3
-		console.log(settings);
-		console.log(geom);
-		console.log(valid);
-		console.log(zoom);
-		console.log(closest);
-		if(valid){
-			if(!geom){
-				bbox = ol.proj.transformExtent(bbox,
-					new ol.proj.get(bboxproj),
-					curr_proj
-				);			
-			}
-			
-			if(zoom){
-				//TODO OL3 'closest' parameter?
-				console.log(bbox);
-				VME.myMap.zoomToExtent(bbox);
-			}else{
-                		if(bboxproj == 'EPSG:3031'){
-                   	 		// WORKAROUND TO FIX STRANGE BEHAVIOUR BOUNDS TRANSFORMATION FROM 4326 TO 3031. BOUND NOW IS HARCODED
-                   			bbox = [-3465996.97,-3395598.49,5068881.53,4524427.45]; 
-                    			VME.myMap.getView().setCenter(ol.extent.getCenter(bbox)); 
-                		}else{
-                    			VME.myMap.getView().setCenter(ol.extent.getCenter(bbox)); 
-                		}
-			}
-		}else{
-			var newproj = bboxproj.split(":")[1];
-            
-            		// uncomment this if default projection is 4326
-			/*bbox = ol.proj.transformExtent(bbox,
-				newproj == "4326" ? new ol.proj.get(newproj) : new ol.proj.get(curr_proj),
-                		new ol.proj.get(bboxproj)
-			);*/	
 
-			//TODO OL3
-			bbox = ol.proj.transformExtent(bbox,
-				new ol.proj.get(curr_proj),
-				new ol.proj.get(bboxproj == "EPSG:3349" ? "EPSG:900913" : bboxproj)
-			);
-			
-			VME.setViewer(bbox, null, newproj, 'embed-link','embed-url', 'embed-iframe');
-			
-		    if(zoom){
-				//TODO OL3 'closest' parameter?
-				VME.myMap.zoomToExtent(bbox);
-			}
-					    
-			VME.setProjection(newproj);		
+/**
+ * VME.zoomTo
+ * @param zoomExtent extent given in the target proj
+ * @param zoomLevel zoom level to apply for the map
+ * @param sourceProj source projection
+ * @param targetProj target projection
+ */
+VME.zoomTo = function(zoomExtent, zoomLevel, sourceProj, targetProj, wrapDateLine) {
+
+	if (zoomExtent != null && sourceProj != null && targetProj != null){
+
+		if(sourceProj.getCode() != targetProj.getCode()){
+			var newproj = targetProj.getCode().split(":")[1];
+			if(targetProj.getCode() == 'EPSG:3031') zoomExtent = [-3465996.97,-3395598.49,5068881.53,4524427.45];
+			VME.setViewer(zoomExtent, zoomLevel, newproj, 'embed-link','embed-url', 'embed-iframe');
 		}
-    }else{
-    	VME.myMap.zoomToMaxExtent();
-    }
+				
+		VME.myMap.zoomToExtent(zoomExtent);
+		//VME.myMap.getView().setCenter(ol.extent.getCenter(zoomExtent));
+
+		if(wrapDateLine) VME.myMap.optimizeCenter(zoomExtent, null, true);
+		
+    	}else{
+    		VME.myMap.zoomToMaxExtent();
+    	}
+
+	if(zoomLevel) VME.myMap.getView().setZoom(zoomLevel);
+
 }
 
 
@@ -453,17 +423,12 @@ VME.resetByYear = function(year){
 	VME.update();	
 	VME.myMap.zoomToMaxExtent();
 	if ( VME.mapCenter ){
-        VME.myMap.setCenter(
-			FigisMap.ol.reCenter(
-				new ol.proj.get('EPSG:4326'),
-				VME.myMap.getView().getProjection(),
-				VME.mapCenter)
-			);
-    }
+        	VME.myMap.getView().setCenter(FigisMap.ol.reCenter('EPSG:4326',VME.myMap.getView().getProjection().getCode(),VME.mapCenter));
+    	}
 	
 	// Ensure that rfb.js is included AFTER vmeData.js, so theese are initialized
-	Vme.form.panels.SearchForm.getForm().reset();
-	Vme.form.panels.SearchPanel.layout.setActiveItem('searchcard-0');
+	VMESearch.form.panels.SearchForm.getForm().reset();
+	VMESearch.form.panels.SearchPanel.layout.setActiveItem('searchcard-0');
 	
 	// Restore toggle
 	VME.restoreToggleButtons();
@@ -563,21 +528,8 @@ VME.refreshLayers = function (acronym){
 
 
 //check if bbox of zoom area is in bbox of projection
-VME.checkValidBbox = function (projections,bboxs) {
-	if(bboxs.srs){
-		if (bboxs.srs != VME.myMap.getView().getProjection().getCode()){
-			return false;
-		}else{
-			return true;
-		}
-	}
-	if (projections == '3031'){
-	    var bbox2 = bboxs.zoomExtent.split(",");
-		var southpolarbbox = [-180,-90,180, -60];
-		return ol.extent.containsExtent(southpolarbbox,bbox2);			
-	}else{
-		return true; 		
-	}
+VME.checkValidBbox = function (zoomExtent, zoomProj) {
+
 };
 
 
@@ -642,8 +594,6 @@ VME.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, 
 	}else{
 		if(!embeddedIframe) pars.setProjection(VME.currentProjection());
 	};
-	console.log("extent");
-	console.log(extent);
 	pars.setExtent( extent );
 	pars.setCenter( center );
 	
@@ -700,9 +650,9 @@ VME.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, 
 			}
 		}
 		
-		if(projection == "3031" && !layers && !year){
+		/*if(projection == "3031" && !layers && !year){
 			VME.myMap.zoomIn();
-		}	
+		}*/	
 		
 		VME.setEmbedLink('embed-url', 'embed-iframe');
 	}
@@ -818,7 +768,7 @@ VME.setVMEPage = function(elinkDiv, urlLink, htmlLink) {
 		
 		//projection
 		if ( prj == '' ) prj = null;
-		VME.setProjection( prj);
+		if ( prj != null ) VME.setProjection( prj);
 
 
 		//layers
@@ -1189,6 +1139,8 @@ VME.switchProjection = function( p ) {
 	var op = VME.lastProjection;
 	p = VME.currentProjection( p );
 	var oe = VME.getExtent();
+	console.log(op);
+	console.log(p);
 	var ne = FigisMap.ol.reBound(op,p,oe);
 	VME.lastExtent = FigisMap.ol.isValidExtent(ne) ? ne : false;
 	VME.lastZoom = false;

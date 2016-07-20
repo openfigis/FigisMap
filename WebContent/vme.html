@@ -208,7 +208,7 @@ document.namespaces;
 			</div>
             <div id="sidebar">
                 <div id="leftTopPan">
-                    <div id="searchtextwrapper"><input type="text" id="searchtext" name="searchtext" onkeydown="if (event.keyCode == 13) { VMESearch.search(false);sidePanel.layout.setActiveItem('searchPanel');sidePanel.expand();VMESearch.form.panels.SearchPanel.layout.setActiveItem('resultPanel');}"/><div onclick=" VMESearch.search(false);sidePanel.layout.setActiveItem('searchPanel');sidePanel.expand();VMESearch.form.panels.SearchPanel.layout.setActiveItem('resultPanel');" id="simpleSearchButton"></div></div>
+                    <div id="searchtextwrapper"><input type="text" id="searchtext" name="searchtext" onkeydown="if (event.keyCode == 13) { VMESearch.run(null, true, false);sidePanel.layout.setActiveItem('searchPanel');sidePanel.expand();VMESearch.form.panels.SearchPanel.layout.setActiveItem('resultPanel');}"/><div onclick=" VMESearch.run(null,true,false);sidePanel.layout.setActiveItem('searchPanel');sidePanel.expand();VMESearch.form.panels.SearchPanel.layout.setActiveItem('resultPanel');" id="simpleSearchButton"></div></div>
                     <div id="leftTopLinks"> 
                         <a onclick="sidePanel.layout.setActiveItem('searchPanel');sidePanel.expand();VMESearch.form.panels.SearchPanel.layout.setActiveItem('searchForm');VMESearch.form.panels.SearchPanel.doLayout()">Advanced Search</a> |
                         <a onclick="sidePanel.layout.setActiveItem('legendPanel');sidePanel.expand();">Legend</a> <div class="xbutton-closepanels" onclick="sidePanel.collapse();" >  </div> |
