@@ -73,7 +73,7 @@ FigisMap.time.getSelectedYear= function(){
  */
 FigisMap.time.setSelectedYear = function(newyear){
 	if(newyear){
-		if(newyear <= FigisMap.time.maxYear && newyear >= FigisMap.time.minYear && newyear != FigisMap.time.selectedYear){
+		if(newyear <= FigisMap.time.maxYear && newyear >= FigisMap.time.minYear){
         		FigisMap.time.selectedYear = newyear;
 			FigisMap.time.selectionHandler(newyear);
     		}

@@ -409,9 +409,9 @@ VMESearch.search = function(advanced){
 				
 			for (var i = 0;i<features.length;i++){
 				if (features[i].getProperties().AREATYPE == 1){
-						areaType1.push({bounds:features[i].getProperties().bbox})
+						areaType1.push({bounds:features[i].getGeometry().getExtent()})
 				}else if(features[i].getProperties().AREATYPE == 2){
-						areaType2.push({bounds:features[i].getProperties().bbox})
+						areaType2.push({bounds:features[i].getGeometry().getExtent()})
 				}
 			}
 
@@ -451,7 +451,9 @@ VMESearch.search = function(advanced){
 			top = (top > 85 && top <= 92) ? 85 : top;
 		
 			var fixedZoomTo = VMESearch.rfbZooms[features[0].getProperties().RFB]
-		
+			console.log("fixedZoomTo");				
+			console.log(fixedZoomTo);		
+
 			// ZOOM TO WRAPDATELINE FEATURES
 			bounds = fixedZoomTo ? fixedZoomTo.zoomExtent : [left, bottom, right, top];
 			var defaultProj = VME.getProjection();
@@ -672,10 +674,11 @@ VMESearch.rfbZoomTo = function(acronym){
 			
 		// ZOOM TO WRAPDATELINE FEATURES
 		if (fixedZoomTo && fixedZoomTo.isWrapDateLine){
-			newLeft = repro_bbox[2];
-			newRight = repro_bbox[0];
+			var newLeft = repro_bbox[2];
+			var newRight = repro_bbox[0];
 			repro_bbox[0] = newLeft;
 			repro_bbox[2] = newRight;
+			console.log(repro_bbox);
 		}	
 			
 		// ////////////////////////////////////////////////////
@@ -691,6 +694,8 @@ VMESearch.rfbZoomTo = function(acronym){
 			settings.srs = "EPSG:3031";
 			VME.zoomTo(settings, repro_bbox, false, true);
 		}else{
+			console.log(settings);
+			console.log(repro_bbox);
 			VME.zoomTo(settings, repro_bbox, true, true);
 		}			
 			

@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 
 <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	
 	<meta name="description" content="Map application to display areas of Vulnerable Marine Ecosystems." />
@@ -142,38 +142,12 @@ document.namespaces;
 			<input id="txtCql" type="hidden" />
 			<input id="command" type="hidden" />
 			<input id="opt" type="hidden" />
-			
-            <!--div id="selectionRFB" onClick="VME.setEmbedLink('embed-url', 'embed-iframe');"></div-->
-            
-			<!-- li>
-				<label id="lblCQL">Provide CQL Query</label>
-				<input id="txtCql" type="text" />
-				<input id="btnUpdate" type="button" value="UPDATE" onClick="addRFBCQL()"/>
-			</li>
-			<li>
-				<label id="lblCQL">Enter Command</label>
-				<input id="command" type="text" />
-				<input id="cmdbtn" type="button" value="UPDATE" onClick="Command()"/>
-			</li>
-			<li>
-				<label id="lblCQL">Optional Arguments</label>
-				<input id="opt" type="text" />
-			</li -->					
+								
 		</div> 
 		
 		<div style="position: absolute;" id="main">
 			<div id="map" class="map"></div>
             
-            <!--div  id="bottomRightPanel">
-                <div id="yearLess" onClick="FigisMap.time.decrementYear(); VME.setEmbedLink('embed-url', 'embed-iframe');" unselectable="on"></div>               
-                <div id="yearCurrent">
-                2014
-                </div>
-                <div id="yearMore" onClick="FigisMap.time.incrementYear(); VME.setEmbedLink('embed-url', 'embed-iframe');" unselectable="on"></div>
-                <div id="yearsLabel">
-                Year Selection
-                </div>                
-            </div-->      
             
             <div id="bottomLeftPanel">            
                 <div id="selectionYears" onclick="VME.toggleYearsPanel();">
@@ -186,9 +160,6 @@ document.namespaces;
                     2014
                     </div>
                     <div id="yearMore" onClick="FigisMap.time.incrementYear(); VME.setEmbedLink('embed-url', 'embed-iframe');" unselectable="on"></div>
-                    <!--div id="yearsLabel">
-                    Year Selection
-                    </div-->   
                     </div>  
                 </div> 
                 
@@ -308,11 +279,11 @@ document.namespaces;
 		}
 		
 		updateCopyYear();
-		/*document.getElementById('disclaimer').innerHTML = FigisMap.label('DISCLAIMER', '<p></p>');*/
+		/*document.getElementById('disclaimer').innerHTML = VME.label('DISCLAIMER', '<p></p>');*/
 		
 		var subTitle = document.getElementById('subTitle');
 		if(subTitle){
-			subTitle.innerHTML = FigisMap.label('SUB_TITLE');
+			subTitle.innerHTML = VME.label('SUB_TITLE');
 		}		
 	// ]]>
 	</script>

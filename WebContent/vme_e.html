@@ -3,48 +3,42 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 
 <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+   	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	
 	<meta name="description" content="Map application to display areas of Vulnerable Marine Ecosystems." />
 	<meta name="author-corporate" content="FAO of the UN" />
 	<meta name="copyright" content="http://www.fao.org/corp/copyright/en/" />
-	<meta name="keywords" content="RFB, Regional Fishery Body, Map, FAO" />
+	<meta name="keywords" content="VME, Vulnerable Marine Ecosystem, Map, FAO" />
 	<title>Vulnerable Marine Ecosystems Database</title>
 	
-	<link rel="stylesheet" type="text/css" href="lib/OpenLayers/theme/default/style.css" />
-	<link rel="stylesheet" href="theme/css/style.css" type="text/css" />
-	<link rel="stylesheet" href="theme/css/vme.css" type="text/css" />
-    <link rel="stylesheet" href="theme/css/vmefonts.css" type="text/css" />
+	<!-- External dependencies -->
+	<link rel="stylesheet" type="text/css" href="js/vendor/extjs/resources/css/ext-all.css" />
+	<link rel="stylesheet" type="text/css" href="js/vendor/extjs/resources/css/xtheme-gray.css" />
+	<script type="text/javascript" src="js/vendor/extjs/adapter/ext/ext-base.js"></script>
+	<script type="text/javascript" src="js/vendor/extjs/ext-all.js"></script>
 	
-	<script type="text/javascript" src="lib/extjs/adapter/ext/ext-base.js"></script>
-	<script type="text/javascript" src="lib/extjs/ext-all.js"></script>
-	<link rel="stylesheet" type="text/css" href="lib/extjs/resources/css/ext-all.css" />
-	<link rel="stylesheet" type="text/css" href="lib/extjs/resources/css/xtheme-gray.css" />
-	<link rel="stylesheet" type="text/css" href="lib/GeoExt/resources/css/geoext-all.css" />
+    	<!-- proxy overriding configuration: allows to use a proxy for test purpose -->
+    	<!-- script type="text/javascript" src="js/figis/vme/proxy-ovr.js" defer="defer"></script -->
 	
-	<script type="text/javascript" src="lib/OpenLayers/OpenLayers.js"></script>
-	<script type="text/javascript" src="lib/proj4js/lib/proj4js-compressed.js"></script>
-	<script type="text/javascript" src="lib/OpenLayers/openlayers-ext/LoadingPanel.js"></script>
-	<script type="text/javascript" src="lib/GeoExt/script/GeoExt.js"></script>
-    <script type="text/javascript" src="lib/OpenLayers/openlayers-ext/GlassyPanZoom.js" defer="defer"></script>
-    <script type="text/javascript" src="lib/OpenLayers/openlayers-ext/FigisLayerSwitcher.js" defer="defer"></script>
+	<!-- FigisMap -->
+	<link rel="stylesheet" type="text/css" href="js/figis/FigisMap/FigisMap.css"></link>
+	<script type="text/javascript" src="js/figis/FigisMap/FigisMap.js"></script>
 
-	<script type="text/javascript" src="src/figis-data.js"></script>
-	<script type="text/javascript" src="src/georeferences.js"></script>
-	<!--script type="text/javascript" src="src/login.js"></script-->	
-    <script type="text/javascript" src="src/factsheet.js"></script>
-    <script type="text/javascript" src="src/infoSourcesLayer.js"></script>    
-	
-	<script type="text/javascript" src="src/FigisMap.js"></script>
-    <!-- proxy overriding configuration: allows to use a proxy for test purpose -->
-    <!-- script type="text/javascript" src="src/proxy-ovr.js" defer="defer"></script-->
-	<script type="text/javascript" src="src/vmeData.js" ></script>
-	<script type="text/javascript" src="src/popups.js"></script>
-	<script type="text/javascript" src="src/sidePanel.js" defer></script>
-	<script type="text/javascript" src="src/vme.js"></script>
-
-	<script type="text/javascript" src="lib/OpenLayers/openlayers-ext/Watermark.js" defer="defer"></script>
+	<!-- VME map viewer -->
+	<link rel="stylesheet" href="assets/figis/vme/css/style.css" type="text/css" />
+	<link rel="stylesheet" href="assets/figis/vme/css/html.css" type="text/css" />
+	<link rel="stylesheet" href="assets/figis/vme/css/vme.css" type="text/css" />
+    	<link rel="stylesheet" href="assets/figis/vme/css/vmefonts.css" type="text/css" />	
+	<script type="text/javascript" src="js/figis/vme/vme-georeferences.js"></script>
+	<script type="text/javascript" src="js/figis/vme/vme-factsheet.js"></script> 
+	<script type="text/javascript" src="js/figis/vme/vme-labels.js"></script>
+	<script type="text/javascript" src="js/figis/vme/vme-data.js"></script>
+	<script type="text/javascript" src="js/figis/vme/vme-sourceinfo.js"></script>
+	<script type="text/javascript" src="js/figis/vme/vme-search.js" defer></script>
+	<script type="text/javascript" src="js/figis/vme/vme-popups.js"></script>
+	<!--script type="text/javascript" src="js/figis/vme/login.js"></script-->
+	<script type="text/javascript" src="js/figis/vme/vme.js"></script>
     
     <style type="text/css">
           	
@@ -89,7 +83,7 @@
     </style>
  
     <!--[if lt IE 9]>
-    <link rel="stylesheet" href="theme/css/oldie.css" type="text/css" />
+    <link rel="stylesheet" href="assets/figis/vme/css/oldie.css" type="text/css" />
     <![endif]-->
 	<style type="text/css">
         img{
@@ -115,7 +109,7 @@
 				<label id="lblFilRFB" style="visibility:hidden">Zoom to:</label>
 			    <select  style="visibility:hidden" id="FilterRFB" onchange="setZoom()"></select>
 				<label style="visibility:hidden" id="lblRFB">Filter by:</label>
-				<select style="visibility:hidden" id="SelectRFB" onchange="setVME(null, null, null, 'e-link','rfbs-link', 'rfbs-html')"></select>  
+				<select style="visibility:hidden" id="SelectRFB" onchange="VME.setViewer(null, null, null, 'e-link','rfbs-link', 'rfbs-html')"></select>  
 				
 				<input id="txtCql" type="hidden" />
 				<input id="command" type="hidden" />
@@ -127,41 +121,40 @@
                 
                 <div id="bottomLeftPanel">
 
-                    <div id="selectionYears" onclick="toggleYearsPanel();">
-                        Year selection
-                    </div> 
-                    <div  id="yearsContent">
-                     <div  id="bottomRightPanel">
-                        <div id="yearLess" onClick="FigisMap.ol.decrementYear(); setVMEEmbedLink('embed-url', 'embed-iframe');" unselectable="on"></div>               
-                        <div id="yearCurrent">
-                        2014
-                        </div>
-                        <div id="yearMore" onClick="FigisMap.ol.incrementYear(); setVMEEmbedLink('embed-url', 'embed-iframe');" unselectable="on"></div>
-                        <!--div id="yearsLabel">
-                        Year Selection
-                        </div-->   
-                        </div>  
-                    </div>
-                
-                    <div id="selectionRFB" onclick="toggleRfbPanel();">
+                    	<div id="selectionYears" onclick="VME.toggleYearsPanel();">
+                    		Year selection
+                	</div> 
+                	<div  id="yearsContent">
+                 	<div  id="bottomRightPanel">
+                    		<div id="yearLess" onClick="FigisMap.time.decrementYear(); VME.setEmbedLink('embed-url', 'embed-iframe');" unselectable="on"></div>               
+                    		<div id="yearCurrent">
+                    		2014
+                    		</div>
+                    		<div id="yearMore" onClick="FigisMap.time.incrementYear(); VME.setEmbedLink('embed-url', 'embed-iframe');" unselectable="on"></div>
+                    		<!--div id="yearsLabel">
+                    		Year Selection
+                    		</div-->   
+                    		</div>  
+                	</div>                 
+                    <div id="selectionRFB" onclick="VME.toggleRfbPanel();">
                         Management Body/Authority (ies)
                     </div> 
                     <div id="RFBCombo_">
                     </div> 
 
                 </div>		
-				<div id="lblVME" class="lblVME figisButtonToggleVME" style="" onclick="toggleStyle(this, true)">VME Closures</div>
-                <div id="lblVMEOther" class="lblVMEOther figisButtonOTHER" style="" onclick="toggleStyle(this, true)">Other access regulated areas</div>
+				<div id="lblVMEs" class="lblVMEs figisButtonToggleVMEs" style="" onclick="VME.toggleVMEs(this)">VME Closures</div>
+                		<div id="lblOARAs" class="lblOARAs figisButtonOARAs" style="" onclick="VME.toggleOARAs(this)">Other access regulated areas</div>
 				
-				<div id="lblFootprints" class="lblFootprints figisButtonBOTTOM" style="" onclick="toggleStyle(this, true)">Bottom fishing areas</div>			
+				<div id="lblBFAs" class="lblBFAs figisButtonBFAs" style="" onclick="VME.toggleBFAs(this)">Bottom fishing areas</div>			
 				
-				<div id="lblReset" class="lblReset figisButton" style="" onclick="resetVME()">Reset</div>
+				<div id="lblReset" class="lblReset figisButton" style="" onclick="VME.reset()">Reset</div>
 
 				<div id="sidebar">
 					<div id="leftTopPan">
-						<div id="searchtextwrapper"><input type="text" id="searchtext" name="searchtext" onkeydown="if (event.keyCode == 13) { Vme.search(false);sidePanel.layout.setActiveItem('searchPanel');sidePanel.expand();Vme.form.panels.SearchPanel.layout.setActiveItem('resultPanel');}"/><div onclick=" Vme.search(false);sidePanel.layout.setActiveItem('searchPanel');sidePanel.expand();Vme.form.panels.SearchPanel.layout.setActiveItem('resultPanel');" id="simpleSearchButton"></div></div>
+						<div id="searchtextwrapper"><input type="text" id="searchtext" name="searchtext" onkeydown="if (event.keyCode == 13) { VMESearch.search(false);sidePanel.layout.setActiveItem('searchPanel');sidePanel.expand();VMESearch.form.panels.SearchPanel.layout.setActiveItem('resultPanel');}"/><div onclick=" VMESearch.search(false);sidePanel.layout.setActiveItem('searchPanel');sidePanel.expand();VMESearch.form.panels.SearchPanel.layout.setActiveItem('resultPanel');" id="simpleSearchButton"></div></div>
 						<div id="leftTopLinks"> 
-							<a onclick="sidePanel.layout.setActiveItem('searchPanel');sidePanel.expand();Vme.form.panels.SearchPanel.layout.setActiveItem('searchForm');Vme.form.panels.SearchPanel.doLayout()">Advanced Search</a> |
+							<a onclick="sidePanel.layout.setActiveItem('searchPanel');sidePanel.expand();VMESearch.form.panels.SearchPanel.layout.setActiveItem('searchForm');VMESearch.form.panels.SearchPanel.doLayout()">Advanced Search</a> |
 							<a onclick="sidePanel.layout.setActiveItem('legendPanel');sidePanel.expand();">Legend</a> <div class="xbutton-closepanels" onclick="sidePanel.collapse();" >  </div>
 							
 						</div>
@@ -183,30 +176,27 @@
 		// <![CDATA[
 			Ext.onReady(function(){
 				sidePanel.render(document.getElementById('sidebarP'));
-                //selectRFB.render(document.getElementById('RFBCombo_'));
 
-				setVMEPage('embed-link','embed-url', 'embed-iframe');
+				FigisMap.init( VME.init );
 				
 				Ext.QuickTips.init();
 
-				//FigisMap.ol.setSelectedYear(new Date().getFullYear());  // moved in setVMEPage to manage embed link
-				
 				if(Ext.isIE7 || Ext.isIE8 || Ext.isIE9){
 					Ext.get('yearCurrent').addClass('ie');
                 }
 				
-                Proj4js.defs["EPSG:3031"] = "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs";                    
+                                 
 			});
 			
 			function updateCopyYear() {
 				var uy = new Date();
 				uy = parseInt(uy.getFullYear() ? uy.getFullYear() : uy.getYear());
-				
+			
 				// Update the year value for the FAO copyright
 				var py = parseInt( document.getElementById('copyYear').innerHTML );
 				if ( isNaN(uy) || isNaN(py) ) return void(0);
 				if ( uy > py ) document.getElementById('copyYear').innerHTML = String( uy );
-				
+			
 				// Update the year value for the time slider
 				var py = parseInt( document.getElementById('yearCurrent').innerHTML );
 				if ( isNaN(uy) || isNaN(py) ) return void(0);
@@ -214,9 +204,9 @@
 			
 				return void(0);
 			}
-			updateCopyYear();
+			updateCopyYear()
 			
-			document.getElementById('disclaimer_e').innerHTML = FigisMap.label('DISCLAIMER', '<p></p>');
+			document.getElementById('disclaimer_e').innerHTML = VME.label('DISCLAIMER', '<p></p>');
 		// ]]>
 	</script>
 	<!--img src="theme/img/new_watermark.png" width="176" height="48" class="olPoweredBy" style="position: fixed; bottom: 310px; right: 390px;z-index: 1000;" /-->

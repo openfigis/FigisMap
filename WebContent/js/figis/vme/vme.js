@@ -10,7 +10,6 @@ FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-popup.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/figis/FigisMap/FigisMap-popup.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/figis/FigisMap/FigisMap-time.js');
 
-
 var VME = new Object();
 
 
@@ -44,7 +43,7 @@ VME.label = function(key){
 
 VME.baseMapParams = function(year){
 	
-	var baselayers = FigisMap.defaults.baseLayers;
+	var baselayers = FigisMap.defaults.baseLayers.slice();
 	if(!VME.myMap) baselayers.reverse();
 	
 	this.rfb = '';
@@ -52,7 +51,6 @@ VME.baseMapParams = function(year){
 	this.context = 'vmeViewer';
 	this.legend = 'legend';
 	this.fullWindowMap = true;
-	this.projection = VME.currentProjection();
 	this.base = baselayers;
 	
 
@@ -208,6 +206,38 @@ VME.baseMapParams.prototype.setVMELayers = function(year){
 }
 
 /*
+	VME.baseMapParams.prototype.setVMELayerVisibility
+	@param layer: layer title
+	@param visible: true if visible, false otherwise
+*/
+VME.baseMapParams.prototype.setVMELayerVisibility = function(layer, visible){
+	for(var i=0;i<this.contextLayers.length;i++){
+		if(layer.label === this.contextLayers[i].label){
+			this.contextLayers[i].hidden = !visible;
+			
+			var el;
+			switch(layer.layer){
+				case FigisMap.fifao.vme:
+					el = document.getElementById("lblVMEs");	
+					el.className = this.contextLayers[i].hidden? "lblVMEs figisButtonVMEs" : "lblVMEs figisButtonToggleVMEs";
+					break;
+				case FigisMap.fifao.vme_bfa:
+					el = document.getElementById("lblBFAs");	
+					el.className = this.contextLayers[i].hidden? "lblBFAs figisButtonBFAs" : "lblBFAs figisButtonToggleBFAs";
+					break;	
+				case FigisMap.fifao.vme_oara:
+					el = document.getElementById("lblOARAs");	
+					el.className = this.contextLayers[i].hidden? "lblOARAs figisButtonOARAs" : "lblOARAs figisButtonToggleOARAs";
+					break;												
+			}	
+			break;
+		}
+	}
+
+		
+}
+
+/*
 	VME.baseMapParams.prototype.setProjection
 	@param p: projection
 */
@@ -331,6 +361,7 @@ VME.zoomTo = function(settings,geom,zoom,closest) {
 			
 			if(zoom){
 				//TODO OL3 'closest' parameter?
+				console.log(bbox);
 				VME.myMap.zoomToExtent(bbox);
 			}else{
                 		if(bboxproj == 'EPSG:3031'){
@@ -595,8 +626,8 @@ VME.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, 
 		}
 	}
 	//year
+	FigisMap.time.setSelectedYear(year);
 	if(typeof year == "undefined"){
-		FigisMap.time.setSelectedYear();
 		year = FigisMap.time.getSelectedYear();
 	}
 	
@@ -606,14 +637,20 @@ VME.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, 
 	//params
 	var pars = new VME.baseMapParams();
 	pars.setVMELayers( year );
-	pars.setProjection( projection );
+	if(projection){
+		pars.setProjection( projection )
+	}else{
+		if(!embeddedIframe) pars.setProjection(VME.currentProjection());
+	};
+	console.log("extent");
+	console.log(extent);
 	pars.setExtent( extent );
 	pars.setCenter( center );
 	
 	if(embeddedIframe){
 		pars.target = 'map_e';
 		pars.fullWindowMap = false;
-		pars.center = (center)? par.center : [14, -26];
+		pars.center = (center)? pars.center : [14, -26];
 		pars.mapSize = mapSize ? mapSize : "L";
 		var elementsDiv = [pars.target, 'main_e', 'page_e', 'wrapper_e', 'disclaimer_e'];
 		VME.setEmbeddedElementClass(elementsDiv, pars.mapSize);		
@@ -630,11 +667,11 @@ VME.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, 
 	//if ( document.getElementById(elinkDiv) ) document.getElementById(elinkDiv).style.display = "none";
 	
 	if(layers){
-		layers = decodeURIComponent(layers);
+		pars.contextLayers = layers;
 	}	
 	
 	
-	VME.draw(pars); //TODO OL3 manage visible layers FigisMap.draw( pars);
+	VME.draw(pars);
 	
 	
 	if ( VME.myMap ) {	
@@ -649,7 +686,7 @@ VME.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, 
 			);
 		}
         if(rfb && rfb != '')
-            VME.refreshLayers(rfb); //TODO OL3
+            	VME.refreshLayers(rfb);
         
 		var l = document.getElementById('legendLegendTitle');
 		if ( l ) l.innerHTML = VME.label( 'Legend', pars );
@@ -742,9 +779,8 @@ VME.setVMEPage = function(elinkDiv, urlLink, htmlLink) {
 				case "mapSize"	: mapSize = param[1]; break;
 			}
 		}
-		
-		if ( !layers || layers == '' ) layers = null;
-		
+
+		//year
 		if ( year && year != '' ){
 			year = parseInt(year);
 			
@@ -760,24 +796,46 @@ VME.setVMEPage = function(elinkDiv, urlLink, htmlLink) {
 			FigisMap.time.setSelectedYear(FigisMap.time.getFullYear());
 		}
 		
+		//extent
 		if ( extent == "" ) extent = null;
 		if ( extent != null ) {
-			var bbox = extent.split(",");
-			extent = [bbox[0], bbox[1], bbox[2], bbox[3]]
+			extent = extent.split(",");
+			for (var i=0; i<extent.length; i++) {
+    				extent[i] = parseFloat(extent[i]);
+			}			
 		}
 		
+		//center
 		if ( center == "" ) center = null;
 		if ( center != null ) {
 			var c = center.split(",");
 			center = c;
 		}
 		
+		//zoom
 		if ( zoom == '' ) zoom = null;
 		if ( zoom != null ) zoom = parseInt( zoom );
 		
+		//projection
 		if ( prj == '' ) prj = null;
-		
 		VME.setProjection( prj);
+
+
+		//layers
+		if ( !layers || layers == '' ) layers = null;		
+		if (layers){
+			layers = decodeURIComponent(layers);
+			layers = layers.split(";");
+
+			var pars = new VME.baseMapParams();
+			pars.setVMELayers( year );
+			for(var i=0;i<pars.contextLayers.length;i++){
+				var layer = pars.contextLayers[i];
+				if(layer.label != "") pars.setVMELayerVisibility(layer, (layers.indexOf(layer.label) != -1));		
+			}
+			layers = pars.contextLayers;
+		}
+
 		
 	}else{	
 		FigisMap.time.setSelectedYear(FigisMap.time.getFullYear());
@@ -812,6 +870,8 @@ VME.setVMEPage = function(elinkDiv, urlLink, htmlLink) {
 */
 VME.draw = function(pars){
 	VME.myMap = FigisMap.draw( pars );
+	if ( ! pars.distribution ) if ( ! pars.associated  ) if ( ! pars.intersecting ) if (! pars.extent) pars.global = true;
+	if(pars.extent) VME.myMap.getView().fit(pars.extent, VME.myMap.getSize());
 	VME.lastPars = pars;
 	VME.lastExtent = null;
 	VME.lastCenter = null;
@@ -1330,18 +1390,18 @@ VME.setEmbeddedElementClass = function(elementsDiv, mapSize){
 */
 VME.setEmbedLink = function(embedUrl, embedIframe) {
 
+
 	// /////////////////////////////////
 	// Get involved layers in the map
 	// /////////////////////////////////
 	var visibleLayers = [];
 	
-	var allLayers = VME.myMap.getLayers();
-	var size = allLayers.length;
+	var allLayers = VME.myMap.getLayerGroup().getLayersArray();
 	
-	for(var i=0; i<size; i++){
+	for(var i=0; i<allLayers.length; i++){
 		var layer = allLayers[i];
-		if(layer && layer.getVisibility()){
-			var layerName = layer.name;
+		if(layer && layer.getVisible() && layer.get('type') != "base"){
+			var layerName = layer.get('title');
 			visibleLayers.push(layerName);
 		}
 	}
@@ -1354,17 +1414,17 @@ VME.setEmbedLink = function(embedUrl, embedIframe) {
 	// //////////////////////////////////////////
 	// Get the current extent, center and zoom
 	// //////////////////////////////////////////
-	var extent = VME.myMap.getView().calculateExtent(VME.myMap.getSize());
+	var extent = VME.myMap.getView().calculateExtent(VME.myMap.getSize()).join(",");
 	var zoom = VME.myMap.getView().getZoom();
 	var center = VME.myMap.getView().getCenter().join(",");
 
 	var year = FigisMap.time.getSelectedYear();
     
-    var comboRfb = Ext.getCmp("RFBCombo");
-    var rfb;
+    	var comboRfb = Ext.getCmp("RFBCombo");
+    	var rfb;
     
-    if (comboRfb)
-        rfb = VME.getRFBCheckBoxValue();
+    	if (comboRfb)
+        		rfb = VME.getRFBCheckBoxValue();
 	
 	// ///////////////////////////////////////////////////
 	// Building the request url containing the map status.
@@ -1394,12 +1454,11 @@ VME.setEmbedLink = function(embedUrl, embedIframe) {
 	linkId.setValue(baseURL);
     
     var newHref = window.location.origin + window.location.pathname;
-
 	//
 	// Set the Regular Size Embedded 
 	//	
 	var regularSizeBaseURL = baseURL + "&mapSize=L";
-    var htmlFrame = '<iframe src="' + regularSizeBaseURL.replace(newHref, newHref + 'index_e.html') + '" width="962" height="670" frameborder="0" marginheight="0">';
+    var htmlFrame = '<iframe src="' + regularSizeBaseURL.replace(newHref, newHref.replace("vme.html","") + 'vme_e.html') + '" width="962" height="670" frameborder="0" marginheight="0">';
 		htmlFrame += "</iframe>";
 		
 	htmlId.setValue(htmlFrame);
@@ -1410,10 +1469,9 @@ VME.setEmbedLink = function(embedUrl, embedIframe) {
 	var htmlId = Ext.getCmp(embedIframe + "-small");
 	
     var smallSizeBaseURL = baseURL + "&mapSize=M";
-    htmlFrame = '<iframe src="' + smallSizeBaseURL.replace(newHref,newHref + 'index_e.html') + '" width="720" height="500" frameborder="0" marginheight="0">';
+    htmlFrame = '<iframe src="' + smallSizeBaseURL.replace(newHref,newHref.replace("vme.html","") + 'vme_e.html') + '" width="720" height="500" frameborder="0" marginheight="0">';
 	htmlFrame += "</iframe>";
 		
 	htmlId.setValue(htmlFrame);
-	
-	//alert(baseURL);
+
 }
