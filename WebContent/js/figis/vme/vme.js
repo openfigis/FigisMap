@@ -52,6 +52,7 @@ VME.baseMapParams = function(year){
 	this.legend = 'legend';
 	this.fullWindowMap = true;
 	this.base = baselayers;
+	this.projection = VME.currentProjection();
 
 	this.popups = [
 		//getfeatureinfo popup
@@ -298,43 +299,58 @@ VME.baseMapParams.prototype.setCenter = function( c ) {
 	return true;
 };
 
-/*
-	VME.baseMapParams.prototype.setZoom
-	@param z: zoom, integer
-	Uses and sets VME.lastZoom
-	In case VME.lastZoom is boolean (false) resets it to 1.
-*/
-VME.baseMapParams.prototype.setZoom = function( z ) {
-	if ( z && (z != 1) ) {
-		VME.lastZoom = z;
-		this.zoom = z;
-		return true;
+
+
+VME.setRFB = function( rfb ){
+	if(rfb){
+		VME.rfb = rfb;
+		VME.isRFB = true;
+	}else{
+		VME.removeRFB();
 	}
-	if ( typeof VME.lastZoom == 'boolean' ) {
-		this.zoom = VME.lastExtent ? VME.myMap.getView().getZoom() : 1;
-		return false;
-	}
-	VME.lastZoom = VME.myMap ? VME.myMap.getView().getZoom() : 1;
-	this.zoom = VME.lastZoom;
-	return true;
-};
+}
+
+VME.removeRFB = function(){
+	if(VME.rfb) delete VME.rfb;
+	VME.isRFB = false;
+}
 
 
 
 /**
  * VME.getRFBZoomLevel
  * @param acronym
+ * @param proj
  * @return zoom level (integer)
  */
-VME.getRFBZoomLevel = function(acronym){
+VME.getRFBZoomLevel = function(acronym, proj){
+	
+	if(!proj) proj = VME.myMap.getView().getProjection();
+	var epsgCode = proj.getCode();
+
 	var zoom;
 	switch(acronym){
-		case "CCAMLR": zoom = 2;break;
-		case "GFCM": zoom = 4;break;
+		case "CCAMLR":
+			switch(epsgCode){
+				case "EPSG:3031": zoom = 2;break;
+				default: zoom = 1;break;	
+			}
+			break;
+		case "GFCM":
+			switch(epsgCode){
+				case "EPSG:3031": zoom = 2;break;
+				default: zoom = 4;break;	
+			}
+			break;
 		case "NAFO": zoom = 2;break;
 		case "NEAFC": zoom = 2;break;
 		case "NPFC": zoom = 2;break;
-		case "SEAFO": zoom = 2;break;
+		case "SEAFO":
+			switch(epsgCode){
+				case "EPSG:3031": zoom = 1;break;
+				default: zoom = 2;break;	
+			}
+			break;
 		case "SPRFMO": zoom = 1;break;
 	}
 	return zoom;
@@ -356,6 +372,7 @@ VME.zoomTo = function(zoomExtent, zoomLevel, sourceProj, targetProj, wrapDateLin
 			var newproj = targetProj.getCode().split(":")[1];
 			if(targetProj.getCode() == 'EPSG:3031') zoomExtent = [-3465996.97,-3395598.49,5068881.53,4524427.45];
 			VME.setViewer(zoomExtent, zoomLevel, newproj, 'embed-link','embed-url', 'embed-iframe');
+			VME.setProjection(newproj);
 		}
 				
 		VME.myMap.zoomToExtent(zoomExtent);
@@ -596,6 +613,7 @@ VME.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, 
 	};
 	pars.setExtent( extent );
 	pars.setCenter( center );
+	if( zoom ) pars.zoom = zoom;
 	
 	if(embeddedIframe){
 		pars.target = 'map_e';
@@ -609,7 +627,6 @@ VME.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, 
 	// Use this if you want to change the center at the embebbed reset
 	//VME.mapCenter = embeddedIframe ? new OpenLayers.LonLat(14, -26) : new OpenLayers.LonLat(-2.46, 18.23);
 
-    if ( zoom != null ) pars.zoom = zoom;
 	
 	if ( extent != null ) pars.extent = extent;
 	pars.filter = filter;
@@ -672,6 +689,10 @@ VME.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, 
 VME.setViewer = function( extent, zoom, mapProjection, elinkDiv, urlLink, htmlLink, filter, refresh) {
 	if ( ! mapProjection ) mapProjection = VME.currentProjection();
 	
+	if ( ! zoom ) {	
+		zoom = (mapProjection == 3031)? 1 : 0;
+	}
+
 	// Close popup when RFB change
 	VMEPopup.remove();
 	VME.addViewer( extent, zoom, mapProjection, elinkDiv, urlLink, htmlLink, filter);
@@ -822,6 +843,7 @@ VME.draw = function(pars){
 	VME.myMap = FigisMap.draw( pars );
 	if ( ! pars.distribution ) if ( ! pars.associated  ) if ( ! pars.intersecting ) if (! pars.extent) pars.global = true;
 	if(pars.extent) VME.myMap.getView().fit(pars.extent, VME.myMap.getSize());
+	if(pars.zoom) VME.myMap.getView().setZoom(pars.zoom);
 	VME.lastPars = pars;
 	VME.lastExtent = null;
 	VME.lastCenter = null;
@@ -1090,6 +1112,7 @@ VME.getProjection = function(radioObj) {
 * @param the EPSG code
 */
 VME.setProjection = function(newValue) {
+    if(newValue == 900913) newValue = 3349;
     var radioObj =document.getElementsByName("srs");
 	if(!radioObj)
 		return;
@@ -1116,7 +1139,7 @@ VME.currentProjection = function( p ) {
 	if ( ! cp ) if ( document.getElementById('RadioEPSG3031').checked ) cp = '3031';
 	if ( ! cp ) if ( document.getElementById('RadioEPSG54009').checked ) cp = '54009';
 	if ( ! cp ) {
-		document.getElementById('SelectSRS4326').checked = true;
+		document.getElementById('RadioSRS4326').checked = true;
 		cp = '4326';
 	}
 	VME.lastProjection = parseInt( cp );
@@ -1139,12 +1162,16 @@ VME.switchProjection = function( p ) {
 	var op = VME.lastProjection;
 	p = VME.currentProjection( p );
 	var oe = VME.getExtent();
-	console.log(op);
-	console.log(p);
 	var ne = FigisMap.ol.reBound(op,p,oe);
 	VME.lastExtent = FigisMap.ol.isValidExtent(ne) ? ne : false;
 	VME.lastZoom = false;
-	VME.setViewer();
+	
+	if(VME.isRFB){
+		if(p == 3349) p = 900913;
+		VMESearch.run(VME.rfb, false, false, ol.proj.get("EPSG:"+p));
+	}else{
+		VME.setViewer();
+	}
 };
 
 /**
@@ -1166,8 +1193,8 @@ VME.getSelectedOwner= function(){
 * Resets the checkbox value
 */
 VME.resetRFBCheckBox = function(){
-    var rfbCombo = Ext.getCmp('RFBCombo');
-    if(rfbCombo){
+    	var rfbCombo = Ext.getCmp('RFBCombo');
+    	if(rfbCombo){
 		rfbCombo.reset();
 		for (var i = 0;i<rfbCombo.panel.items.items.length;i++){
 			for (var c = 0;c<rfbCombo.panel.items.items[i].items.items.length;c++){
@@ -1175,6 +1202,7 @@ VME.resetRFBCheckBox = function(){
 				rfbCombo.panel.items.items[i].items.items[c].el.dom.checked = false;
 			}
 		}
+		VME.removeRFB();
 	}
 }      
 
@@ -1192,6 +1220,7 @@ VME.getRFBCheckBoxValue = function(){
 				var checkbox = rfbCombo.panel.items.items[i].items.items[c];
 				if(checkbox.checked == true && checkbox.el.dom.checked == true){
 					rfbValue = checkbox.acronym;
+					break;
 				}
 			}
 		}

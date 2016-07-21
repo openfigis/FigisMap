@@ -325,14 +325,54 @@ VMESearch.form.panels.SearchForm = new Ext.FormPanel({
 
 
 /**
+ * VMESearch.RFBCache
+ * Navigation RFB bounds cache for faster switching of RFB and projection
+ */
+VMESearch.RFBCache = {};
+
+/**
+ * VMESearch.getRFBInCache
+ * Retrieves bounds eventually cached given an RFB and a projection
+ * @param rfb
+ * @param proj epsg code string e.g. "EPSG:4326"
+ * @return an array giving the bounds
+ */
+VMESearch.getRFBInCache = function(rfb, proj){
+	var bounds = undefined;
+	if(VMESearch.RFBCache[rfb]){
+		if(proj){
+			var cache = VMESearch.RFBCache[rfb][proj];	
+			if(cache) bounds = cache;
+		}
+	}
+	return bounds;
+}
+
+/**
+ * VMESearch.setRFBInCache
+ * Set bounds in cache given an RFB and a projection
+ * @param rfb
+ * @param proj epsg code string e.g. "EPSG:4326"
+ * @param an array giving the bounds
+ */
+VMESearch.setRFBInCache = function(rfb, proj, bounds){
+	if(!VMESearch.RFBCache[rfb]) VMESearch.RFBCache[rfb] = new Object();
+	if(proj){
+		if(!VMESearch.RFBCache[rfb][proj]) VMESearch.RFBCache[rfb][proj] = bounds;
+	}
+}
+
+
+/**
  * VMESearch.run
  * Search VMEs zooming to the VME autority area.
  * @param value acronym of the RFMO
  * @param search true if search should be performed, false otherwise
  * @param advanced true to perform advanced search, false otherwise
+ * @param targetProj target projection to force reprojection
  * 
  */
-VMESearch.run = function(value, search, advanced){
+VMESearch.run = function(value, search, advanced, targetProj){
 
 	//start loader
 	if(VMESearch.loader.disabled){
@@ -358,39 +398,53 @@ VMESearch.run = function(value, search, advanced){
 		}
 	}
 
+
 	if(value){
+
 		//cases:
 		//- zoom to Authority area without advanced search
 		//- zoom to Authority with advanced search
 		
 		var rfbName = value;
+		VME.setRFB(rfbName);
 	
 		//layout actions
 		VMEPopup.remove();
 		VMESearch.resetHighlightVMELayer();
 		VME.refreshLayers(rfbName);
 
-		         
-		//vector source
-		var layer = "fifao:RFB_COMP_CLIP";
-		var sourceUrl = FigisMap.rnd.vars.wfs + layer;
-		var cqlFilter = "RFB=" + "'" + rfbName + "'";
-		var vectorSource = FigisMap.rnd.configureVectorSource(sourceUrl, cqlFilter);
-		vectorSource.loadFeatures();
+		//projs
+		var sourceProj = VME.myMap.getView().getProjection();
+		if(!targetProj){
+			targetProj = (rfbName === "CCAMLR")? ol.proj.get("EPSG:3031") : ((sourceProj.getCode() == "EPSG:3031")? ol.proj.get("EPSG:900913") : sourceProj);
+		}
+
+		//look to cache, if not in cache perform a WFS request otherwise we take bounds from cache  
+		var inCache = VMESearch.getRFBInCache(rfbName, targetProj.getCode());
+
+		if(!inCache){
+			console.log("Bounds for '"+rfbName+"' in proj "+targetProj.getCode()+" not in cache - Performing WFS request");
 			
-		//loadFeatures callback
-		var loadFeaturesCallback = function(){		
-			var features = vectorSource.getFeatures();
-			if(!features || features.length < 1){
-				if(!VMESearch.loader.disabled){
-					VMESearch.loader.hide();
-					VMESearch.loader.disable();
-				}
+			//vector source
+			var layer = "fifao:RFB_COMP_CLIP";
+			var sourceUrl = FigisMap.rnd.vars.wfs + layer;
+			var cqlFilter = "RFB=" + "'" + rfbName + "'";
+			var vectorSource = FigisMap.rnd.configureVectorSource(sourceUrl, cqlFilter);
+			vectorSource.loadFeatures();
+			
+			//loadFeatures callback
+			var loadFeaturesCallback = function(){		
+				var features = vectorSource.getFeatures();
+				if(!features || features.length < 1){
+					if(!VMESearch.loader.disabled){
+						VMESearch.loader.hide();
+						VMESearch.loader.disable();
+					}
 						
-				Ext.MessageBox.show({
-					title: "Info",
-						msg: VME.label("SIDP_NOFEATURES"),
-						buttons: Ext.Msg.OK,
+					Ext.MessageBox.show({
+						title: "Info",
+							msg: VME.label("SIDP_NOFEATURES"),
+							buttons: Ext.Msg.OK,
 						icon: Ext.MessageBox.WARNING,
 						scope: this
 					});
@@ -414,7 +468,7 @@ VMESearch.run = function(value, search, advanced){
 				}
 
 				var size = areaType2.length == 0 ? areaType1.length : areaType2.length;
-				var bounds = areaType2.length == 0 ? areaType1[0].bounds : areaType2[0].bounds;
+				bounds = areaType2.length == 0 ? areaType1[0].bounds : areaType2[0].bounds;
 
 				var left = bounds[0];
 				var bottom = bounds[1];
@@ -452,17 +506,18 @@ VMESearch.run = function(value, search, advanced){
 				var fixedZoomTo = VMESearch.rfbZooms[rfbName];
 				bounds = fixedZoomTo ? fixedZoomTo.zoomExtent : [left, bottom, right, top];
 				
-				var wrapDateLine = false;
-				if(fixedZoomTo && fixedZoomTo.isWrapDateLine) wrapDateLine = true;
-
-				//zoom parameters
-				var zoomExtent = bounds;
-				var zoomLevel = VME.getRFBZoomLevel(rfbName);
-				var sourceProj = VME.myMap.getView().getProjection();
-				var targetProj = (rfbName === "CCAMLR")? ol.proj.get("EPSG:3031") : ((sourceProj.getCode() == "EPSG:3031")? ol.proj.get("EPSG:900913") : sourceProj);
 				
-				var bbox = ol.proj.transformExtent(zoomExtent, ol.proj.get("EPSG:4326"), targetProj);
-				VME.zoomTo(bbox, zoomLevel, sourceProj, targetProj, wrapDateLine);
+				//add to cache for next time
+				console.log("Caching bounds for '"+rfbName+"' in proj 'EPSG:4326'");
+				if(!VMESearch.getRFBInCache(rfbName, "EPSG:4326")) VMESearch.setRFBInCache(rfbName, "EPSG:4326", bounds);
+
+				console.log("Caching bounds for '"+rfbName+"' in proj '"+targetProj.getCode()+"'");
+				if(targetProj.getCode() != "EPSG:4326") bounds = ol.proj.transformExtent(bounds, ol.proj.get("EPSG:4326"), targetProj);
+				VMESearch.setRFBInCache(rfbName, targetProj.getCode(), bounds);
+
+				//perform zooming
+				VMESearch.runZoom(rfbName, bounds, sourceProj, targetProj);
+				
 
 				//search
 				if(search) VMESearch.performSearch(advanced);
@@ -482,15 +537,46 @@ VMESearch.run = function(value, search, advanced){
 			});
 	
 			vectorSource.loadFeatures();
+
+		}else{
+			console.log("Bounds for '"+rfbName+"' in proj "+targetProj.getCode()+" in cache - Use it!");
+			VMESearch.runZoom(rfbName, inCache, sourceProj, targetProj);
+
+			//end loader
+			if(!VMESearch.loader.disabled){
+				VMESearch.loader.hide();
+				VMESearch.loader.disable();
+			}
+
+		}
+
 	}else{
 		//cases:
 		//- free text search
 		//- advanced search without RFMO selection
 		if(search) VMESearch.performSearch(advanced);
-	
+		
 	}
 	
 };
+
+
+/**
+ * VMESearch.runZoom
+ * Function to be called from VMESearch.run, either after grabbing RFB bounds by WFS, or from cache
+ * @param rfbName
+ * @param zoomExtent
+ * @param sourceProj
+ * @param targetProj
+ */
+VMESearch.runZoom = function(rfbName, zoomExtent, sourceProj, targetProj){
+
+	var wrapDateLine = false;
+	var fixedZoomTo = VMESearch.rfbZooms[rfbName];
+	if(fixedZoomTo && fixedZoomTo.isWrapDateLine) wrapDateLine = true;	
+	var zoomLevel = VME.getRFBZoomLevel(rfbName, targetProj);
+	VME.zoomTo(zoomExtent, zoomLevel, sourceProj, targetProj, wrapDateLine);
+}
 
 
 /**
