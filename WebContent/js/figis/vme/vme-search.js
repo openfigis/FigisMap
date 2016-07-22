@@ -398,7 +398,6 @@ VMESearch.run = function(value, search, advanced, targetProj){
 		}
 	}
 
-
 	if(value){
 
 		//cases:
@@ -542,12 +541,6 @@ VMESearch.run = function(value, search, advanced, targetProj){
 			console.log("Bounds for '"+rfbName+"' in proj "+targetProj.getCode()+" in cache - Use it!");
 			VMESearch.runZoom(rfbName, inCache, sourceProj, targetProj);
 
-			//end loader
-			if(!VMESearch.loader.disabled){
-				VMESearch.loader.hide();
-				VMESearch.loader.disable();
-			}
-
 		}
 
 	}else{
@@ -556,6 +549,12 @@ VMESearch.run = function(value, search, advanced, targetProj){
 		//- advanced search without RFMO selection
 		if(search) VMESearch.performSearch(advanced);
 		
+	}
+
+	//end loader
+	if(!VMESearch.loader.disabled){
+		VMESearch.loader.hide();
+		VMESearch.loader.disable();
 	}
 	
 };
