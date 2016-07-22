@@ -455,29 +455,29 @@ VME.resetByYear = function(year){
 }
 
 VME.update = function(){
-    /* TODO: maybe block year changes ?
-    Ext.getCmp('years-slider').disable();
-    Ext.getCmp("year-min-largestep").disable(); 
-    Ext.getCmp("year-min-littlestep").disable(); 
-    Ext.getCmp("year-max-littlestep").disable(); 
-    Ext.getCmp("year-max-largestep").disable();
-    Ext.getCmp("last-year").disable(); 
-    Ext.getCmp("first-year").disable(); 
-    */
+    	/* TODO: maybe block year changes ?
+    	Ext.getCmp('years-slider').disable();
+    	Ext.getCmp("year-min-largestep").disable(); 
+    	Ext.getCmp("year-min-littlestep").disable(); 
+    	Ext.getCmp("year-max-littlestep").disable(); 
+    	Ext.getCmp("year-max-largestep").disable();
+    	Ext.getCmp("last-year").disable(); 
+    	Ext.getCmp("first-year").disable(); 
+    	*/
     
-    var acronym;
+    	var acronym;
     
-    var rfbComboTop = VME.getRFBCheckBoxValue();
-    var rfmoComboSearch = Ext.getCmp("RFMOCombo").getRawValue();
+    	var rfbComboTop = VME.getRFBCheckBoxValue();
+    	var rfmoComboSearch = Ext.getCmp("RFMOCombo").getRawValue();
 
-    if(rfbComboTop == ""){
-        acronym = rfmoComboSearch;
-    }else{
-        acronym = rfbComboTop;
-    }
+    	if(rfbComboTop == ""){
+    	    acronym = rfmoComboSearch;
+    	}else{
+    	    acronym = rfbComboTop;
+    	}
     
-    VMEPopup.remove();
-    VME.refreshLayers(acronym);
+    	VMEPopup.remove();
+   	VME.refreshLayers(acronym);
 	
 
 	//remove highlight layer if any
@@ -653,24 +653,10 @@ VME.addViewer = function(extent, zoom, projection, elinkDiv, urlLink, htmlLink, 
 			);
 		}
         if(rfb && rfb != '')
+		VME.setRFB(rfb);
             	VME.refreshLayers(rfb);
-        
-		var l = document.getElementById('legendLegendTitle');
-		if ( l ) l.innerHTML = VME.label( 'Legend', pars );
-		l = document.getElementById('legendMembersTitle');
-		if ( l ) {
-			if ( document.getElementById('MemberCountries').innerHTML == '' ) {
-				l.style.display = 'none';
-			} else {
-				l.innerHTML = VME.label('List of Members');
-				l.style.display = '';
-			}
-		}
-		
-		/*if(projection == "3031" && !layers && !year){
-			VME.myMap.zoomIn();
-		}*/	
-		
+		var p = (projection == 3349)? 900913 : p;
+		VMESearch.run(VME.rfb, false, false, ol.proj.get("EPSG:"+p));
 		VME.setEmbedLink('embed-url', 'embed-iframe');
 	}
 }
@@ -697,24 +683,24 @@ VME.setViewer = function( extent, zoom, mapProjection, elinkDiv, urlLink, htmlLi
 	VMEPopup.remove();
 	VME.addViewer( extent, zoom, mapProjection, elinkDiv, urlLink, htmlLink, filter);
 
-    var acronym;
+    	var acronym;
 
-    var rfbComboTop = VME.getRFBCheckBoxValue();
-    var rfmoComboSearch = Ext.getCmp("RFMOCombo").getRawValue();
+    	var rfbComboTop = VME.getRFBCheckBoxValue();
+    	var rfmoComboSearch = Ext.getCmp("RFMOCombo").getRawValue();
 
-    if(rfbComboTop == ""){
-        acronym = rfmoComboSearch;
-    }else{
-        acronym = rfbComboTop;
-    }
+    	if(rfbComboTop == ""){
+    	    acronym = rfmoComboSearch;
+    	}else{
+    	    acronym = rfbComboTop;
+    	}
 	
-    // REFRESH IS FALSE WHEN USER CHANGE PROJECTION
-    if(refresh){
-        VME.resetRFBCheckBox();
-        VME.refreshLayers();
-    }else{
-        VME.refreshLayers(acronym);
-    }
+    	// REFRESH IS FALSE WHEN USER CHANGE PROJECTION
+    	if(refresh){
+    	    VME.resetRFBCheckBox();
+    	    VME.refreshLayers();
+    	}else{
+    	    VME.refreshLayers(acronym);
+    	}
 	
 	// Restore toggle
 	VME.restoreToggleButtons();
@@ -746,7 +732,7 @@ VME.setVMEPage = function(elinkDiv, urlLink, htmlLink) {
 				case "prj"	: prj = param[1]; break;
 				case "center"	: center = param[1]; break;
 				case "year"	: year = param[1]; break;
-                case "rfb"	: rfb = param[1]; break;
+                		case "rfb"	: rfb = param[1]; break;
 				case "mapSize"	: mapSize = param[1]; break;
 			}
 		}
@@ -822,7 +808,7 @@ VME.setVMEPage = function(elinkDiv, urlLink, htmlLink) {
 		// mercatorRadio Radio Button checked as default.
 		// //////////////////////////////////////////////////
         
-        var mercatorRadio = document.getElementById("RadioEPSG3349");
+        	var mercatorRadio = document.getElementById("RadioEPSG3349");
 		mercatorRadio.checked = true;
 		VME.setProjection('3349');
 		prj = '3349';
