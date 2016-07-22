@@ -66,11 +66,16 @@ ol.inherits(ol.Overlay.Popup, ol.Overlay);
 /**
  * Show the popup.
  * @param {ol.Coordinate} coord Where to anchor the popup.
- * @param {String} html String of HTML to display within the popup.
+ * @param {String} {HTMLDivElement} html String or element of HTML to display within the popup.
  */
 ol.Overlay.Popup.prototype.show = function(coord, html) {
 	this.setPosition(coord);
-	this.content.innerHTML = html;
+	if(html instanceof HTMLDivElement){
+		this.content.innerHTML = "";
+		this.content.appendChild(html);
+	}else{
+		this.content.innerHTML = html;
+	}
 	this.container.style.display = 'block';
 	if (this.panMapIfOutOfView) {
 		this.panIntoView_(coord);
@@ -78,6 +83,11 @@ ol.Overlay.Popup.prototype.show = function(coord, html) {
 	this.content.scrollTop = 0;
 	return this;
 };
+
+
+ol.Overlay.Popup.prototype.isOpened = function(){
+	return this.container.style.display == 'block';
+}
 
 /**
  * @private

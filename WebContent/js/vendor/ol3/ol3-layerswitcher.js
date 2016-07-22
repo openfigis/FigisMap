@@ -8,46 +8,55 @@
  */
 ol.control.LayerSwitcher = function(opt_options) {
 
-    var options = opt_options || {};
+	//options
+    	var options = opt_options || {};
+    	var tipLabel = options.tipLabel ? options.tipLabel : 'Legend';
+    	this.displayLegend_ = options.displayLegend ? options.displayLegend : false;
+	this.togglingLegendGraphic_ = options.toggleLegendGraphic ? options.displayLegend : false;
+	this.collapsableGroups_ = options.collapsableGroups ? options.collapsableGroups : false;
+	this.groupInfoHandler_ = options.groupInfoHandler ? options.groupInfoHandler : false;
+	this.isExternalized = (options.target)? true : false;
+	this.id = (options.target)? options.target : undefined;
+	
+	//array for map listeners
+    	this.mapListeners = [];
 
-    var tipLabel = options.tipLabel ?
-      options.tipLabel : 'Legend';
+	this.panel = document.createElement('div');
+	this.panel.className = 'panel';
+	
+	var element = document.createElement('div');
+	if(!this.isExternalized){
+	
+		this.hiddenClassName = 'ol-unselectable ol-control layer-switcher';
+		this.shownClassName = this.hiddenClassName + ' shown';
+		element.className = this.hiddenClassName;
+		
+		var button = document.createElement('button');
+		button.setAttribute('title', tipLabel);
+		element.appendChild(button);
+		element.appendChild(this.panel);
+		
+		var this_ = this;
 
-    this.displayLegend_ = options.displayLegend ? options.displayLegend : false;
+		button.onclick = function(e) {
+			this_.showPanel();
+		};
+		
+		element.onmouseover = function(e) {
+			this_.showPanel();
+		};
 
-    this.mapListeners = [];
-
-    this.hiddenClassName = 'ol-unselectable ol-control layer-switcher';
-    this.shownClassName = this.hiddenClassName + ' shown';
-
-    var element = document.createElement('div');
-    element.className = this.hiddenClassName;
-
-    var button = document.createElement('button');
-    button.setAttribute('title', tipLabel);
-    element.appendChild(button);
-
-    this.panel = document.createElement('div');
-    this.panel.className = 'panel';
-    element.appendChild(this.panel);
-
-    var this_ = this;
-
-    element.onmouseover = function(e) {
-        this_.showPanel();
-    };
-
-    button.onclick = function(e) {
-        this_.showPanel();
-    };
-
-    element.onmouseout = function(e) {
-        e = e || window.event;
-        if (!element.contains(e.toElement)) {
-            this_.hidePanel();
-        }
-    };
-
+		element.onmouseout = function(e) {
+			e = e || window.event;
+			if (!element.contains(e.toElement)) {
+				this_.hidePanel();
+			}
+		};
+	}else{
+		var element = document.createElement('div');
+		element.appendChild(this.panel);
+	}
+		
     ol.control.Control.call(this, {
         element: element,
         target: options.target
@@ -83,14 +92,33 @@ ol.control.LayerSwitcher.prototype.renderPanel = function() {
 
     this.ensureTopVisibleBaseLayerShown_();
 
-    while(this.panel.firstChild) {
-        this.panel.removeChild(this.panel.firstChild);
-    }
-
-    var ul = document.createElement('ul');
-    this.panel.appendChild(ul);
-    this.renderLayers_(this.getMap(), ul);
-
+	if(this.isExternalized){
+		var targetElement = document.getElementById(this.id);
+		while(targetElement.firstChild){
+		 targetElement.removeChild(targetElement.firstChild);
+		}
+		while(this.element.firstChild) {
+			this.element.removeChild(this.element.firstChild);
+		}
+		this.panel = document.createElement('div');
+		this.panel.className = 'panel';
+		
+		 var ul = document.createElement('ul');
+		this.panel.appendChild(ul);
+		this.renderLayers_(this.getMap(), ul);
+		
+		this.element.appendChild(this.panel);
+		targetElement.appendChild(this.element);
+		
+	}else{
+		while(this.panel.firstChild) {
+			this.panel.removeChild(this.panel.firstChild);
+		}
+		var ul = document.createElement('ul');
+		this.panel.appendChild(ul);
+		this.renderLayers_(this.getMap(), ul);
+	}
+  
 };
 
 /**
@@ -98,19 +126,32 @@ ol.control.LayerSwitcher.prototype.renderPanel = function() {
  * @param {ol.Map} map The map instance.
  */
 ol.control.LayerSwitcher.prototype.setMap = function(map) {
-    // Clean up listeners associated with the previous map
+
+	// Clean up listeners associated with the previous map
     for (var i = 0, key; i < this.mapListeners.length; i++) {
         this.getMap().unByKey(this.mapListeners[i]);
     }
     this.mapListeners.length = 0;
-    // Wire up listeners etc. and store reference to new map
-    ol.control.Control.prototype.setMap.call(this, map);
+  
     if (map) {
-        var this_ = this;
-        this.mapListeners.push(map.on('pointerdown', function() {
-            this_.hidePanel();
-        }));
-        this.renderPanel();
+		 // Wire up listeners etc. and store reference to new map
+		ol.control.Control.prototype.setMap.call(this, map);
+		
+		if(this.isExternalized){
+			//configure map listeners
+			this.mapListeners.push(map.once("postrender", function(){
+				this.renderPanel();
+			}, this));
+			this.mapListeners.push(map.getView().on('propertychange', function(e) {
+				this.renderPanel();
+			}, this));
+		
+		}else{
+			this.mapListeners.push(map.on('pointerdown', function() {
+				this.hidePanel();
+			}, this));
+			this.renderPanel();
+		}
     }
 };
 
@@ -148,35 +189,6 @@ ol.control.LayerSwitcher.prototype.setVisible_ = function(lyr, visible) {
     }
 };
 
-
-/**
- * Builds a GetLegendGraphic WMS request to handle layer legend
- * @param {ol.layer.TileWMS} lyr WMS Layer
- * @return {String} string representing the GetLegendGraphic URL request
- * 
- */
-ol.control.LayerSwitcher.prototype.getLegendGraphic_ = function(lyr) {
-	
-	var source = lyr.getSource();
-	if( !(source instanceof ol.source.TileWMS) ) return false;
-	
-	var params = source.getParams();
-
-	var request = '';
-	request += source.getUrls()[0] + '?';
-	request += 'VERSION=1.0.0';
-	request += '&REQUEST=GetLegendGraphic';
-	request += '&LAYER=' + params.LAYERS;
-	request += '&STYLE=' + ( (params.STYLES)? params.STYLES : '');
-	request += '&LEGEND_OPTIONS=forcelabels:on;forcerule:True;fontSize:12'; //maybe to let as options
-	request += '&SCALE=139770286.4465912'; //to investigate
-	request += '&FORMAT=image/png';
-	request += '&TRANSPARENT=true';
-	
-	return request;
-}
-
-
 /**
  * Render all layers that are children of a group.
  * @private
@@ -196,9 +208,38 @@ ol.control.LayerSwitcher.prototype.renderLayer_ = function(lyr, idx) {
 
     if (lyr.getLayers) {
 
-        li.className = 'group';
+	var groupClassName = 'layer-switcher-layergroup shown';
+	var groupHiddenClassName = 'layer-switcher-layergroup';
+	
+        li.className = groupClassName;
         label.innerHTML = lyrTitle;
+		
+		if(this.collapsableGroups_ ){
+			if(lyr.getLayers().getArray().length > 0){
+				if(lyr.getLayers().getArray()[0].get('type') != 'base')
+					label.style.textDecoration = "underline";
+					label.onclick = function(e) {
+						li.className = (li.className == groupClassName)? groupHiddenClassName : groupClassName;
+					};
+			}
+		}
         li.appendChild(label);
+
+	//handler layergroup info
+	if(this.groupInfoHandler_ && lyr.infoUrl){
+		var img = document.createElement('img');
+		img.className = "layer-switcher-layerinfo";
+		img.title = "Source of Information";
+		img.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAKcSURBVDjLpZPLa9RXHMU/d0ysZEwmMQqZiTaP0agoaKGJUiwIxU0hUjtUQaIuXHSVbRVc+R8ICj5WvrCldJquhVqalIbOohuZxjDVxDSP0RgzyST9zdzvvffrQkh8tBs9yy9fPhw45xhV5X1U8+Yhc3U0LcEdVxdOVq20OA0ooQjhpnfhzuDZTx6++m9edfDFlZGMtXKxI6HJnrZGGtauAWAhcgwVnnB/enkGo/25859l3wIcvpzP2EhuHNpWF9/dWs/UnKW4EOGDkqhbQyqxjsKzMgM/P1ymhlO5C4ezK4DeS/c7RdzQoa3x1PaWenJjJZwT9rQ1gSp/js1jYoZdyfX8M1/mp7uFaTR8mrt29FEMQILr62jQ1I5kA8OF59jIItVA78dJertTiBNs1ZKfLNG+MUHX1oaURtIHEAOw3p/Y197MWHEJEUGCxwfHj8MTZIcnsGKxzrIURYzPLnJgbxvG2hMrKdjItjbV11CYKeG8R7ygIdB3sBMFhkem0RAAQ3Fuka7UZtRHrasOqhYNilOwrkrwnhCU/ON5/q04vHV48ThxOCuoAbxnBQB+am65QnO8FqMxNCjBe14mpHhxBBGCWBLxD3iyWMaYMLUKsO7WYH6Stk1xCAGccmR/Ozs/bKJuXS39R/YgIjgROloSDA39Deit1SZWotsjD8pfp5ONqZ6uTfyWn+T7X0f59t5fqDhUA4ry0fYtjJcWeZQvTBu4/VqRuk9/l9Fy5cbnX+6Od26s58HjWWaflwkusKGxjm1bmhkvLXHvh1+WMbWncgPfZN+qcvex6xnUXkzvSiYP7EvTvH4toDxdqDD4+ygT+cKMMbH+3MCZ7H9uAaDnqytpVX8cDScJlRY0YIwpAjcNcuePgXP/P6Z30QuoP4J7WbYhuQAAAABJRU5ErkJggg==";
+		li.appendChild(img);
+
+		var this_ = this;
+		img.onclick = function(e) {
+			this_.groupInfoHandler_(lyr);
+		};
+
+	}
+
         var ul = document.createElement('ul');
         li.appendChild(ul);
 
@@ -206,6 +247,9 @@ ol.control.LayerSwitcher.prototype.renderLayer_ = function(lyr, idx) {
 
     } else {
 
+	li.className = "layer-switcher-layer";
+	
+	//create html
         var input = document.createElement('input');
         if (lyr.get('type') === 'base') {
             input.type = 'radio';
@@ -217,37 +261,53 @@ ol.control.LayerSwitcher.prototype.renderLayer_ = function(lyr, idx) {
         input.checked = lyr.get('visible');
         input.onchange = function(e) {
             this_.setVisible_(lyr, e.target.checked);
+			if(this_.togglingLegendGraphic_) this_.toggleLegendGraphic_(lyr, idx);
         };
         li.appendChild(input);
 
         label.htmlFor = lyrId;
         label.innerHTML = lyrTitle;
         li.appendChild(label);
-
-    }
-
-    //handling legend graphic for overlays
-    if( this.displayLegend_ && !lyr.getLayers && lyr.get('type') != 'base' && !lyr.skipLegend){
-   	
-	var imgSrc = false;
-	if(lyr instanceof ol.layer.Tile){
-		imgSrc = this.getLegendGraphic_(lyr);
-	}else if(lyr instanceof ol.layer.Vector){
-		imgSrc = (lyr.icon)? lyr.icon : false;
-	}
-	
-	if(imgSrc){
-		var legend = document.createElement('div');
-		legend.style.marginLeft = "15px";
-		var img = '<img src="'+imgSrc+'" />';
-		legend.innerHTML = img;
-		li.appendChild(legend);
-	}
+		
+		//handling legend graphic for overlays
+		this.renderLegendGraphic_(lyr, idx, li);
     }
 
     return li;
 
 };
+
+/**
+ * Render a layer legend graphic
+ * @private
+ * @param {ol.layer.Base} lyr Layer for which the legend should be rendered
+ */
+ol.control.LayerSwitcher.prototype.renderLegendGraphic_ = function(lyr, idx, li) {
+	if( this.displayLegend_ && lyr.get('type') != 'base' && lyr.showLegendGraphic){
+   	
+		var imgSrc = (lyr.legendGraphic)? lyr.legendGraphic : false;
+		if(imgSrc){
+			var legend = document.createElement('div');
+			var legendId = lyr.get('title').replace(' ', '-') + '_' + idx + "_legend";
+			legend.id = legendId;
+			legend.style.display = (lyr.getVisible()? "block" : "none");
+			var img = '<img src="'+imgSrc+'" />';
+			legend.innerHTML = img;
+			li.appendChild(legend);
+		}
+    }
+}
+
+/**
+ * Toggles a layer legend (hide/show legend image)
+ * @private
+ * @param {ol.layer.Base} lyr Layer for which the legend should be rendered
+ */
+ol.control.LayerSwitcher.prototype.toggleLegendGraphic_ = function(lyr, idx) {
+	var legendId = lyr.get('title').replace(' ', '-') + '_' + idx + "_legend";
+	var legend = document.getElementById(legendId);
+	legend.style.display = (lyr.getVisible()? "block" : "none");
+}
 
 /**
  * Render all layers that are children of a group.

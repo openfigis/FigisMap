@@ -1,0 +1,1 @@
+proj4.defs("EPSG:54009","+proj=moll +lon_0=0 +x_0=0 +y_0=0 +a=6371000 +b=6371000 +units=m +no_defs");
