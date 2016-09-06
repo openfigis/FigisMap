@@ -1,0 +1,251 @@
+/**
+ * OL3 css stylesheets imports
+ */
+@import url("../vendor/ol3/ol3.css");
+@import url("../vendor/ol3/ol3-loadingpanel.css");
+@import url("../vendor/ol3/ol3-layerswitcher.css");
+@import url("../vendor/ol3/ol3-zoomtomaxextent.css");
+@import url("../vendor/ol3/ol3-popup.css");
+@import url("../vendor/ol3/ol3-tooltip.css");
+
+/**
+ * Custom OpenLayers 3 CSS stylesheet for FigisMap
+ *
+ */
+
+/**
+* MousePosition control
+*/
+.ol-mouse-position {
+	top:auto;
+	left:auto;
+	bottom: 6px;
+	left: 10px;
+	font-size: 13px;
+	position: absolute
+}
+
+/**
+* ScaleLine control
+*/
+.ol-scale-line-metric {
+	background:none;
+	bottom: 31px;
+	left: 8px;
+	padding: 2px;
+	position: absolute
+}
+
+.ol-scale-line-nautical {
+	background:none;
+	bottom: 19px;
+	left: 8px;
+	padding: 2px;
+	position: absolute
+}
+
+.ol-scale-line-metric-inner {
+	border: 2px solid #000;
+	border-top:none;
+	color: #000;
+	font-family: Verdana, Helvetica, sans-serif;
+	font-size: 10px;
+	text-align: center;
+	margin: 1px;
+	will-change: contents, width
+}
+
+.ol-scale-line-nautical-inner {
+	border: 2px solid #000;
+	border-bottom:none;
+	color: #000;
+	font-family: Verdana, Helvetica, sans-serif;
+	font-size: 10px;
+	text-align: center;
+	margin: 1px;
+	will-change: contents, width
+}
+
+/**
+* LayerSwitcher control
+*/
+.layer-switcher { position: absolute; top: 5px; right: 5px; text-align: left; background-color: transparent; }
+.layer-switcher .panel { background-color: white; border: 1px solid #829ec4; border-collapse: collapse; display: none; font-size: 11px; padding: 0 18px 5px 0; }
+.layer-switcher .panel { background-color: rgba(255,255,255,.7); border-radius: 4px; }
+.layer-switcher button { background-color: transparent; background-position: 50% 50%; height: 1.375em; width: 1.375em; }
+.layer-switcher button { background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAOJJREFUeNpibJp35D/DAAImhgEGow4YdcCoA4a2A4Id1A+CMCVmsFBiuZaiiD2Ue3DtgZv2dAsBJMsbQBjEJjckWCixvHn+0UaQWG2iNQNQrIGckGCi1HIQgLLJCgkmSi2n1BFM1LCcEkcQdICdgSwDMZZjcwRIL8UOOHThMcPB849AzAZgYqsnpB6qpgGkB6SXKlFArCNItZykREjIEeRYTnI2xOUIci0HAUZyGqWgxGVvKMcALQkZyLWc7LoAZhHQEWAHkGs5RZURsoXkWk6RAyi1eLRFNOqAUQcMGgcABBgATiaSvgias38AAAAASUVORK5CYII='); }
+.layer-switcher .panel ul { margin: 0 5px; padding-left: 5px; }
+.layer-switcher input { margin: 0 5px 1px 0; }
+
+/**
+* Atrribution control
+*/
+.ol-powered-by {
+	-khtml-opacity: 0.7;
+	-moz-opacity: 0.7;
+	color: Blue;
+	display: block;
+	font-size: 12px;
+	font-style: normal;
+	opacity: 0.7;
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+}
+
+/* attribution for map */
+
+.ol-attribution-map {
+	text-align:left;
+	bottom:.5em;
+	right:.5em;
+	max-width:calc(100% - 1.3em);
+	font-size:12px;
+	display:inherit;
+}
+.ol-attribution-map ul {
+	margin:0;
+	padding:0 .5em;
+	color:#000;
+	text-shadow:0 0 2px #fff;
+}
+.ol-attribution-map li {
+	display:inline !important;
+	list-style:none;
+	line-height:inherit
+}
+
+.ol-attribution-map li:not(:last-child):after  {
+	content:" "
+}
+
+.ol-attribution-map img {
+	max-height:inherit;
+	max-width:inherit;
+}
+
+.ol-attribution-map.ol-uncollapsible img{
+	margin-top:-.2em;
+	max-height:inherit;
+}
+
+.ol-attribution-map button,.ol-attribution-map ul {
+	display:inline-block
+}
+
+.ol-attribution-map.ol-collapsed ul{
+	display:none
+}
+
+.ol-attribution-map.ol-logo-only ul{
+	display:block
+}
+
+.ol-attribution-map:not(.ol-collapsed){
+	background: transparent; /*rgba(255,255,255,.8)*/
+}
+	
+.ol-attribution-map.ol-uncollapsible{
+	bottom:0.5em;
+	right:0.5em;
+	border-radius:4px 0 0;
+	height:1.1em;
+	line-height:1em;
+	display:inherit !important;
+}
+
+.ol-attribution-map.ol-logo-only{
+	background:0 0;
+	top:.4em;
+	height:1.1em;
+	line-height:1em
+}
+
+.ol-attribution-map.ol-uncollapsible img{
+	margin-top:-.2em;
+	max-height:inherit;
+}
+
+.ol-attribution-map.ol-logo-only button,.ol-attribution-map.ol-uncollapsible button{
+	display:none
+}
+
+
+/* attribution for baselayer */
+
+
+.ol-attribution-baselayer {
+	text-align:left;
+	top:.3em;
+	left:45px;
+	max-width:calc(100% - 1.3em);
+	font-size:12px;
+	font-family: 'Liberation Sans', Arial, Helvetica, sans-serif;
+}
+.ol-attribution-baselayer ul {
+	margin:0;
+	padding:0;
+	color:#000;
+	text-shadow:0 0 2px #fff
+}
+.ol-attribution-baselayer li {
+	margin:0;
+	padding:0;
+	display:inline;
+	list-style:none;
+	line-height:inherit
+}
+
+.ol-attribution-baselayer li:not(:last-child):after  {
+	content:" "
+}
+
+.ol-attribution-baselayer img {
+	max-height:2em;
+	max-width:inherit
+}
+
+.ol-attribution-baselayer.ol-uncollapsible img{
+	margin-top:-.2em;
+	max-height:inherit;
+}
+
+.ol-attribution-baselayer button,.ol-attribution-baselayer ul {
+	display:inline-block
+}
+
+.ol-attribution-baselayer.ol-collapsed ul{
+	display:none
+}
+
+.ol-attribution-baselayer.ol-logo-only ul{
+	display:block
+}
+
+.ol-attribution-baselayer:not(.ol-collapsed){
+	background: transparent; /*rgba(255,255,255,.8)*/
+}
+	
+.ol-attribution-baselayer.ol-uncollapsible{
+	top:0.3em;
+	left:45px;
+	border-radius:4px 0 0;
+	height:1.1em;
+	line-height:1em
+}
+
+.ol-attribution-baselayer.ol-logo-only{
+	background:0 0;
+	top:.4em;
+	height:1.1em;
+	line-height:1em
+}
+
+.ol-attribution-baselayer.ol-uncollapsible img{
+	margin-top:-.2em;
+	max-height:1.6em
+}
+
+.ol-attribution-baselayer.ol-logo-only button,.ol-attribution-baselayer.ol-uncollapsible button{
+	display:none
+}

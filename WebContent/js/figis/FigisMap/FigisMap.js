@@ -297,7 +297,7 @@ FigisMap.console = function( args, doAlert ) {
 		args = [ args ];
 	}
 	try {
-		for ( var i = 0; i < args.length; i++ ) console.log( args[i] );
+		for ( var i = 0; i < args.length; i++ ){ console.log( args[i] ) }	
 	} catch( e ) {
 		if ( doAlert ) {
 			var txt = '';
@@ -316,10 +316,11 @@ FigisMap.console = function( args, doAlert ) {
  */
 FigisMap.debug = function() {
 	if ( FigisMap.debugLevel ) {
-		var args = [' --- debug information --- '].concat( Array.prototype.slice.call(arguments) );
+		var args = [' --- DEBUG information --- '].concat( Array.prototype.slice.call(arguments) );
 		FigisMap.console( args );
 	}
 }
+
 
 /**
  * FigisMap.error
@@ -707,23 +708,55 @@ FigisMap.ol.isValidExtent = function( bounds ) {
 FigisMap.ol.optimizeCenter = function( myMap, bounds, projsToExclude, force){
 
 	if(!projsToExclude) projsToExclude = new Array();	
-
-	var proj = parseInt( myMap.getView().getProjection().getCode().replace(/^EPSG:/,'') );
+	var mapProj = myMap.getView().getProjection();
+	var proj = parseInt( mapProj.getCode().replace(/^EPSG:/,'') );
+	var projBounds = mapProj.getExtent();
 	
 	if(projsToExclude.indexOf(proj) == -1){
 		var nc = false;
-		if ( proj == 3031 ) {
-			// center to south pole in polar projection
-			nc = FigisMap.ol.reCenter( 4326, proj );
-		} else if ( proj == 900913 || proj == 3349 ) {
-			// center to Pacific centre in Mercator - only if larger than 35k km (whole world)
-			var nbw = Math.abs( bounds[0] - bounds[2]);
-			if ( nbw > 35000000 || force) {
+		switch(proj) {
+			case 3031:
+				// center to south pole in polar projection
+				//note: unchanged from FigisMap 1.0-OL3
 				nc = FigisMap.ol.reCenter( 4326, proj );
-				nc[1] = ( bounds[3] + bounds[1] )/2;			
-			}
-		} else if ( proj == 4326 ) {
- 			nc = [ parseInt((bounds[2]+bounds[0])/2), parseInt((bounds[3]+bounds[1])/2) ];
+				break;
+			case 900913:
+				// center to Pacific centre in Mercator - only if larger than 35k km (whole world)
+				//note: unchanged from FigisMap 1.0-OL3
+				var nbw = Math.abs( bounds[0] - bounds[2]);
+				if ( nbw > 35000000 || force) {
+					nc = FigisMap.ol.reCenter( 4326, proj );
+					nc[1] = ( bounds[3] + bounds[1] )/2;			
+				}
+				break;
+			case 3349: 
+				// center to Pacific centre in Mercator - only if larger than 35k km (whole world)
+				// note: unchanged from FigisMap 1.0-OL3
+				var nbw = Math.abs( bounds[0] - bounds[2]);
+				if ( nbw > 35000000 || force) {
+					nc = FigisMap.ol.reCenter( 4326, proj );
+					nc[1] = ( bounds[3] + bounds[1] )/2;			
+				}
+				break;
+
+			case 4326:
+				// center to Pacific in WFS84
+				//note: new for FigisMap 1.1-OL3
+				ncx =  parseInt(bounds[2] + (projBounds[2]*2 - bounds[2] + bounds[0])/2);
+				if(ncx > projBounds[2]) ncx = ncx - projBounds[2]*2;
+				ncy = parseInt((bounds[1] + bounds[3])/2);
+ 				nc = [ ncx , ncy ];
+				break;
+
+			case 54009:
+				// center to Pacific in Mollweide?
+				//note: new for FigisMap 1.1-OL3
+				ncx =  parseInt(bounds[2] + (projBounds[2]*2 - bounds[2] + bounds[0])/2);
+				if(ncx > projBounds[2]) ncx = ncx - projBounds[2]*2;
+				ncy = parseInt((bounds[1] + bounds[3])/2);
+ 				nc = [ ncx , ncy ];
+				break;
+
 		}
 		if ( nc ) myMap.getView().setCenter( nc );
 	}
