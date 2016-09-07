@@ -135,7 +135,7 @@ FigisMap.localPathForGeoserver = "/figis/geoserver";
 FigisMap.httpBaseRoot = FigisMap.isRemoteDeveloper ? '' : FigisMap.geoServerBase + ('/figis/geoserver/factsheets/');
 
 //assets
-FigisMap.assetsRoot = "assets/";
+FigisMap.assetsRoot = FigisMap.httpBaseRoot + "assets/";
 
 FigisMap.rnd.vars = {
 	geoserverURL		: FigisMap.geoServerBase + FigisMap.localPathForGeoserver,
