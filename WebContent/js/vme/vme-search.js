@@ -122,7 +122,7 @@ VMESearch.clickOnFeature =function(geographicFeatureId,rec_year,zoom){
 	//remove highlight layer if any
 	VMESearch.resetHighlightVMELayer();
 
-        var typename = FigisMap.fifao.vme;
+        var typename = FigisMap.fifao.vmc;
         var CQL_FILTER = "VME_AREA_TIME = '"+geographicFeatureId+"'";
 
         Ext.Ajax.request({

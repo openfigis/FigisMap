@@ -61,9 +61,9 @@ VME.baseMapParams = function(year){
 			strategy: "getfeatureinfo",
 			multiple: true,
 			refs: [
-				{id: FigisMap.fifao.vme, resourceHandler: VMEPopup.vmeResourceHandler},
-				{id: FigisMap.fifao.vme_bfa},
-				{id: FigisMap.fifao.vme_oara}
+				{id: FigisMap.fifao.vmc, resourceHandler: VMEPopup.vmeResourceHandler},
+				{id: FigisMap.fifao.vmb},
+				{id: FigisMap.fifao.vmo}
 			],
 			contentHandler : VMEPopup.contentHandler,
 			beforeevent : function(){
@@ -121,7 +121,7 @@ VME.baseMapParams.prototype.setVMELayers = function(year){
 	this.contextLayers = [
 		//main VME layers
 		{
-			layer	: FigisMap.fifao.vme_bfa,
+			layer	: FigisMap.fifao.vmb,
 			label	: 'Bottom fishing areas', //'Area types',
 			overlayGroup: VME.overlayGroups[1],
 			style: "MEASURES_BTM_FISH",
@@ -132,7 +132,7 @@ VME.baseMapParams.prototype.setVMELayers = function(year){
 			legend_options: "forcelabels:on;forcerule:True;fontSize:12"
 		},
 		{
-			layer	: FigisMap.fifao.vme_oara,
+			layer	: FigisMap.fifao.vmo,
 			label	: 'Other access regulated areas', //'Area types',
 			overlayGroup: VME.overlayGroups[1],
 			style: "MEASURES_OTHER",
@@ -143,7 +143,7 @@ VME.baseMapParams.prototype.setVMELayers = function(year){
 			legend_options: "forcelabels:on;forcerule:True;fontSize:12"
 		},
 		{
-			layer	: FigisMap.fifao.vme,
+			layer	: FigisMap.fifao.vmc,
 			label	: 'VME closed areas', //'Area types',
 			overlayGroup: VME.overlayGroups[1],
 			style: "MEASURES_VME",
@@ -190,7 +190,7 @@ VME.baseMapParams.prototype.setVMELayers = function(year){
 			showLegendGraphic: true
 		},
 		{
-			layer		: FigisMap.fifao.vme_regarea,
+			layer		: FigisMap.fifao.vmr,
 			label	: 'RFB Competence Areas',
 			overlayGroup: VME.overlayGroups[0],
 			cached		: true,
@@ -217,15 +217,15 @@ VME.baseMapParams.prototype.setVMELayerVisibility = function(layer, visible){
 			
 			var el;
 			switch(layer.layer){
-				case FigisMap.fifao.vme:
+				case FigisMap.fifao.vmc:
 					el = document.getElementById("lblVMEs");	
 					el.className = this.contextLayers[i].hidden? "lblVMEs figisButtonVMEs" : "lblVMEs figisButtonToggleVMEs";
 					break;
-				case FigisMap.fifao.vme_bfa:
+				case FigisMap.fifao.vmb:
 					el = document.getElementById("lblBFAs");	
 					el.className = this.contextLayers[i].hidden? "lblBFAs figisButtonBFAs" : "lblBFAs figisButtonToggleBFAs";
 					break;	
-				case FigisMap.fifao.vme_oara:
+				case FigisMap.fifao.vmo:
 					el = document.getElementById("lblOARAs");	
 					el.className = this.contextLayers[i].hidden? "lblOARAs figisButtonOARAs" : "lblOARAs figisButtonToggleOARAs";
 					break;												
@@ -496,20 +496,20 @@ VME.refreshLayer = function(layer, year, acronym){
 	//prepare new params
 	var RFBFilter = (typeof(acronym) == 'undefined' || acronym == 'undefined' || acronym == "") ? false : true; 
 	var newParams = {};
-	if(layer == FigisMap.fifao.vme_regarea){
+	if(layer == FigisMap.fifao.vmr){
 		//case of RFB layer
 		newParams.CQL_FILTER = (RFBFilter ? "RFB = '" + acronym + "'" : "RFB <> '*'");
 	}else{
 		//cases of VME layers
 		var styleId = undefined;
 		switch(layer) {
-			case FigisMap.fifao.vme:
+			case FigisMap.fifao.vmc:
 				styleId = "VME";
 				break;
-			case FigisMap.fifao.vme_oara:
+			case FigisMap.fifao.vmo:
 				styleId = "OTHER";
 				break;
-			case FigisMap.fifao.vme_bfa:
+			case FigisMap.fifao.vmb:
 				styleId = "BTM_FISH";
 				break;
 		}
@@ -535,10 +535,10 @@ VME.refreshLayer = function(layer, year, acronym){
  */
 VME.refreshLayers = function (acronym){
 	var year = FigisMap.time.getSelectedYear();
-    	VME.refreshLayer(FigisMap.fifao.vme_regarea, year, acronym);
-	VME.refreshLayer(FigisMap.fifao.vme, year, acronym);
-	VME.refreshLayer(FigisMap.fifao.vme_oara, year, acronym);
-	VME.refreshLayer(FigisMap.fifao.vme_bfa, year, acronym);
+    	VME.refreshLayer(FigisMap.fifao.vmr, year, acronym);
+	VME.refreshLayer(FigisMap.fifao.vmc, year, acronym);
+	VME.refreshLayer(FigisMap.fifao.vmo, year, acronym);
+	VME.refreshLayer(FigisMap.fifao.vmb, year, acronym);
 	FigisMap.ol.updateLayerSwitcher(VME.myMap);
 };
 
@@ -835,17 +835,17 @@ VME.draw = function(pars){
 	VME.lastCenter = null;
 	VME.lastZoom = null;
 
-	var VMELayer = FigisMap.ol.getLayer(VME.myMap, FigisMap.fifao.vme);
+	var VMELayer = FigisMap.ol.getLayer(VME.myMap, FigisMap.fifao.vmc);
 	VMELayer.on("change:visible",function(e){
 		VME.toggleVMEs();
 	});
 
-	var BFALayer = FigisMap.ol.getLayer(VME.myMap, FigisMap.fifao.vme_bfa);
+	var BFALayer = FigisMap.ol.getLayer(VME.myMap, FigisMap.fifao.vmb);
 	BFALayer.on("change:visible", function(e){
 		VME.toggleBFAs();
 	});
 
-	var OARALayer = FigisMap.ol.getLayer(VME.myMap, FigisMap.fifao.vme_oara);
+	var OARALayer = FigisMap.ol.getLayer(VME.myMap, FigisMap.fifao.vmo);
 	OARALayer.on("change:visible", function(e){
 		VME.toggleOARAs();
 	});
@@ -923,7 +923,7 @@ VME.toggleVMELayer = function(layer, el, hiddenClass, visibleClass){
 * Enables/Disables 'vme:closures' layer in LayerSwitcher 
 **/	
 VME.toggleVMEs = function(el) {
-	VME.toggleVMELayer(FigisMap.fifao.vme, el, "lblVMEs figisButtonVMEs", "lblVMEs figisButtonToggleVMEs");
+	VME.toggleVMELayer(FigisMap.fifao.vmc, el, "lblVMEs figisButtonVMEs", "lblVMEs figisButtonToggleVMEs");
 }
 
 /**
@@ -932,7 +932,7 @@ VME.toggleVMEs = function(el) {
 * Enables/Disables 'vme:other_areas' layer in LayerSwitcher 
 **/	
 VME.toggleOARAs = function(el){
-	VME.toggleVMELayer(FigisMap.fifao.vme_oara, el, "lblOARAs figisButtonOARAs", "lblOARAs figisButtonToggleOARAs");
+	VME.toggleVMELayer(FigisMap.fifao.vmo, el, "lblOARAs figisButtonOARAs", "lblOARAs figisButtonToggleOARAs");
 }
 
 /**
@@ -941,7 +941,7 @@ VME.toggleOARAs = function(el){
 * Enables/Disables 'vme:bottom_fishing_areas' layer in LayerSwitcher 
 **/	
 VME.toggleBFAs = function(el){
-	VME.toggleVMELayer(FigisMap.fifao.vme_bfa, el, "lblBFAs figisButtonBFAs", "lblBFAs figisButtonToggleBFAs");
+	VME.toggleVMELayer(FigisMap.fifao.vmb, el, "lblBFAs figisButtonBFAs", "lblBFAs figisButtonToggleBFAs");
 }
 
 /**
@@ -952,7 +952,7 @@ VME.toggleBFAs = function(el){
 VME.restoreToggleButtons = function(){
 	var el = document.getElementById("lblVMEs");	
 	if(el){
-		var vme = FigisMap.ol.getLayer(VME.myMap, FigisMap.fifao.vme);
+		var vme = FigisMap.ol.getLayer(VME.myMap, FigisMap.fifao.vmc);
 		
 		// ///////////////////////////////////////////////
 		// If there are Embed URL params concerning VME 
@@ -968,7 +968,7 @@ VME.restoreToggleButtons = function(){
 	
 	el = document.getElementById("lblBFAs");										
     if(el){
-		var bfa = FigisMap.ol.getLayer(VME.myMap, FigisMap.fifao.vme_bfa);
+		var bfa = FigisMap.ol.getLayer(VME.myMap, FigisMap.fifao.vmb);
 			
 		// /////////////////////////////////////////////////////
 		// If there are Embed URL params concerning Bottom fishing areas 
@@ -984,7 +984,7 @@ VME.restoreToggleButtons = function(){
 
 	el = document.getElementById("lblOARAs");										
     if(el){
-		var oara = FigisMap.ol.getLayer(VME.myMap, FigisMap.fifao.vme_oara);
+		var oara = FigisMap.ol.getLayer(VME.myMap, FigisMap.fifao.vmo);
 			
 		// /////////////////////////////////////////////////////
 		// If there are Embed URL params concerning Bottom fishing areas 

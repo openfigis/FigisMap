@@ -359,11 +359,11 @@ VMEPopup.contentHandler = function(features, requests){
 		var layer = layers[i];
 		var tabTitle = "";
 		switch(layer){
-    			case FigisMap.fifao.vme :
+    			case FigisMap.fifao.vmc :
       				tabTitle = "VME closed areas";break;
-    			case FigisMap.fifao.vme_oara :
+    			case FigisMap.fifao.vmo :
       				tabTitle = "Other access regulated areas";break;     
-    			case FigisMap.fifao.vme_bfa : 
+    			case FigisMap.fifao.vmb : 
       				tabTitle = "Bottom fishing areas";break;
 		}
 
@@ -401,7 +401,7 @@ VMEPopup.contentHandler = function(features, requests){
 		var layerResults = "";
 		for(var j=0;j<fc.length;j++){
 			switch(layer){
-				case FigisMap.fifao.vme:
+				case FigisMap.fifao.vmc:
 					layerResults += VMEPopup.vmeFeatureTemplate(layer, fc[j], resources[j]); break;
 				default:
 					layerResults += VMEPopup.genericFeatureTemplate(layer, fc[j], null); break;
