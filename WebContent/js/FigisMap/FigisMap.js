@@ -60,13 +60,13 @@ FigisMap.fifao = {
 
 	//VME layers
 	vmc : 'vme:closures', // VME closed areas
-    vmo : 'vme:other_areas', // Other access regulated areas    
-    vmb : 'vme:bottom_fishing_areas', // Bottom fishing areas
-    vmr : 'fifao:RFB_COMP_CLIP', // VME regulatory areas
+	vmo : 'vme:other_areas', // Other access regulated areas    
+	vmb : 'vme:bottom_fishing_areas', // Bottom fishing areas
+	vmr : 'fifao:RFB_COMP_CLIP', // VME regulatory areas
 	guf : 'fifao:gebco_underseafeatures', //undersea features
-    gbi : 'vme:gebco_isobath2000', //isobath -2000m
-    vnt : 'vme:vents_InterRidge_2011_all', // Hidrotermal
-    ccr : 'vme:WCMC-001-ColdCorals2005', //ColdCorals
+	gbi : 'vme:gebco_isobath2000', //isobath -2000m
+	vnt : 'vme:vents_InterRidge_2011_all', // Hidrotermal
+	ccr : 'vme:WCMC-001-ColdCorals2005', //ColdCorals
 
 
 };
