@@ -155,13 +155,13 @@ VMEData.templates = {
                         
 						//buttons
 						'<a onclick="VMESearch.clickOnFeature(\'{geographicFeatureId}\',{year},false)">'+
-                        			'<img title="More information" src="assets/figis/vme/img/icons/buttoninfo.png" />'+
+                        			'<img title="More information" src="assets/vme/img/icons/buttoninfo.png" />'+
                         			'</a> '+
                         			'<a onclick="VMESearch.clickOnFeature(\'{geographicFeatureId}\',{year},true)">'+
-                        			'<img title="Zoom to area" src="assets/figis/vme/img/icons/buttonzoom.png" />'+
+                        			'<img title="Zoom to area" src="assets/vme/img/icons/buttonzoom.png" />'+
                         			'</a> '+
                         			'<a onClick="VMESearch.factsheetRel(\'{[this.getFactsheetUrl(values)]}\');">'+
-                        			'<img title="View fact sheet" src="assets/figis/vme/img/icons/buttonfactsheet.png" />'+
+                        			'<img title="View fact sheet" src="assets/vme/img/icons/buttonfactsheet.png" />'+
                         			'</a> '+
 					'</div>'+
 				'</tpl>',

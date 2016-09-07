@@ -249,7 +249,7 @@ VMEPopup.vmeFeatureTemplate = function(layer, feature, resource){
 			if (pdf == ""){
 				html += '</em><span>' + measureArray[i] + '</span> <a  target="_blank" href="' + pdf + '"></a><br/>';
 			}else{
-				html += '</em><span>' + measureArray[i] + '</span> <a  target="_blank" href="' + pdf + '"><img title="Download pdf" src="assets/figis/vme/img/icons/download_pdf.png"></a><br/>';
+				html += '</em><span>' + measureArray[i] + '</span> <a  target="_blank" href="' + pdf + '"><img title="Download pdf" src="assets/vme/img/icons/download_pdf.png"></a><br/>';
 			}
 		}
 		return html;
@@ -275,13 +275,13 @@ VMEPopup.vmeFeatureTemplate = function(layer, feature, resource){
 			'<div>'+
 				'<div style="text-align:right;float:right;">' +
 					'<a class="" target="_blank" href="'+downloadLink+'">'+
-						'<img title="Download as shapefile" src="assets/figis/vme/img/icons/download.png">'+
+						'<img title="Download as shapefile" src="assets/vme/img/icons/download.png">'+
 					'</a>&nbsp;&nbsp;' +
 					'<a class="" onClick="VMESearch.clickOnFeature(\''+p["VME_AREA_TIME"]+'\','+FigisMap.time.getSelectedYear()+',true)">'+
-						'<img title="Zoom to area" src="assets/figis/vme/img/icons/buttonzoom.png">'+
+						'<img title="Zoom to area" src="assets/vme/img/icons/buttonzoom.png">'+
 					'</a>&nbsp;&nbsp;' + 
 					'<a href="javascript:void(0);" onClick="VMESearch.factsheetRel(\''+vme.factsheetURL+'\');">'+
-						'<img title="View fact sheet" src="assets/figis/vme/img/icons/buttonfactsheet.png" />'+
+						'<img title="View fact sheet" src="assets/vme/img/icons/buttonfactsheet.png" />'+
 					'</a>' +
                         	'</div>'+
 				'<div style="text-align:left;">' +
@@ -325,11 +325,11 @@ VMEPopup.genericFeatureTemplate = function(layer, feature, resource){
 					'<div>'+
 						'<div style="text-align:right;float:right;">' +
 							'<a class="" target="_blank" href="'+downloadLink+'">'+
-								'<img title="Download as shapefile" src="assets/figis/vme/img/icons/download.png">'+
+								'<img title="Download as shapefile" src="assets/vme/img/icons/download.png">'+
 							'</a>' +
 							'<a class="" onClick="VMESearch.clickOnFeature(\''+p["VME_AREA_TIME"]+'\','+FigisMap.time.getSelectedYear()+',true)">'+
 
-								'<img title="Zoom to area" src="assets/figis/vme/img/icons/buttonzoom.png">'+
+								'<img title="Zoom to area" src="assets/vme/img/icons/buttonzoom.png">'+
 							'</a>' +
 						'</div>'+
 						'<div style="text-align:left;">' +
