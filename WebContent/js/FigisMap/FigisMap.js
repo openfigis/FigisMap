@@ -59,10 +59,10 @@ FigisMap.fifao = {
 	sun : 'fifao:FAO_SUB_UNIT',
 
 	//VME layers
-	vmc : 'vme:closures', // VME closed areas
-    vmo : 'vme:other_areas', // Other access regulated areas    
-    vmb : 'vme:bottom_fishing_areas', // Bottom fishing areas
-    vmr : 'fifao:RFB_COMP_CLIP', // VME regulatory areas
+	vme : 'vme:closures', // VME closed areas
+    vme_oara : 'vme:other_areas', // Other access regulated areas    
+    vme_bfa : 'vme:bottom_fishing_areas', // Bottom fishing areas
+    vme_regarea : 'fifao:RFB_COMP_CLIP', // VME regulatory areas
 	guf : 'fifao:gebco_underseafeatures', //undersea features
     gbi : 'vme:gebco_isobath2000', //isobath -2000m
     vnt : 'vme:vents_InterRidge_2011_all', // Hidrotermal
@@ -135,7 +135,7 @@ FigisMap.localPathForGeoserver = "/figis/geoserver";
 FigisMap.httpBaseRoot = FigisMap.isRemoteDeveloper ? '' : FigisMap.geoServerBase + ('/figis/geoserver/factsheets/');
 
 //assets
-FigisMap.assetsRoot = FigisMap.httpBaseRoot + "assets/";
+FigisMap.assetsRoot = "assets/";
 
 FigisMap.rnd.vars = {
 	geoserverURL		: FigisMap.geoServerBase + FigisMap.localPathForGeoserver,
@@ -2607,7 +2607,7 @@ FigisMap.renderer = function(options) {
 			myMap.zoomToExtent( nb, false );
 
 			//apply specific center rules
-			myMap.optimizeCenter(nb, [4326]);
+			myMap.optimizeCenter(nb, [4326, 54009]);
 			
 			FigisMap.debug( 'FigisMap.renderer autoZoom values:', { bounds: bounds, boundsSize: ol.extent.getSize(bounds), nb: nb, nc : myMap.getView().getCenter(), mapSize: myMap.getSize() } );
 		}
