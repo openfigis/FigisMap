@@ -2439,9 +2439,9 @@ FigisMap.renderer = function(options) {
 			}
 		}
 		
-		//Testing cluster
+		//Add eventual vector layer
 		if( pars.vectorLayer ) {
-			FigisMap.debug('FigisMap - cluster layer', pars.vectorLayer);
+			FigisMap.debug('FigisMap - vector layer', pars.vectorLayer);
 			pars.vectorLayer.overlayGroup = FigisMap.ol.getDefaultOverlayGroup(pars);
 			for(var i = 0;i < overlays.length;i++){
 				if(group.get('title') === pars.vectorLayer.overlayGroup.name){
