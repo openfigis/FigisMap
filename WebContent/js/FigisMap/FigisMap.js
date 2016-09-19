@@ -872,9 +872,9 @@ FigisMap.ol.toggleLayer = function(map, layername, visible){
  * Refresh a layer with acronym/time filters
  * @param layer name of the layer as in Geoserver ('namespace:layername')
  */
-FigisMap.ol.refreshLayer = function(layer, newParams){
+FigisMap.ol.refreshLayer = function(map, layer, newParams){
 	
-	var olLayer = FigisMap.ol.getLayer(VME.myMap, layer);
+	var olLayer = FigisMap.ol.getLayer(map, layer);
 	var source = olLayer.getSource();
 	var params = source.getParams();
 	
@@ -2439,9 +2439,9 @@ FigisMap.renderer = function(options) {
 			}
 		}
 		
-		//Add eventual vector layer
+		//Testing cluster
 		if( pars.vectorLayer ) {
-			FigisMap.debug('FigisMap - vector layer', pars.vectorLayer);
+			FigisMap.debug('FigisMap - cluster layer', pars.vectorLayer);
 			pars.vectorLayer.overlayGroup = FigisMap.ol.getDefaultOverlayGroup(pars);
 			for(var i = 0;i < overlays.length;i++){
 				if(group.get('title') === pars.vectorLayer.overlayGroup.name){

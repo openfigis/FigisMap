@@ -523,7 +523,7 @@ VME.refreshLayer = function(layer, year, acronym){
 	}
 
 	//update layer
-	FigisMap.ol.refreshLayer(layer, newParams);
+	FigisMap.ol.refreshLayer(VME.myMap, layer, newParams);
 	
 }
 
