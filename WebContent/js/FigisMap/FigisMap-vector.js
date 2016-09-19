@@ -47,36 +47,42 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 
 	if( !layer.id ) alert("Missing vector layer 'id'");
 	if( !layer.source ) alert("Missing vector layer 'source'");
-
+	if( !layer.placemarker ) layer.placemarker = false;
+	
 	//data access
 	var sourceFeatures = layer.source;
 
 	//manage icon image caches
-	var cachedIcons = new Array();
-	var listenerKey = sourceFeatures.on('change', function(e) {
-  		if (sourceFeatures.getState() == 'ready') {
+	if( layer.iconHandler ) {
+		var cachedIcons = new Array();
+		var listenerKey = sourceFeatures.on('change', function(e) {
+			if (sourceFeatures.getState() == 'ready') {
 
-			var features = sourceFeatures.getFeatures();
-			for(var i=0;i<features.length;i++){
-				var icon = layer.iconHandler(features[i]);
-				var isCached = false;
-				for(var j=0;j<cachedIcons.length;j++){
-					if(cachedIcons[j].src.endsWith(icon)){
-						isCached = true;
-						break;
+				var features = sourceFeatures.getFeatures();
+				for(var i=0;i<features.length;i++){
+					var icon = layer.iconHandler(features[i]);
+					var isCached = false;
+					for(var j=0;j<cachedIcons.length;j++){
+						if(cachedIcons[j].src.endsWith(icon)){
+							isCached = true;
+							break;
+						}
+					}
+					if(!isCached){
+						var iconImage = new Image();
+						iconImage.src = icon;
+						cachedIcons.push(iconImage);
 					}
 				}
-				if(!isCached){
-					var iconImage = new Image();
-					iconImage.src = icon;
-					cachedIcons.push(iconImage);
+
+					ol.Observable.unByKey(listenerKey);
 				}
-			}
-
-    			ol.Observable.unByKey(listenerKey);
-     		}
-	});
-
+		});
+	}
+		
+	//inherity geometry type
+	
+		
 	//configure target layer (simple or clustered)
 	var targetLayer = null;
 
@@ -92,11 +98,10 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 					var icons = new Array();
 					var featureIcon = (layer.iconHandler)? layer.iconHandler(feature) : null;
 					if(icons.indexOf(featureIcon) == -1 && featureIcon != null){
-
 						icons.push( featureIcon );
 						styles.push( new ol.style.Style({
 							image : new ol.style.Icon({
-								anchor : [ 0.5,1 ],
+								anchor : [ 0.5, (layer.placemarker? 1 : 0.5) ],
 								anchorXUnits : 'fraction',
 								anchorYUnits : 'fraction',
 								opacity : 0.75,
@@ -106,23 +111,44 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 						}) );						
 					}
 
-
 					if(layer.style){
-						if(layer.style instanceof ol.style.Style) styles.push(layer.style);
-					}else{
-						//default style with same color pattern as in OL2
-						styles.push( new ol.style.Style({
-							fill: new ol.style.Fill({
-      								color: "rgba(238,153,0,0.4)" //'#ee9900' with opacity 0.4
-      							}),
-      							stroke: new ol.style.Stroke({
-        							color: '#ee9900',
-      								width: 1
-      							})
-						}) );
+						if(layer.style instanceof ol.style.Style) {
+							styles = new Array();
+							styles.push(layer.style);
+						}
 					}
+					
+					//default styles
+					//Note: styles rely on same color pattern as in OL2
+					if(styles.length == 0){
+						var fc = layer.source.getFeatures();
+						if(fc.length > 0){
+							var defaultStyle = null;
+							var geomType = fc[0].getGeometry().getType();
+							if(geomType.indexOf("Point") != -1){
+								defaultStyle = new ol.style.Style({
+									image: new ol.style.Circle({
+										fill:new ol.style.Fill({color: "rgba(238,153,0,0.4)" }),
+										stroke: new ol.style.Stroke({color:  '#ee9900', width: 1}),
+										radius: 5
+									})	
+								});
+							}else if(geomType.indexOf("Polygon") != -1){
+								defaultStyle = new ol.style.Style({
+									fill: new ol.style.Fill({
+											color: "rgba(238,153,0,0.4)" //'#ee9900' with opacity 0.4
+										}),
+									stroke: new ol.style.Stroke({
+										color: '#ee9900',
+										width: 1
+									})
+								});
+							}
+							if(defaultStyle != null) styles.push( defaultStyle );
+						}
+					}
+					
 					return styles;
-
 			}
 		});	
 
@@ -162,7 +188,7 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 						icons.push( featureIcon );
 						styles.push( new ol.style.Style({
 							image : new ol.style.Icon({
-								anchor : [ 0.5,1 ],
+								anchor : [ 0.5, (layer.placemarker? 1 : 0.5) ],
 								anchorXUnits : 'fraction',
 								anchorYUnits : 'fraction',
 								opacity : 0.75,
@@ -170,7 +196,7 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 							}),
 							text : (!layer.clusterOptions.singlecount && size == 1)? null : new ol.style.Text({
 								text : size.toString(),
-								offsetY : -16,
+								offsetY : (layer.placemarker? -16 : 0),
 								scale : 1.2,
 								fill : new ol.style.Fill({
 									color : '#fff'
@@ -239,7 +265,7 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 					var styles = [
 						new ol.style.Style({
 								image : new ol.style.Icon({
-								anchor : [ 0.5, 1 ],
+								anchor : [ 0.5, (layer.placemarker? 1 : 0.5) ],
 								anchorXUnits : 'fraction',
 								anchorYUnits : 'fraction',
 								opacity : 0.75,
