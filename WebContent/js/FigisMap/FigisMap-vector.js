@@ -78,10 +78,14 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 					ol.Observable.unByKey(listenerKey);
 				}
 		});
+
+		if( layer.clusterOptions ) {
+			var iconImage = new Image();
+			iconImage.src = layer.clusterOptions.icon;
+			cachedIcons.push( iconImage );
+		}
 	}
-		
-	//inherity geometry type
-	
+
 		
 	//configure target layer (simple or clustered)
 	var targetLayer = null;
@@ -241,10 +245,6 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 				// Feature style when it springs apart
 				featureStyle : function(feature, resolution){
 
-					var features = feature.get('features');
-					var feat = undefined;
-					if(features) feat = features[0];
-
 					var fill = new ol.style.Fill({
 						color: 'rgba(255,255,255,0.4)'
 					});
@@ -256,7 +256,7 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 					//use directly cached image
 					var iconImg = null;
 					for(var i=0;i<cachedIcons.length;i++){
-						if(cachedIcons[i].src.endsWith(layer.iconHandler(feat))){
+						if(cachedIcons[i].src.endsWith(layer.iconHandler(feature))){
 							iconImg = cachedIcons[i];
 							break;				
 						}				

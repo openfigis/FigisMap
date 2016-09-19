@@ -219,8 +219,15 @@ FV.baseMapParams.prototype.setLayer = function( l ) {
 			icon: FigisMap.assetsRoot + 'firms/img/' + l + '.png',
 			iconHandler: function(feature) {
 				var imgRef = l;
+
+				//distinguish cluster exploded icons vs. non-clustered resources
+				
+				if(feature) if(feature.get('features')) imgRef += '_cluster';
+				
+				//manage fishery special cases
 				var specialCases = ["472","473","474"];
-				if(feature) if(specialCases.indexOf(feature.get('FIGIS_ID')) != -1) imgRef = 'fishery_production_system';			
+				if(feature) if(specialCases.indexOf(feature.get('FIGIS_ID')) != -1) imgRef = 'fishery_production_system';				
+			
 				return FigisMap.assetsRoot + 'firms/img/' + imgRef + '.png';
 			},
 			showLegendGraphic : true,
