@@ -166,6 +166,7 @@ FV.baseMapParams.prototype.setCenter = function( c ) {
 		}
 	}
 	this.center = FV.lastCenter ? FV.lastCenter : null;
+	console.log(this.center);
 	return true;
 };
 
@@ -337,6 +338,7 @@ FV.switchProjection = function( p ) {
 	var oe = FV.getExtent();
 	var ne = FigisMap.ol.reBound(op,p,oe);
 	FV.lastExtent = FigisMap.ol.isValidExtent(ne) ? ne : false;
+	if(FV.lastExtent) FV.lastCenter = ol.extent.getCenter(FV.lastExtent);
 	FV.lastZoom = false;
 	FV.setViewer();
 };
