@@ -54,7 +54,7 @@ div.sidePanel:hover, .ol-unselectable.ol-control.layer-switcher.shown { box-shad
 .sidePanel blockquote { background-color: rgba(255,255,255,.8); border-radius: 0 0 10px 10px; margin: 0; opacity: 0; overflow-y: hidden; padding: 0 10px; }
 .sidePanel blockquote { height: 0px; }
 .sidePanel:hover blockquote, .sidePanel *:hover blockquote, .sidePanel blockquote:hover { opacity: 1; padding: 5px 10px 0 10px; }
-#projectionPanel { left: 60px; position: absolute; top: 0; width: 150px; }
+#projectionPanel { left: 60px; position: absolute; top: 0; width: 160px; }
 #linkPanel { position: absolute; right: 300px; top: 0; width: 220px; }
 body.embed #linkPanel { display: none; }
 .sidePanel:hover blockquote, .sidePanel *:hover blockquote, .sidePanel blockquote:hover { height: 100%; }

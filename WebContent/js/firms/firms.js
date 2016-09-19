@@ -314,6 +314,7 @@ FV.currentProjection = function( p ) {
 	var cp;
 	if ( document.getElementById('SelectSRS4326').checked ) cp = '4326';
 	if ( ! cp ) if ( document.getElementById('SelectSRS3349').checked ) cp = '3349';
+	if ( ! cp ) if ( document.getElementById('SelectSRS54009').checked ) cp = '54009';
 	if ( ! cp ) {
 		document.getElementById('SelectSRS4326').checked = true;
 		cp = '4326';
@@ -324,6 +325,8 @@ FV.currentProjection = function( p ) {
 	if ( p != cp ) {
 		document.getElementById('SelectSRS4326').checked = ( p == '4326');
 		document.getElementById('SelectSRS3349').checked = ( p == '3349');
+		document.getElementById('SelectSRS54009').checked = ( p == '54009');
+		
 	}
 	FV.lastProjection = parseInt( p );
 	return FV.lastProjection;
