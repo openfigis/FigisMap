@@ -217,12 +217,12 @@ FV.baseMapParams.prototype.setLayer = function( l ) {
 			source: FigisMap.rnd.configureVectorSource(sourceUrl, null),
 			title: l == 'resource' ? "Marine resources" : "Fisheries",
 			icon: FigisMap.assetsRoot + 'firms/img/' + l + '.png',
-			/*iconHandler: function(feature) {
+			iconHandler: function(feature) {
 				var imgRef = l;
 				var specialCases = ["472","473","474"];
 				if(feature) if(specialCases.indexOf(feature.get('FIGIS_ID')) != -1) imgRef = 'fishery_production_system';			
 				return FigisMap.assetsRoot + 'firms/img/' + imgRef + '.png';
-			},*/
+			},
 			showLegendGraphic : true,
 			cluster: true,
 			clusterOptions: { distance: 30, animate: true, singlecount: false, icon: FigisMap.assetsRoot + 'firms/img/' + l + '_cluster.png' }
