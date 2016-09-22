@@ -256,6 +256,22 @@ FV.baseMapParams.prototype.updateLayerSource = function( l , filter) {
 	}
 }
 
+/*
+	FV.baseMapParams.prototype.addFilterCategory
+	@param category: the resource/fishery category, string
+	Updates the layer source
+*/
+FV.baseMapParams.prototype.addFilterCategory = function( category ) {
+	if( category ) {
+		FV.categories.push(category);
+		this.categories = FV.categories;
+	} else {
+		return false;
+	}
+	
+	return true;
+}
+
 
 FV.getExtent = function() {
 	return ( FV.myMap ) ? FV.myMap.getView().calculateExtent(FV.myMap.getSize()) : null;
@@ -345,6 +361,7 @@ FV.switchProjection = function( p ) {
 
 FV.currentLayer = function( l ) {
 	if ( l ) {
+		FV.categories = [];
 		l = String(l);
 		FV.setLayerStatus('resource', (l == 'resource') );
 		FV.setLayerStatus('fishery', (l == 'fishery') );
@@ -370,6 +387,27 @@ FV.switchLayer = function( l ) {
 	FV.currentLayer( l );
 	FV.setViewer();
 };
+
+FV.filterLayerByCategory = function( id, category ) {
+	
+	if( document.getElementById(id).checked ){
+		FV.lastPars.addFilterCategory( category );
+	}else{
+		FV.categories = FV.categories.filter(function(i) {
+			return i != category;
+		});
+	}
+
+	var cqlFilter = null;
+	if( FV.categories.length > 0 ){
+		var filterCategories = "(" + FV.categories.map(category => `'${category}'`).join(',') + ")";
+		cqlFilter = "CATEGORY IN " + filterCategories;
+		console.log(cqlFilter);
+	}
+		
+	FV.lastPars.updateLayerSource( FV.currentLayer(), cqlFilter);
+	
+}
 
 /**
 * FV.setViewerPage function. Load the base FIRMS Map applying the user request parameters, if any
