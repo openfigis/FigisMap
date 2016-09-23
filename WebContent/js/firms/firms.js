@@ -215,7 +215,7 @@ FV.baseMapParams.prototype.setLayer = function( l ) {
 
 		this.vectorLayer = {
 			id: l,
-			source: FigisMap.rnd.configureVectorSource(sourceUrl, null),
+			source: FigisMap.rnd.configureVectorSource(sourceUrl, FV.getCQLFilterByCategory( l )),
 			title: l == 'resource' ? "Marine resources" : "Fisheries",
 			icon: FigisMap.assetsRoot + 'firms/img/' + l + '.png',
 			iconHandler: function(feature) {
@@ -258,13 +258,15 @@ FV.baseMapParams.prototype.updateLayerSource = function( l , filter) {
 
 /*
 	FV.baseMapParams.prototype.addFilterCategory
+	@param parent: the parent ('resource'/'fishery')
 	@param category: the resource/fishery category, string
 	Updates the layer source
 */
-FV.baseMapParams.prototype.addFilterCategory = function( category ) {
+FV.baseMapParams.prototype.addFilterCategory = function( parent, category ) {
 	if( category ) {
-		FV.categories.push(category);
-		this.categories = FV.categories;
+		FV.categories[parent].push(category);
+		if(typeof this.category == "undefined") this.categories = new Object();
+		this.categories[parent] = FV.categories[parent];
 	} else {
 		return false;
 	}
@@ -361,7 +363,10 @@ FV.switchProjection = function( p ) {
 
 FV.currentLayer = function( l ) {
 	if ( l ) {
-		FV.categories = [];
+		if(typeof FV.categories == "undefined"){
+			FV.categories = new Object();
+		}
+		if(typeof FV.categories[l] == "undefined") FV.categories[l] = [];
 		l = String(l);
 		FV.setLayerStatus('resource', (l == 'resource') );
 		FV.setLayerStatus('fishery', (l == 'fishery') );
@@ -388,25 +393,38 @@ FV.switchLayer = function( l ) {
 	FV.setViewer();
 };
 
-FV.filterLayerByCategory = function( id, category ) {
-	
-	if( document.getElementById(id).checked ){
-		FV.lastPars.addFilterCategory( category );
-	}else{
-		FV.categories = FV.categories.filter(function(i) {
-			return i != category;
-		});
-	}
 
+FV.getCQLFilterByCategory = function(parent) {
 	var cqlFilter = null;
-	if( FV.categories.length > 0 ){
-		var filterCategories = "(" + FV.categories.map(category => `'${category}'`).join(',') + ")";
+	if( FV.categories[parent].length > 0 ){
+		var filterCategories = "(" + FV.categories[parent].map(category => `'${category}'`).join(',') + ")";
 		cqlFilter = "CATEGORY IN " + filterCategories;
 		console.log(cqlFilter);
 	}
-		
-	FV.lastPars.updateLayerSource( FV.currentLayer(), cqlFilter);
+	return cqlFilter;
+}
+
+
+FV.filterLayerByCategory = function( id, parent, category ) {
 	
+	if( document.getElementById(id).checked ){
+		FV.lastPars.addFilterCategory( parent, category );
+	}else{
+		FV.categories[parent] = FV.categories[parent].filter(function(i) {
+			return i != category;
+		});
+	}
+	
+	FV.lastPars.updateLayerSource( FV.currentLayer(), FV.getCQLFilterByCategory(parent));
+	
+}
+
+FV.filterResourcesByCategory = function(id, category){
+	FV.filterLayerByCategory(id, "resource", category);
+}
+
+FV.filterFisheriesByCategory = function(id, category){
+	FV.filterLayerByCategory(id, "fishery", category);
 }
 
 /**
