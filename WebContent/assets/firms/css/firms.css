@@ -72,7 +72,7 @@ body.embed #linkPanel { display: none; }
 .ol-unselectable.ol-control.layer-switcher.layer-switcher ul { margin: 0; padding: 0; }
 
 @media print { #resourceSwitcher { display: none; } }
-#resourceSwitcher { top: 10em; left: .5em; position: absolute; width: 180px; z-index: 100; font-size: 12px; }
+#resourceSwitcher { top: 10em; left: .5em; position: absolute; width: 200px; z-index: 100; font-size: 12px; }
 #resourceSwitcher * { transition: all .5s; }
 #resourceSwitcher div { border-radius: 10px; font-size: 100%; margin: 0 0 .5em 0; padding: 5px 10px; text-align: left;  opacity: .4; }
 .category-filters{ display:none; padding-left:5px;color:white;}
