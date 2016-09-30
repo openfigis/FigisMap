@@ -60,6 +60,7 @@ FigisMap.fifao = {
 
 	//VME layers
 	vmc : 'vme:closures', // VME closed areas
+<<<<<<< HEAD
 	vmo : 'vme:other_areas', // Other access regulated areas    
 	vmb : 'vme:bottom_fishing_areas', // Bottom fishing areas
 	vmr : 'fifao:RFB_COMP_CLIP', // VME regulatory areas
@@ -67,6 +68,15 @@ FigisMap.fifao = {
 	gbi : 'vme:gebco_isobath2000', //isobath -2000m
 	vnt : 'vme:vents_InterRidge_2011_all', // Hidrotermal
 	ccr : 'vme:WCMC-001-ColdCorals2005', //ColdCorals
+=======
+    	vmo : 'vme:other_areas', // Other access regulated areas    
+    	vmb : 'vme:bottom_fishing_areas', // Bottom fishing areas
+    	vmr : 'fifao:RFB_COMP_CLIP', // VME regulatory areas
+	guf : 'fifao:gebco_underseafeatures', //undersea features
+    	gbi : 'vme:gebco_isobath2000', //isobath -2000m
+    	vnt : 'vme:vents_InterRidge_2011_all', // Hidrotermal
+    	ccr : 'vme:WCMC-001-ColdCorals2005', //ColdCorals
+>>>>>>> origin/master
 
 
 };
@@ -135,7 +145,7 @@ FigisMap.localPathForGeoserver = "/figis/geoserver";
 FigisMap.httpBaseRoot = FigisMap.isRemoteDeveloper ? '' : FigisMap.geoServerBase + ('/figis/geoserver/factsheets/');
 
 //assets
-FigisMap.assetsRoot = FigisMap.httpBaseRoot + "assets/";
+FigisMap.assetsRoot = "assets/";
 
 FigisMap.rnd.vars = {
 	geoserverURL		: FigisMap.geoServerBase + FigisMap.localPathForGeoserver,
@@ -872,9 +882,9 @@ FigisMap.ol.toggleLayer = function(map, layername, visible){
  * Refresh a layer with acronym/time filters
  * @param layer name of the layer as in Geoserver ('namespace:layername')
  */
-FigisMap.ol.refreshLayer = function(layer, newParams){
+FigisMap.ol.refreshLayer = function(map, layer, newParams){
 	
-	var olLayer = FigisMap.ol.getLayer(VME.myMap, layer);
+	var olLayer = FigisMap.ol.getLayer(map, layer);
 	var source = olLayer.getSource();
 	var params = source.getParams();
 	
@@ -2607,7 +2617,7 @@ FigisMap.renderer = function(options) {
 			myMap.zoomToExtent( nb, false );
 
 			//apply specific center rules
-			myMap.optimizeCenter(nb, [4326]);
+			myMap.optimizeCenter(nb, [4326, 54009]);
 			
 			FigisMap.debug( 'FigisMap.renderer autoZoom values:', { bounds: bounds, boundsSize: ol.extent.getSize(bounds), nb: nb, nc : myMap.getView().getCenter(), mapSize: myMap.getSize() } );
 		}

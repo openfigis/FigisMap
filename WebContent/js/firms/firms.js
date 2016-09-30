@@ -166,6 +166,7 @@ FV.baseMapParams.prototype.setCenter = function( c ) {
 		}
 	}
 	this.center = FV.lastCenter ? FV.lastCenter : null;
+	console.log(this.center);
 	return true;
 };
 
@@ -214,13 +215,20 @@ FV.baseMapParams.prototype.setLayer = function( l ) {
 
 		this.vectorLayer = {
 			id: l,
-			source: FigisMap.rnd.configureVectorSource(sourceUrl, null),
+			source: FigisMap.rnd.configureVectorSource(sourceUrl, FV.getCQLFilterByCategory( l )),
 			title: l == 'resource' ? "Marine resources" : "Fisheries",
 			icon: FigisMap.assetsRoot + 'firms/img/' + l + '.png',
 			iconHandler: function(feature) {
 				var imgRef = l;
+
+				//distinguish cluster exploded icons vs. non-clustered resources
+				
+				if(feature) if(feature.get('features')) imgRef += '_cluster';
+				
+				//manage fishery special cases
 				var specialCases = ["472","473","474"];
-				if(feature) if(specialCases.indexOf(feature.get('FIGIS_ID')) != -1) imgRef = 'fishery_production_system';			
+				if(feature) if(specialCases.indexOf(feature.get('FIGIS_ID')) != -1) imgRef = 'fishery_production_system';				
+			
 				return FigisMap.assetsRoot + 'firms/img/' + imgRef + '.png';
 			},
 			showLegendGraphic : true,
@@ -246,6 +254,24 @@ FV.baseMapParams.prototype.updateLayerSource = function( l , filter) {
 		FigisMap.rnd.updateVectorLayer(FV.myMap, this.vectorLayer);
 		
 	}
+}
+
+/*
+	FV.baseMapParams.prototype.addFilterCategory
+	@param parent: the parent ('resource'/'fishery')
+	@param category: the resource/fishery category, string
+	Updates the layer source
+*/
+FV.baseMapParams.prototype.addFilterCategory = function( parent, category ) {
+	if( category ) {
+		FV.categories[parent].push(category);
+		if(typeof this.category == "undefined") this.categories = new Object();
+		this.categories[parent] = FV.categories[parent];
+	} else {
+		return false;
+	}
+	
+	return true;
 }
 
 
@@ -307,6 +333,7 @@ FV.currentProjection = function( p ) {
 	var cp;
 	if ( document.getElementById('SelectSRS4326').checked ) cp = '4326';
 	if ( ! cp ) if ( document.getElementById('SelectSRS3349').checked ) cp = '3349';
+	if ( ! cp ) if ( document.getElementById('SelectSRS54009').checked ) cp = '54009';
 	if ( ! cp ) {
 		document.getElementById('SelectSRS4326').checked = true;
 		cp = '4326';
@@ -317,6 +344,8 @@ FV.currentProjection = function( p ) {
 	if ( p != cp ) {
 		document.getElementById('SelectSRS4326').checked = ( p == '4326');
 		document.getElementById('SelectSRS3349').checked = ( p == '3349');
+		document.getElementById('SelectSRS54009').checked = ( p == '54009');
+		
 	}
 	FV.lastProjection = parseInt( p );
 	return FV.lastProjection;
@@ -327,12 +356,17 @@ FV.switchProjection = function( p ) {
 	var oe = FV.getExtent();
 	var ne = FigisMap.ol.reBound(op,p,oe);
 	FV.lastExtent = FigisMap.ol.isValidExtent(ne) ? ne : false;
+	if(FV.lastExtent) FV.lastCenter = ol.extent.getCenter(FV.lastExtent);
 	FV.lastZoom = false;
 	FV.setViewer();
 };
 
 FV.currentLayer = function( l ) {
 	if ( l ) {
+		if(typeof FV.categories == "undefined"){
+			FV.categories = new Object();
+		}
+		if(typeof FV.categories[l] == "undefined") FV.categories[l] = [];
 		l = String(l);
 		FV.setLayerStatus('resource', (l == 'resource') );
 		FV.setLayerStatus('fishery', (l == 'fishery') );
@@ -358,6 +392,40 @@ FV.switchLayer = function( l ) {
 	FV.currentLayer( l );
 	FV.setViewer();
 };
+
+
+FV.getCQLFilterByCategory = function(parent) {
+	var cqlFilter = null;
+	if( FV.categories[parent].length > 0 ){
+		var filterCategories = '(\'' + FV.categories[parent].join('\',\'') + '\')';
+		cqlFilter = "CATEGORY IN " + filterCategories;
+		console.log(cqlFilter);
+	}
+	return cqlFilter;
+}
+
+
+FV.filterLayerByCategory = function( id, parent, category ) {
+	
+	if( document.getElementById(id).checked ){
+		FV.lastPars.addFilterCategory( parent, category );
+	}else{
+		FV.categories[parent] = FV.categories[parent].filter(function(i) {
+			return i != category;
+		});
+	}
+	
+	FV.lastPars.updateLayerSource( FV.currentLayer(), FV.getCQLFilterByCategory(parent));
+	
+}
+
+FV.filterResourcesByCategory = function(id, category){
+	FV.filterLayerByCategory(id, "resource", category);
+}
+
+FV.filterFisheriesByCategory = function(id, category){
+	FV.filterLayerByCategory(id, "fishery", category);
+}
 
 /**
 * FV.setViewerPage function. Load the base FIRMS Map applying the user request parameters, if any

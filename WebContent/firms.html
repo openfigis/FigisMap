@@ -115,13 +115,52 @@
 			<div id="main">
 				<div id="map" class="map"></div>
 				<div id="resourceSwitcher">
+					<!-- Marine Resources -->
 					<div id="resourceSwitcherPanelResource">
 						<input type="radio" name="SelectLayer" onchange="FV.switchLayer(this.value)" value="resource" id="resourceSwitcher-resource" />
 						<label for="resourceSwitcher-resource">Marine Resources</label>
+						
+						<!-- Filters -->
+						<ul class="category-filters">
+						    <li>
+							<input type="checkbox" name="FilterLayer1" onchange="FV.filterResourcesByCategory('rs-marineresource',this.value)" value="Marine Resource" id="rs-marineresource" />
+							<label for="rs-marineresource">Marine resource</label>
+						    </li>
+						    <li>
+							<input type="checkbox" name="FilterLayer2" onchange="FV.filterResourcesByCategory('rs-biologicalstock',this.value)" value="Biological Stock" id="rs-biologicalstock" />
+							<label for="rs-biologicalstock">Considered a single stock</label>
+						    </li>
+						</ul>
 					</div>
+					
+					<!-- Fisheries -->
 					<div id="resourceSwitcherPanelFishery">
 						<input type="radio" name="SelectLayer" onchange="FV.switchLayer(this.value)" value="fishery" id="resourceSwitcher-fishery" />
 						<label for="resourceSwitcher-fishery">Fisheries</label>
+
+						<!-- Filters -->
+						<ul class="category-filters">
+						    <li>
+							<input type="checkbox" name="FilterLayer1" onchange="FV.filterFisheriesByCategory('rs-fisheryresource',this.value)" value="Fishery Resource" id="rs-fisheryresource" />
+							<label for="rs-fisheryresource">Fishery resource</label>
+						    </li>
+						    <li>
+							<input type="checkbox" name="FilterLayer2" onchange="FV.filterFisheriesByCategory('rs-fishingactivity',this.value)" value="Fishing Activity" id="rs-fishingactivity" />
+							<label for="rs-fishingactivity">Fishing activity</label>
+						    </li>
+						    <li>
+							<input type="checkbox" name="FilterLayer3" onchange="FV.filterFisheriesByCategory('rs-fisherymanagementunit',this.value)" value="Fishery Management Unit" id="rs-fisherymanagementunit" />
+							<label for="rs-fisherymanagementunit">Management unit</label>
+						    </li>
+						    <li>
+							<input type="checkbox" name="FilterLayer4" onchange="FV.filterFisheriesByCategory('rs-productionsystem',this.value)" value="Production System" id="rs-productionsystem" />
+							<label for="rs-productionsystem">Production System</label>
+						    </li>
+						    <li>
+							<input type="checkbox" name="FilterLayer5" onchange="FV.filterFisheriesByCategory('rs-jurisdictional',this.value)" value="Jurisdictional" id="rs-jurisdictional" />
+							<label for="rs-jurisdictional">Jurisdictional</label>
+						    </li>
+						</ul>
 					</div>
 				</div>
 				<div id="ftsContainer" class="closed" onclick="openSearch();">
@@ -151,6 +190,11 @@
 							<input type="radio" name="SelectSRS" onchange="FV.switchProjection(this.value)" value="3349" checked="checked" id="SelectSRS3349" />
 							<label for="SelectSRS3349">Mercator (3857)</label>
 						</div>
+						<div>
+							<input type="radio" name="SelectSRS" onchange="FV.switchProjection(this.value)" value="54009" id="SelectSRS54009" />
+							<label for="SelectSRS54009">Mollweide (54009)</label>
+						</div>
+
 					<blockquote>
 				</div>
 				<div id="linkPanel" class="sidePanel" onmouseover="FV.setViewerEmbedLink()">
