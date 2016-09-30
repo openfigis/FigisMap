@@ -2,6 +2,7 @@
  * FIRMS Map viewer Javascript
  * Authors: M. Balestra, E. Blondel
  * 
+ * [unicode glyph: ]
  */
 
 var performAutoZoom = true;
@@ -270,7 +271,6 @@ FV.baseMapParams.prototype.addFilterCategory = function( parent, category ) {
 	} else {
 		return false;
 	}
-	
 	return true;
 }
 
@@ -370,6 +370,7 @@ FV.currentLayer = function( l ) {
 		l = String(l);
 		FV.setLayerStatus('resource', (l == 'resource') );
 		FV.setLayerStatus('fishery', (l == 'fishery') );
+		if ( typeof FV.lastPars != 'undefined') FV.filterByCategory( l );
 	} else {
 		if ( document.getElementById('resourceSwitcher-resource').checked ) l = 'resource';
 		if ( ! l ) if ( document.getElementById('resourceSwitcher-fishery').checked ) l = 'fishery';
@@ -397,35 +398,48 @@ FV.switchLayer = function( l ) {
 FV.getCQLFilterByCategory = function(parent) {
 	var cqlFilter = null;
 	if( FV.categories[parent].length > 0 ){
-		var filterCategories = '(\'' + FV.categories[parent].join('\',\'') + '\')';
+		var filterCategories = "('" + FV.categories[parent].join("','") + "')";
 		cqlFilter = "CATEGORY IN " + filterCategories;
 		console.log(cqlFilter);
 	}
 	return cqlFilter;
 }
 
-
-FV.filterLayerByCategory = function( id, parent, category ) {
-	
-	if( document.getElementById(id).checked ){
-		FV.lastPars.addFilterCategory( parent, category );
-	}else{
-		FV.categories[parent] = FV.categories[parent].filter(function(i) {
-			return i != category;
-		});
+FV.filterByCategory = function(l) {
+	var parent = typeof l == 'undefined' ? FV.currentLayer() : l;
+	var theDiv = document.getElementById('resourceSwitcher-'+parent).parentNode;
+	var chks = theDiv.getElementsByTagName('ul')[0].getElementsByTagName('input');
+	var tmp = [];
+	for ( var i = 0; i < chks.length; i++ ) {
+		if ( chks[i].checked ) tmp.push(chks[i].value);
 	}
-	
-	FV.lastPars.updateLayerSource( FV.currentLayer(), FV.getCQLFilterByCategory(parent));
-	
-}
+	FV.categories[parent] = [];
+	if ( tmp.length == 0 ) {
+		for ( var i = 0; i < chks.length; i++ ) chks[i].checked = true;
+	} else if ( tmp.length < chks.length ) {
+		FV.categories[parent] = tmp;
+	}
+	FV.lastPars.updateLayerSource( parent, FV.getCQLFilterByCategory(parent));
+};
 
-FV.filterResourcesByCategory = function(id, category){
-	FV.filterLayerByCategory(id, "resource", category);
-}
-
-FV.filterFisheriesByCategory = function(id, category){
-	FV.filterLayerByCategory(id, "fishery", category);
-}
+// FV.filterLayerByCategory = function( id, parent, category ) {
+// 	if( document.getElementById(id).checked ){
+// 		FV.lastPars.addFilterCategory( parent, category );
+// 	} else {
+// 		FV.categories[parent] = FV.categories[parent].filter(function(i) {
+// 			return i != category;
+// 		});
+// 	}
+// 	FV.lastPars.updateLayerSource( FV.currentLayer(), FV.getCQLFilterByCategory(parent));
+// };
+// 
+// FV.filterResourcesByCategory = function(id, category){
+// 	FV.filterLayerByCategory(id, "resource", category);
+// }
+// 
+// FV.filterFisheriesByCategory = function(id, category){
+// 	FV.filterLayerByCategory(id, "fishery", category);
+// }
 
 /**
 * FV.setViewerPage function. Load the base FIRMS Map applying the user request parameters, if any
