@@ -397,7 +397,7 @@ FV.switchLayer = function( l ) {
 FV.getCQLFilterByCategory = function(parent) {
 	var cqlFilter = null;
 	if( FV.categories[parent].length > 0 ){
-		var filterCategories = "(" + FV.categories[parent].map(category => `'${category}'`).join(',') + ")";
+		var filterCategories = '(\'' + FV.categories[parent].join('\',\'') + '\')';
 		cqlFilter = "CATEGORY IN " + filterCategories;
 		console.log(cqlFilter);
 	}
