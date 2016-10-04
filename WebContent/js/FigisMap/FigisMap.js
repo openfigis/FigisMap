@@ -60,8 +60,7 @@ FigisMap.fifao = {
 	sun : 'fifao:FAO_SUB_UNIT',
 
 	//VME layers
-	vmc : 'vme:closures', // VME closed areas
-<<<<<<< HEAD
+	vmc : 'vme:closures',	// VME closed areas
 	vmo : 'vme:other_areas', // Other access regulated areas    
 	vmb : 'vme:bottom_fishing_areas', // Bottom fishing areas
 	vmr : 'fifao:RFB_COMP_CLIP', // VME regulatory areas
@@ -69,15 +68,6 @@ FigisMap.fifao = {
 	gbi : 'vme:gebco_isobath2000', //isobath -2000m
 	vnt : 'vme:vents_InterRidge_2011_all', // Hidrotermal
 	ccr : 'vme:WCMC-001-ColdCorals2005', //ColdCorals
-=======
-    	vmo : 'vme:other_areas', // Other access regulated areas    
-    	vmb : 'vme:bottom_fishing_areas', // Bottom fishing areas
-    	vmr : 'fifao:RFB_COMP_CLIP', // VME regulatory areas
-	guf : 'fifao:gebco_underseafeatures', //undersea features
-    	gbi : 'vme:gebco_isobath2000', //isobath -2000m
-    	vnt : 'vme:vents_InterRidge_2011_all', // Hidrotermal
-    	ccr : 'vme:WCMC-001-ColdCorals2005', //ColdCorals
->>>>>>> origin/master
 
 
 };
@@ -353,11 +343,11 @@ FigisMap.error = function() {
  */
 
 if (!('remove' in Element.prototype)) {
-    Element.prototype.remove = function() {
-        if (this.parentNode) {
-            this.parentNode.removeChild(this);
-        }
-    };
+	Element.prototype.remove = function() {
+		if (this.parentNode) {
+			this.parentNode.removeChild(this);
+		}
+	};
 }
 
 /**
@@ -2619,7 +2609,7 @@ FigisMap.renderer = function(options) {
 			}*/
 
 			//zoom to extent
-			myMap.zoomToExtent( nb, false );
+			myMap.zoomToExtent( nb, true );
 
 			//apply specific center rules
 			myMap.optimizeCenter(nb, [4326, 54009]);
