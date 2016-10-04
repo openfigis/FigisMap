@@ -79,9 +79,15 @@ body.embed #linkPanel { display: none; }
 #resourceSwitcherPanelResource { background-color: rgba(0,51,153,.8); color: rgba(255,255,0,.8); }
 #resourceSwitcherPanelFishery { background-color: rgba(102,0,102,.8); color: rgba(255,255,0,.8); }
 #resourceSwitcher div.active { opacity: .9; }
+/* 
 #resourceSwitcher div.active .category-filters { display:block; }
+ */
 #resourceSwitcher div.inactive:hover { opacity: .7; }
 #resourceSwitcher div.inactive:hover * { cursor: pointer; }
+#resourceSwitcher div ul { display: none; }
+#resourceSwitcher div.active:hover ul { display: block; }
+#resourceSwitcher div li { opacity: 0; }
+#resourceSwitcher div.active:hover li { opacity: 1; }
 #resourceSwitcher img.iconsearch { float: right; margin: 0; padding: 0; border: none; margin-top: -4px; margin-right: -6px; opacity : .7; }
 #resourceSwitcher div.active img.iconsearch { cursor: pointer; }
 #resourceSwitcher div.active img.iconsearch:hover { opacity: 1; margin-top: -8px;  }
