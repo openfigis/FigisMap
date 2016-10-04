@@ -49,21 +49,50 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 	if( !layer.source ) alert("Missing vector layer 'source'");
 	if( !layer.placemarker ) layer.placemarker = false;
 	
-	//data access
+	//data access (vector/cluster)
 	var sourceFeatures = layer.source;
+	var clusterFeatures;
+	if( layer.cluster ) {
+		if (!layer.clusterOptions.hasOwnProperty('singlecount')) layer.clusterOptions.singlecount = true;
+		clusterFeatures = FigisMap.rnd.configureClusterSource(layer, sourceFeatures);
+	}
 
 	//manage icon image caches
+	//for both vector and cluster sources
 	if( layer.iconHandler ) {
 		var cachedIcons = new Array();
 		var listenerKey = sourceFeatures.on('change', function(e) {
 			if (sourceFeatures.getState() == 'ready') {
+	
+				//cache single and cluster feature icons
+				var sources = [sourceFeatures, clusterFeatures];
+				for(var i=0;i<sources.length;i++){
+					var source = sources[i];
+					var features = source.getFeatures();
+					for(var j=0;j<features.length;j++){
+						var icon = layer.iconHandler(features[j]);
+						var isCached = false;
+						for(var k=0;k<cachedIcons.length;k++){
+							if(cachedIcons[k].src.endsWith(icon)){
+								isCached = true;
+								break;
+							}
+						}
+						if(!isCached){
+							var iconImage = new Image();
+							iconImage.src = icon;
+							cachedIcons.push(iconImage);
+						}
+					}
 
-				var features = sourceFeatures.getFeatures();
-				for(var i=0;i<features.length;i++){
-					var icon = layer.iconHandler(features[i]);
+				}
+
+				//cache cluster group icons
+				if( layer.clusterOptions ) {
 					var isCached = false;
-					for(var j=0;j<cachedIcons.length;j++){
-						if(cachedIcons[j].src.endsWith(icon)){
+					var icon = layer.clusterOptions.icon;
+					for(var k=0;k<cachedIcons.length;k++){
+						if(cachedIcons[k].src.endsWith(icon)){
 							isCached = true;
 							break;
 						}
@@ -74,16 +103,12 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 						cachedIcons.push(iconImage);
 					}
 				}
-
-					ol.Observable.unByKey(listenerKey);
-				}
+				FigisMap.debug("Caching icons for vector/cluster layer:", cachedIcons);
+				
+				ol.Observable.unByKey(listenerKey);
+			}
 		});
 
-		if( layer.clusterOptions ) {
-			var iconImage = new Image();
-			iconImage.src = layer.clusterOptions.icon;
-			cachedIcons.push( iconImage );
-		}
 	}
 
 		
@@ -160,11 +185,6 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 	}else {
 		//Clustered Vector layer
 		//----------------------
-		
-		if (!layer.clusterOptions.hasOwnProperty('singlecount')) layer.clusterOptions.singlecount = true;
-
-		// configure the cluster source
-		var clusterFeatures = FigisMap.rnd.configureClusterSource(layer, sourceFeatures);
 
 		if(!layer.hasOwnProperty('iconHandler')) layer.iconHandler = function(feature){return layer.icon;};
 		
