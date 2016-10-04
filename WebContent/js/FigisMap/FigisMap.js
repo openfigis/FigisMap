@@ -45,7 +45,8 @@ FigisMap.fifao = {
 	eez : 'fifao:EEZ',
 	ics : 'fifao:ICCAT_SMU',
 	lme : 'fifao:LME',
-	maj : 'fifao:FAO_MAJOR_Lines',
+	maj : 'fifao:FAO_MAJOR',
+	mal : 'fifao:FAO_MAJOR_Lines',
 	ma2 : 'fifao:FAO_MAJOR',
 	nma : 'fifao:limit_200nm',
 	cmp : 'fifao:ISO3_COUNTRY',
@@ -87,6 +88,7 @@ FigisMap.fifaoStyles = {
 FigisMap.isFaoArea = function( layerName ) {
 	switch ( layerName ) {
 		case FigisMap.fifao.maj : return true; break;
+		case FigisMap.fifao.mal : return true; break;
 		case FigisMap.fifao.ma2 : return true; break;
 		case FigisMap.fifao.div : return true; break;
 		case FigisMap.fifao.sdi : return true; break;
@@ -1324,6 +1326,7 @@ FigisMap.fs.setAutoZoom = function( p, dtype ) {
 	if ( ! prio ) if ( dtype[ FigisMap.fifao.eez ] ) prio = dtype[ FigisMap.fifao.eez ][0];
 	if ( ! prio ) if ( dtype[ FigisMap.fifao.cbs ] ) prio = dtype[ FigisMap.fifao.cbs ][0];
 	if ( ! prio ) if ( dtype[ FigisMap.fifao.maj ] ) prio = dtype[ FigisMap.fifao.maj ][0];
+
 	if ( ! prio ) prio = 0;
 	p.distribution[ prio ].autoZoom = true;
 	return true;
@@ -1755,6 +1758,7 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 	if ( pars.basicsLayers ) {
 
 		var hideBasicLayers = (pars.options.hideBasicLayers)? pars.options.hideBasicLayers : false;
+		var useMajorAreasAsLines = (pars.options.majorAreasAsLines)? pars.options.majorAreasAsLines : false;
 	
 		//WMS 200 nautical miles arcs
 		if ( ! layerTypes[ FigisMap.fifao.nma ] && ! pars.options.skipNauticalMiles ) {
@@ -1772,9 +1776,9 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 			});
 		}
 		//WMS FAO Areas
-		if ( pars.projection != 3031 ) if ( ! pars.options.skipFishingAreas ) if ( ! ( layerTypes[ FigisMap.fifao.ma2 ] || layerTypes[ FigisMap.fifao.maj ] ) ) {
+		if ( pars.projection != 3031 ) if ( ! pars.options.skipFishingAreas ) if ( ! ( layerTypes[ FigisMap.fifao.ma2 ] || layerTypes[ FigisMap.fifao.maj ] || layerTypes[ FigisMap.fifao.mal ] ) ) {
 			layers.unshift( { //TODO check why Unshift
-				layer	: FigisMap.fifao.maj,
+				layer	: useMajorAreasAsLines? FigisMap.fifao.mal : FigisMap.fifao.maj,
 				label	: 'FAO fishing areas',
 				overlayGroup: overlayGroup,
 				filter	:'*',
@@ -2134,8 +2138,9 @@ FigisMap.getStyleRuleDescription = function(STYLE, pars) {
 				colors			: (boolean) use color map background
 				labels			: (boolean) use labels - defaults to options.colors
 				baseMarineLabels	: (boolean) display marine labels layer on top of basic auto layers (in map and layerswitcher)
-				baseMask : (boolean) display continent mask just above baselayers (before any other overlay)
-				hideBasicLayers : (boolean) hide the basic auto layers FAO areas and EEZ
+				baseMask 		: (boolean) display continent mask just above baselayers (before any other overlay)
+				majorAreasAsLines	: (boolean) use a Lines version of FAO MAJOR areas layer instead of polygons (to be used for viewers only)
+				hideBasicLayers 	: (boolean) hide the basic auto layers FAO areas and EEZ
 				skipLayerSwitcher	: (boolean) omit layer switcher if true
 				skipLoadingPanel	: (boolean) omit Loading panel (spinning wheel) if true
 				loadingPanelOptions	: (Object) object of options passed to LoadingPanel

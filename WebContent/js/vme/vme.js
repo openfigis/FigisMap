@@ -88,6 +88,7 @@ VME.baseMapParams = function(year){
 		labels: true,
 		baseMarineLabels: true,
 		baseMask: true,
+		majorAreasAsLines: true,
 		hideBasicLayers: true,
 		layerSwitcherOptions: { 
 			target: "layerswitcher",
