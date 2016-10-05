@@ -142,9 +142,10 @@ ol.control.LayerSwitcher.prototype.setMap = function(map) {
 			this.mapListeners.push(map.once("postrender", function(){
 				this.renderPanel();
 			}, this));
-			this.mapListeners.push(map.on('postcompose', function(e) {
+			//TODO test on all FIGIS applications
+			/*this.mapListeners.push(map.on('postcompose', function(e) {
 				this.renderPanel();
-			}, this));
+			}, this));*/
 			this.mapListeners.push(map.getView().on('propertychange', function(e) {
 				this.renderPanel();
 			}, this));
