@@ -113,10 +113,10 @@ body.embed #linkPanel { display: none; }
 #ftsContainer.closed #ftsText { width: 20px; }
 #ftsResult { color: rgba(0,0,0,.8); font-size: 10px; margin: -10px 0 0 20px; width: 400px; padding: .5em 0; }
 #ftsContainer.closed #ftsResult { display: none; }
-#ftsResult.haveResults { background-color: rgba(255,255,255,.8); border-radius: 0 0 10px 10px; }
+#ftsResult.haveResults { background-color: rgba(255,255,255,.8); border-radius: 0 0 10px 10px; max-height: 320px; overflow-y: auto; }
 #ftsResult.noResults { }
 #ftsResult p { padding: 0; margin: .5em; }
-#ftsResult p.ftsComment { text-align: center; color : rgba(0,0,0,.7); font-style: italic; }
+#ftsResult p.ftsComment { text-align: center; color : rgba(0,0,0,.7); font-style: italic; margin-top: .2em; }
 
 #progressIndicator { background-color: rgba(128,128,128,.5); border: solid 1px rgba(64,64,64,.5); border-radius: 4px; box-shadow: 2px 2px 2px rgba(0,0,0,.5); height: 8px; left: 50%; margin-left: -8%; overflow: hidden; position: absolute; bottom: 10%; width: 16%; z-index: 100; }
 #progressIndicatorValue { background-color: rgba(204,102,0,.6); height: 14px; width: 0px; }

@@ -623,7 +623,8 @@ FV.fts.execute = function() {
 	} else {
 		if ( FV.fts.progress ) FV.fts.progress.style.visibility = 'visible';
 		var xmlHttp = FigisMap.getXMLHttpRequest();
-		var url = FigisMap.currentSiteURI + "/figis/firmsviewersearch/" + FV.currentLayer() + '/'+ escape(text);
+		//var url = FigisMap.currentSiteURI + "/figis/firmsviewersearch/" + FV.currentLayer() + '/'+ escape(text);
+		var url = FigisMap.currentSiteURI + "/figis/moniker/firmssearch/" + FV.currentLayer() + '/'+ escape(text);
 		if ( xmlHttp ) {
 			xmlHttp.onreadystatechange = function() {
 				if ( xmlHttp.readyState != 4 ) return void(0);
@@ -641,12 +642,22 @@ FV.fts.delivery = function( xmlHttp ) {
 	var doc = xmlHttp.responseXML;
 	if ( ! doc ) return void(0);
 	if ( ! doc.documentElement ) return void(0);
-	var resultnodes = doc.documentElement.getElementsByTagName('result');
-	var results = [];
+	var resultnodes = doc.documentElement.getElementsByTagName('output');
 	var hasResult = ( resultnodes && resultnodes.length && resultnodes.length > 0 );
-	if ( hasResult ) results = resultnodes[0].getElementsByTagName('doc');
-	var hasResults = ( results.length > 0 );
+	var results = hasResult ? resultnodes[0].getElementsByTagName('arrayitem') : [];
+	var tot = results.length;
+	var hasResults = ( tot > 0 );
 	FV.fts.deliveryClean();
+	FV.fts.showResult.className = 'haveResults';
+	var c = '';
+	if ( tot == 0 ) {
+		c =  'No matching results.';
+	} else if ( tot == 1 ) {
+		c = 'One result found.';
+	} else {
+		c = '' + tot + ' matching results.';
+	}
+	FV.fts.deliveryComment( c );
 	if ( hasResults ) {
 		FV.fts.showResult.className = 'haveResults';
 		var dom = FV.currentLayer();
@@ -668,9 +679,6 @@ FV.fts.delivery = function( xmlHttp ) {
 			}
 			FV.fts.deliveryComment( c );
 		}
-	} else {
-		FV.fts.showResult.className = 'haveResults';
-		FV.fts.deliveryComment( 'No matching results' );
 	}
 };
 
@@ -697,20 +705,10 @@ FV.fts.deliveryClean = function() {
 };
 
 FV.fts.deliveryParseLine = function( node ) {
-	var ret = {};
-	var ns = node.children;
-	if ( ns.length == 0 ) return false;
-	var pfx = 'fts_';
-	for ( var j = 0; j < ns.length; j++ ) {
-		var n = ns[j];
-		ret[ pfx + n.getAttribute('name') ] = ( n.nodeName == 'arr' ) ? n.children[0].childNodes[0].nodeValue : n.childNodes[0].nodeValue;
-	}
 	var p = document.createElement('p');
-	var t = ret[ pfx + 'title' ];
-	if ( ret[ pfx + 'georeference' ] ) t = ret[ pfx + 'georeference' ] + ' ' + t;
-	if ( ret[ pfx + 'figisid' ] ) {
-		t = '<a href="javascript:FV.setViewerResource('+ret[ pfx + 'figisid' ] +')">' + t + '</a>';
-	}
+	var t = node.getAttribute('name').toString();
+	var fid = node.getAttribute('fid').toString();
+	if ( fid !== '' ) t = '<a href="javascript:FV.setViewerResource(' + fid + ')">' + t + '</a>';
 	p.innerHTML = t;
 	return p;
 };
