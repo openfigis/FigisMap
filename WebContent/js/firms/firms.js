@@ -404,11 +404,27 @@ FV.getCQLFilterByCategory = function(parent) {
 	}
 	return cqlFilter;
 }
-
-FV.filterByCategory = function(l) {
+FV.getFilterCheckboxes = function(l) {
 	var parent = typeof l == 'undefined' ? FV.currentLayer() : l;
 	var theDiv = document.getElementById('resourceSwitcher-'+parent).parentNode;
-	var chks = theDiv.getElementsByTagName('ul')[0].getElementsByTagName('input');
+	return theDiv.getElementsByTagName('ul')[0].getElementsByTagName('input');
+};
+FV.isFilterActive = function( chks ) {
+	if ( typeof chks == 'undefined' ) chks = FV.getFilterCheckboxes();
+	var tot = chks.length;
+	var qtc = 0;
+	for ( var i = 0; i < tot; i++ ) if ( chks[i].checked ) qtc++;
+	return ( ( qtc > 0 ) && ( qtc < tot ) );
+};
+FV.filterReload = function( l, cats ) {
+	var chks = FV.getFilterCheckboxes( l );
+	for ( var i = 0; i < chks.length; i++ ) chks[i].checked = false;
+	for ( var i = 0; i < cats.length; i++ ) chks[cats[i]].checked = true;
+	FV.filterByCategory( l );
+};
+FV.filterByCategory = function(l) {
+	var parent = typeof l == 'undefined' ? FV.currentLayer() : l;
+	var chks = FV.getFilterCheckboxes( parent );
 	var tmp = [];
 	for ( var i = 0; i < chks.length; i++ ) {
 		if ( chks[i].checked ) tmp.push(chks[i].value);
@@ -421,7 +437,6 @@ FV.filterByCategory = function(l) {
 	}
 	FV.lastPars.updateLayerSource( parent, FV.getCQLFilterByCategory(parent));
 };
-
 // FV.filterLayerByCategory = function( id, parent, category ) {
 // 	if( document.getElementById(id).checked ){
 // 		FV.lastPars.addFilterCategory( parent, category );
@@ -445,7 +460,8 @@ FV.filterByCategory = function(l) {
 * FV.setViewerPage function. Load the base FIRMS Map applying the user request parameters, if any
 */
 FV.setViewerPage = function() {
-	var layer, extent, center, zoom, prj, featureid;
+	var layer, extent, center, zoom, prj, featureid, cat;
+	var finalize = [];
 	if ( location.search.indexOf("layer=") != -1 ){
 		// Parsing the request to get the parameters
 		var params = location.search.replace(/^\?/,'').replace(/&amp;/g,'&').split("&");
@@ -458,6 +474,7 @@ FV.setViewerPage = function() {
 				case "zoom"	: zoom = parseInt(param[1]); break;
 				case "prj"	: prj = param[1]; break;
 				case "feat"	: featureid = param[1]; break;
+				case "cat"	: cat = param[1]; break;
 			}
 		}
 		if ( layer && layer != "" ) FV.currentLayer( layer );
@@ -478,11 +495,16 @@ FV.setViewerPage = function() {
 		if ( zoom != null ) zoom = parseInt( zoom );
 		if ( prj == '' ) prj = null;
 		if ( prj != null ) FV.currentProjection( prj );
-		if ( featureid ) FV.onDrawEnd = function() { setTimeout('FV.setViewerResource('+featureid+')',10) };
+		if ( featureid ) finalize.push('FV.setViewerResource('+featureid+')');
+		if ( layer && cat ) finalize.push('FV.filterReload("'+layer+'",['+cat+'])');
 	} else {
 		zoom = 1;
 		FV.currentLayer('resource');
 		layer = 'resource';
+	}
+	if ( finalize.length > 0 ) {
+		finalize = finalize.join(';');
+		FV.onDrawEnd = function() { setTimeout( finalize, 10) };
 	}
 	//Load the Viewer using the request parameters
 	FV.addViewer( extent, center, zoom, prj, layer);
@@ -495,13 +517,20 @@ FV.setViewerEmbedLink = function(){
 	if ( ! ( document.getElementById ) ) return void(0);
 	if ( ! FV.myMap ) FV.myMap = FigisMap.lastMap;
 	//Building the request url containing the map status.
+	var l = FV.currentLayer();
 	var url = location.href.replace(/#.*$/,'').replace(/\?.*$/,'')
-		+ "?layer=" + FV.currentLayer()
+		+ "?layer=" + l
 		+ "&extent=" + FV.myMap.getView().calculateExtent(FV.myMap.getSize()).join(',')
 		+ "&center=" + FV.myMap.getView().getCenter().join(',')
 		+ "&zoom=" + FV.myMap.getView().getZoom()
 		+ "&prj=" + FV.currentProjection();
 	if ( FV.currentFeatureID ) url += '&feat=' + FV.currentFeatureID;
+	if ( FV.isFilterActive() ) {
+		var chks = FV.getFilterCheckboxes( l );
+		var acf = [];
+		for ( var i = 0; i < chks.length; i++ ) if ( chks[i].checked ) acf.push(i);
+		url += '&cat=' + acf.join(',');
+	}
 	var urle = url + '&embed=y';
 	//Setting the input fields of the embed-link div
 	document.getElementById('firms-link').value = url;
