@@ -60,8 +60,7 @@ FigisMap.fifao = {
 	sun : 'fifao:FAO_SUB_UNIT',
 
 	//VME layers
-	vmc : 'vme:closures', // VME closed areas
-<<<<<<< HEAD
+	vmc : 'vme:closures',	// VME closed areas
 	vmo : 'vme:other_areas', // Other access regulated areas    
 	vmb : 'vme:bottom_fishing_areas', // Bottom fishing areas
 	vmr : 'fifao:RFB_COMP_CLIP', // VME regulatory areas
@@ -69,15 +68,6 @@ FigisMap.fifao = {
 	gbi : 'vme:gebco_isobath2000', //isobath -2000m
 	vnt : 'vme:vents_InterRidge_2011_all', // Hidrotermal
 	ccr : 'vme:WCMC-001-ColdCorals2005', //ColdCorals
-=======
-    	vmo : 'vme:other_areas', // Other access regulated areas    
-    	vmb : 'vme:bottom_fishing_areas', // Bottom fishing areas
-    	vmr : 'fifao:RFB_COMP_CLIP', // VME regulatory areas
-	guf : 'fifao:gebco_underseafeatures', //undersea features
-    	gbi : 'vme:gebco_isobath2000', //isobath -2000m
-    	vnt : 'vme:vents_InterRidge_2011_all', // Hidrotermal
-    	ccr : 'vme:WCMC-001-ColdCorals2005', //ColdCorals
->>>>>>> origin/master
 
 
 };
@@ -353,11 +343,11 @@ FigisMap.error = function() {
  */
 
 if (!('remove' in Element.prototype)) {
-    Element.prototype.remove = function() {
-        if (this.parentNode) {
-            this.parentNode.removeChild(this);
-        }
-    };
+	Element.prototype.remove = function() {
+		if (this.parentNode) {
+			this.parentNode.removeChild(this);
+		}
+	};
 }
 
 /**
@@ -2363,7 +2353,16 @@ FigisMap.renderer = function(options) {
 		myMap.addControl( new ol.control.Attribution({collapsible : false, className : 'ol-attribution-baselayer'}) );
 		
 		//optional controls
-		if (! pars.options.skipLayerSwitcher ) myMap.addControl( new ol.control.LayerSwitcher( pars.options.layerSwitcherOptions ? pars.options.layerSwitcherOptions : null ) );
+		if (! pars.options.skipLayerSwitcher ) {
+			if(pars.options.layerSwitcherOptions) {
+				//by default, except if option is explicitly given, we set disableRenderOnPostcompose = true
+				//(bug with current OL3 version 3.11.1 in use with FigisMap). FYI this option is set to false in ol3-layerswitcher (expected behavior)
+				if(!pars.options.layerSwitcherOptions.disableRenderOnPostcompose) {
+					pars.options.layerSwitcherOptions.disableRenderOnPostcompose = true;
+				}
+			}
+			myMap.addControl( new ol.control.LayerSwitcher( pars.options.layerSwitcherOptions ? pars.options.layerSwitcherOptions : null ) );
+		}
 		if (! pars.options.skipWatermark ) FigisMap.rnd.watermarkControl( myMap, p );
 		if (! pars.options.skipMouse ) FigisMap.rnd.mouseControl( myMap, p );
 		if ( ! pars.options.skipScale ) if (projection != 3031) {
@@ -2619,7 +2618,7 @@ FigisMap.renderer = function(options) {
 			}*/
 
 			//zoom to extent
-			myMap.zoomToExtent( nb, false );
+			myMap.zoomToExtent( nb, true );
 
 			//apply specific center rules
 			myMap.optimizeCenter(nb, [4326, 54009]);
