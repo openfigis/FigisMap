@@ -46,8 +46,9 @@ FigisMap.fifao = {
 	ics : 'fifao:ICCAT_SMU',
 	lme : 'fifao:LME',
 	maj : 'fifao:FAO_MAJOR',
+	ma2 : 'fifao:FAO_MAJOR', //TODO check if it still used
+	man : 'fifao:FAO_MAJOR_Labels',
 	mal : 'fifao:FAO_MAJOR_Lines',
-	ma2 : 'fifao:FAO_MAJOR',
 	nma : 'fifao:limit_200nm',
 	cmp : 'fifao:ISO3_COUNTRY',
 	obl : 'fifao:OB_LR',
@@ -60,14 +61,16 @@ FigisMap.fifao = {
 	sun : 'fifao:FAO_SUB_UNIT',
 
 	//VME layers
-	vmc : 'vme:closures', // VME closed areas
+	vmc : 'vme:closures',	// VME closed areas
 	vmo : 'vme:other_areas', // Other access regulated areas    
 	vmb : 'vme:bottom_fishing_areas', // Bottom fishing areas
 	vmr : 'fifao:RFB_COMP_CLIP', // VME regulatory areas
 	guf : 'fifao:gebco_underseafeatures', //undersea features
 	gbi : 'vme:gebco_isobath2000', //isobath -2000m
 	vnt : 'vme:vents_InterRidge_2011_all', // Hidrotermal
-	ccr : 'vme:WCMC-001-ColdCorals2005' //ColdCorals
+	ccr : 'vme:WCMC-001-ColdCorals2005', //ColdCorals
+
+
 };
 
 /**
@@ -135,7 +138,7 @@ FigisMap.localPathForGeoserver = "/figis/geoserver";
 FigisMap.httpBaseRoot = FigisMap.isRemoteDeveloper ? '' : FigisMap.geoServerBase + ('/figis/geoserver/factsheets/');
 
 //assets
-FigisMap.assetsRoot = "assets/";
+FigisMap.assetsRoot = FigisMap.httpBaseRoot + "assets/";
 
 FigisMap.rnd.vars = {
 	geoserverURL		: FigisMap.geoServerBase + FigisMap.localPathForGeoserver,
@@ -1034,6 +1037,7 @@ FigisMap.parser.layersHack = function( p ) {
 	if ( p.distribution && p.intersecting && ( ! p.skipStyles ) ) {
 		for ( var i = 0; i < p.distribution.length; i++ ) {
 			var l = p.distribution[i];
+			console.log(l);
 			var isInIntersecting = false;
 			for ( var j = 0; j < p.intersecting.length; j++ ) if ( p.intersecting[j].layer == l.layer ) { isInIntersecting = true; break; }
 			if ( isInIntersecting ) l.style = FigisMap.defaults.layerStyles[ l.type ];
@@ -1043,6 +1047,7 @@ FigisMap.parser.layersHack = function( p ) {
 	if ( p.distribution && ( ! p.skipStyles ) ) {
 		for ( var i = 0; i < p.distribution.length; i++ ) {
 			var l = p.distribution[i];
+			console.log(l);
 			if ( FigisMap.isFaoArea( l.layer ) ) l.style = FigisMap.defaults.layerStyles.distribution;
 		}
 	}
@@ -1787,6 +1792,7 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 				showLegendGraphic: true
 			} );
 		}
+
 	}
 
 	//continent land mask
@@ -1822,6 +1828,24 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 			hideInSwitcher	: false,
 			showLegendGraphic: false
 		} );
+
+		
+		//FAO Areas Labels/Names
+		if ( pars.projection != 3031 ) if ( ! pars.options.skipFishingAreas ) if ( ! ( layerTypes[ FigisMap.fifao.man ] ) ) {
+			layers.push( {
+				layer	: FigisMap.fifao.man,
+				label	: 'FAO fishing area codes',
+				overlayGroup: overlayGroup,
+				filter	:'*',
+				type	:'auto',
+				skipLegend	: false,
+				hidden: hideBasicLayers,
+				hideInSwitcher	: false,
+				showLegendGraphic: false,
+				cached: false
+			} );
+		}
+
 	}
 
 	
