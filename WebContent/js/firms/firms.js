@@ -19,6 +19,7 @@ var FV = new Object();
 
 FV.myMap = false;
 FV.currentFeatureID = false;
+FV.isViewerEmbedded = false;
 
 FV.init = function() {
 	FV.setViewerPage();
@@ -65,6 +66,7 @@ FV.baseMapParams = function() {
 		skipScale: true,
 		labels: true,
 		topMarineLabels: true,
+		majorAreasAsLines: true,
 		loadingPanelOptions : FV.loadingPanelOptions,
 		layerSwitcherOptions: { displayLegend: true }
 	};
@@ -94,7 +96,9 @@ FV.baseMapParams = function() {
 			contentHandler : function(feature, request) {
 				var content = document.createElement("div");
 				content.appendChild(request.responseXML.documentElement);
-				return content.innerHTML;
+				var h = content.innerHTML;
+				if ( ! FV.isViewerEmbedded ) h = h.replace(/ target="_top"/g,' target="firms"');
+				return h;
 			},
 			onopen: function( feature ){
 				FV.currentFeatureID = feature.get('FIGIS_ID');
@@ -223,12 +227,12 @@ FV.baseMapParams.prototype.setLayer = function( l ) {
 				var imgRef = l;
 
 				//distinguish cluster exploded icons vs. non-clustered resources
-				
-				if(feature) if(feature.get('features')) imgRef += '_cluster';
+				//if(feature) if(feature.get('features')) imgRef += '_cluster';
+				if(feature) if(feature.get('features')) imgRef += '_detail';
 				
 				//manage fishery special cases
 				var specialCases = ["472","473","474"];
-				if(feature) if(specialCases.indexOf(feature.get('FIGIS_ID')) != -1) imgRef = 'fishery_production_system';				
+				if(feature) if(specialCases.indexOf(feature.get('FIGIS_ID')) != -1) imgRef = 'fishery_production_system';
 			
 				return FigisMap.assetsRoot + 'firms/img/' + imgRef + '.png';
 			},
@@ -404,11 +408,27 @@ FV.getCQLFilterByCategory = function(parent) {
 	}
 	return cqlFilter;
 }
-
-FV.filterByCategory = function(l) {
+FV.getFilterCheckboxes = function(l) {
 	var parent = typeof l == 'undefined' ? FV.currentLayer() : l;
 	var theDiv = document.getElementById('resourceSwitcher-'+parent).parentNode;
-	var chks = theDiv.getElementsByTagName('ul')[0].getElementsByTagName('input');
+	return theDiv.getElementsByTagName('ul')[0].getElementsByTagName('input');
+};
+FV.isFilterActive = function( chks ) {
+	if ( typeof chks == 'undefined' ) chks = FV.getFilterCheckboxes();
+	var tot = chks.length;
+	var qtc = 0;
+	for ( var i = 0; i < tot; i++ ) if ( chks[i].checked ) qtc++;
+	return ( ( qtc > 0 ) && ( qtc < tot ) );
+};
+FV.filterReload = function( l, cats ) {
+	var chks = FV.getFilterCheckboxes( l );
+	for ( var i = 0; i < chks.length; i++ ) chks[i].checked = false;
+	for ( var i = 0; i < cats.length; i++ ) chks[cats[i]].checked = true;
+	FV.filterByCategory( l );
+};
+FV.filterByCategory = function(l) {
+	var parent = typeof l == 'undefined' ? FV.currentLayer() : l;
+	var chks = FV.getFilterCheckboxes( parent );
 	var tmp = [];
 	for ( var i = 0; i < chks.length; i++ ) {
 		if ( chks[i].checked ) tmp.push(chks[i].value);
@@ -421,7 +441,6 @@ FV.filterByCategory = function(l) {
 	}
 	FV.lastPars.updateLayerSource( parent, FV.getCQLFilterByCategory(parent));
 };
-
 // FV.filterLayerByCategory = function( id, parent, category ) {
 // 	if( document.getElementById(id).checked ){
 // 		FV.lastPars.addFilterCategory( parent, category );
@@ -445,14 +464,11 @@ FV.filterByCategory = function(l) {
 * FV.setViewerPage function. Load the base FIRMS Map applying the user request parameters, if any
 */
 FV.setViewerPage = function() {
-	
-	var layer, extent, center, zoom, prj, featureid;
-	
+	var layer, extent, center, zoom, prj, featureid, cat;
+	var finalize = [];
 	if ( location.search.indexOf("layer=") != -1 ){
-		
 		// Parsing the request to get the parameters
 		var params = location.search.replace(/^\?/,'').replace(/&amp;/g,'&').split("&");
-		
 		for (var j=0; j < params.length; j++) {
 			var param = params[j].split("=");
 			switch ( param[0] ) {
@@ -462,36 +478,39 @@ FV.setViewerPage = function() {
 				case "zoom"	: zoom = parseInt(param[1]); break;
 				case "prj"	: prj = param[1]; break;
 				case "feat"	: featureid = param[1]; break;
+				case "cat"	: cat = param[1]; break;
 			}
 		}
-		
 		if ( layer && layer != "" ) FV.currentLayer( layer );
 		if ( extent == "" ) extent = null;
 		if ( extent != null ) {
 			extent = extent.split(",");
 			for (var i=0; i<extent.length; i++) {
-    				extent[i] = parseFloat(extent[i]);
+				extent[i] = parseFloat(extent[i]);
 			}
 		}
-
 		if( center == "") center = null;
 		if( center != null) {
 			center = center.split(",");
 			center[0] = parseFloat(center[0]);
 			center[1] = parseFloat(center[1]);
 		}
-
 		if ( zoom == '' ) zoom = null;
 		if ( zoom != null ) zoom = parseInt( zoom );
 		if ( prj == '' ) prj = null;
 		if ( prj != null ) FV.currentProjection( prj );
-		if ( featureid ) FV.onDrawEnd = function() { setTimeout('FV.setViewerResource('+featureid+')',10) };
+		if ( featureid ) finalize.push('FV.setViewerResource('+featureid+')');
+		if ( layer && cat ) finalize.push('FV.filterReload("'+layer+'",['+cat+'])');
 	} else {
 		zoom = 1;
 		FV.currentLayer('resource');
 		layer = 'resource';
 	}
-	
+	if ( location.search.indexOf("embed=y") != -1 ) FV.isViewerEmbedded = true;
+	if ( finalize.length > 0 ) {
+		finalize = finalize.join(';');
+		FV.onDrawEnd = function() { setTimeout( finalize, 10) };
+	}
 	//Load the Viewer using the request parameters
 	FV.addViewer( extent, center, zoom, prj, layer);
 };
@@ -500,20 +519,24 @@ FV.setViewerPage = function() {
 * setFirmsViewerEmberLink function. Manage the expand/collapse of the Embed-Link div.
 */
 FV.setViewerEmbedLink = function(){
-
 	if ( ! ( document.getElementById ) ) return void(0);
 	if ( ! FV.myMap ) FV.myMap = FigisMap.lastMap;
-	
 	//Building the request url containing the map status.
+	var l = FV.currentLayer();
 	var url = location.href.replace(/#.*$/,'').replace(/\?.*$/,'')
-		+ "?layer=" + FV.currentLayer()
+		+ "?layer=" + l
 		+ "&extent=" + FV.myMap.getView().calculateExtent(FV.myMap.getSize()).join(',')
 		+ "&center=" + FV.myMap.getView().getCenter().join(',')
 		+ "&zoom=" + FV.myMap.getView().getZoom()
 		+ "&prj=" + FV.currentProjection();
 	if ( FV.currentFeatureID ) url += '&feat=' + FV.currentFeatureID;
+	if ( FV.isFilterActive() ) {
+		var chks = FV.getFilterCheckboxes( l );
+		var acf = [];
+		for ( var i = 0; i < chks.length; i++ ) if ( chks[i].checked ) acf.push(i);
+		url += '&cat=' + acf.join(',');
+	}
 	var urle = url + '&embed=y';
-	
 	//Setting the input fields of the embed-link div
 	document.getElementById('firms-link').value = url;
 	document.getElementById('firms-html').value = '<iframe src ="' + urle + '" width="800" height="600" frameborder="0" marginheight="0"></iframe>';
@@ -528,9 +551,7 @@ FV.setViewerEmbedLink = function(){
  * @param {Integer}{String} FIGIS factsheet id, provided as integer or string 
  */
 FV.setViewerResource = function(id) {
-	
 	var feature = FigisMap.ol.getVectorLayerFeatureById(FV.myMap, 'FIGIS_ID', id);
-	
 	//testing spin animation for setCenter
 	/*var duration = 2000;
 	var start = +new Date();
@@ -543,11 +564,22 @@ FV.setViewerResource = function(id) {
 	
 	//setCenter
 	FV.myMap.getView().setCenter(feature.getGeometry().getCoordinates());
-	
 	//open popup
 	FigisMap.rnd.emulatePopupForFeature(FV.myMap, FV.currentLayer(), feature);
 };
-
+FV.zoomViewerResource = function(id) {
+	var feature = FigisMap.ol.getVectorLayerFeatureById(FV.myMap, 'FIGIS_ID', id);
+	FV.myMap.getView().setCenter(feature.getGeometry().getCoordinates());
+};
+FV.triggerViewerResource = function(id){
+	var p = FigisMap.lastMap.getOverlayById( FV.currentLayer() );
+	if ( p.isOpened() ) {
+		p.hide();
+		FigisMap.lastMap.getInteractions().getArray().filter(function(i){return i instanceof ol.interaction.SelectCluster})[0].clear();
+	} else {
+		FV.setViewerResource(id);
+	}
+};
 FV.fsAutoMap = function( fid, ftitle, fpars ) {
 	if ( typeof fpars == 'string' ) eval( ' fpars = ' + fpars );
 	FV.lastExtent = false;
@@ -561,6 +593,7 @@ FV.fsAutoMap = function( fid, ftitle, fpars ) {
 		if ( !( pars.distribution.constructor === Array ) ) pars.distribution = [ pars.distribution ];
 		if ( !( fpars.distribution.constructor === Array ) ) fpars.distribution = [ fpars.distribution ];
 		for ( var i = 0; i < fpars.distribution.length; i++ ) {
+			fpars.distribution[i].showLegendGraphic = true;
 			pars.distribution.push( fpars.distribution[i] );
 		}
 	}
@@ -569,6 +602,7 @@ FV.fsAutoMap = function( fid, ftitle, fpars ) {
 		if ( !( pars.intersecting.constructor === Array ) ) pars.intersecting = [ pars.intersecting ];
 		if ( !( fpars.intersecting.constructor === Array ) ) fpars.intersecting = [ fpars.intersecting ];
 		for ( var i = 0; i < fpars.intersecting.length; i++ ) {
+			fpars.intersecting[i].showLegendGraphic = true;
 			pars.intersecting.push( fpars.intersecting[i] );
 		}
 	}
@@ -577,13 +611,20 @@ FV.fsAutoMap = function( fid, ftitle, fpars ) {
 		if ( !( pars.associated.constructor === Array ) ) pars.associated = [ pars.associated ];
 		if ( !( fpars.associated.constructor === Array ) ) fpars.associated = [ fpars.associated ];
 		for ( var i = 0; i < fpars.associated.length; i++ ) {
+			fpars.associated[i].showLegendGraphic = true;
 			pars.associated.push( fpars.associated[i] );
 		}
 	}
-	if ( ftitle ) pars.attribution = '<a href="javascript:FV.addViewer()">✕</a> <a href="javascript:FV.setViewerResource('+fid+')" title="Show popup">'+ftitle+'</a>';
+	if ( ftitle ) pars.attribution = '<span class="buttons"><a href="javascript:FV.addViewer()" title="Close the resource">✖</a> <a href="javascript:FV.triggerViewerResource('+fid+')" title="Information popup">❖</a></span> <span class="rtitle">'+ftitle+'</span>';
 	//FV.onDrawEnd = function() { setTimeout('FV.setViewerResource('+fid+')',10) };
+	FV.onDrawEnd = function() { setTimeout('FV.fsAutoMapPostCheck('+fid+')',10) };
 	FV.draw( pars );
 	setTimeout('FV.currentFeatureID = '+fid,10);
+};
+FV.fsAutoMapPostCheck = function(fid) {
+	var e = FV.getExtent();
+	var c = FV.getCenter();
+	if( e && c ) if ( ( c[1] < e[1] ) || ( c[1] > e[3] ) ) FV.zoomViewerResource(fid);
 };
 
 /*
@@ -652,10 +693,14 @@ FV.fts.delivery = function( xmlHttp ) {
 	var c = '';
 	if ( tot == 0 ) {
 		c =  'No matching results.';
-	} else if ( tot == 1 ) {
-		c = 'One result found.';
 	} else {
-		c = '' + tot + ' matching results.';
+		if ( tot == 1 ) {
+			c = 'One result found';
+		} else {
+			c = '' + tot + ' matching results';
+		}
+		c += ' - [<a target="firmssearchresults" href="'+FigisMap.currentSiteURI+'/figis/moniker/firmssearch/';
+		c += doc.documentElement.getAttribute('dataset')+'/'+doc.documentElement.getAttribute('txt')+'">Export</a>]';
 	}
 	FV.fts.deliveryComment( c );
 	if ( hasResults ) {
@@ -706,7 +751,7 @@ FV.fts.deliveryClean = function() {
 
 FV.fts.deliveryParseLine = function( node ) {
 	var p = document.createElement('p');
-	var t = node.getAttribute('name').toString();
+	var t = node.getAttribute('name').toString().replace(/ : [0-9]{4}$/,'');
 	var fid = node.getAttribute('fid').toString();
 	if ( fid !== '' ) t = '<a href="javascript:FV.setViewerResource(' + fid + ')">' + t + '</a>';
 	p.innerHTML = t;
