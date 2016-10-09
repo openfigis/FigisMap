@@ -1761,8 +1761,8 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 	if ( pars.basicsLayers ) {
 
 		var hideBasicLayers = (pars.options.hideBasicLayers)? pars.options.hideBasicLayers : false;
-		var useMajorAreasAsLines = (pars.options.majorAreasAsLines)? pars.options.majorAreasAsLines : false;
-	
+		var useMajorAreasAsLines = (pars.options.majorAreasAsLines)? pars.options.majorAreasAsLines : false;	
+
 		//WMS 200 nautical miles arcs
 		if ( ! layerTypes[ FigisMap.fifao.nma ] && ! pars.options.skipNauticalMiles ) {
 			layers.unshift({ //TODO check why Unshift
@@ -2382,6 +2382,9 @@ FigisMap.renderer = function(options) {
 				if(!pars.options.layerSwitcherOptions.disableRenderOnPostcompose) {
 					pars.options.layerSwitcherOptions.disableRenderOnPostcompose = true;
 				}
+			}else{
+				if(!pars.options) pars.options = new Object();
+				if(!pars.options.layerSwitcherOptions) pars.options.layerSwitcherOptions = {disableRenderOnPostcompose: true};
 			}
 			myMap.addControl( new ol.control.LayerSwitcher( pars.options.layerSwitcherOptions ? pars.options.layerSwitcherOptions : null ) );
 		}
