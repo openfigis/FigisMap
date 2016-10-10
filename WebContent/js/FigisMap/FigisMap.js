@@ -1831,6 +1831,7 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 
 		
 		//FAO Areas Labels/Names
+		if (!pars.options.majorAreasCodes) pars.options.majorAreasCodes = false;
 		if ( pars.projection != 3031 ) if ( ! pars.options.skipFishingAreas ) if ( ! ( layerTypes[ FigisMap.fifao.man ] ) ) {
 			layers.push( {
 				layer	: FigisMap.fifao.man,
@@ -1839,7 +1840,7 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 				filter	:'*',
 				type	:'auto',
 				skipLegend	: false,
-				hidden: hideBasicLayers,
+				hidden: hideBasicLayers || !pars.options.majorAreasCodes,
 				hideInSwitcher	: false,
 				showLegendGraphic: false,
 				cached: false
@@ -2162,6 +2163,7 @@ FigisMap.getStyleRuleDescription = function(STYLE, pars) {
 				baseMarineLabels	: (boolean) display marine labels layer on top of basic auto layers (in map and layerswitcher)
 				baseMask 		: (boolean) display continent mask just above baselayers (before any other overlay)
 				majorAreasAsLines	: (boolean) use a Lines version of FAO MAJOR areas layer instead of polygons (to be used for viewers only)
+				majorAreasCodes		: (boolean) display Major area codes as auto layer
 				hideBasicLayers 	: (boolean) hide the basic auto layers FAO areas and EEZ
 				skipLayerSwitcher	: (boolean) omit layer switcher if true
 				skipLoadingPanel	: (boolean) omit Loading panel (spinning wheel) if true

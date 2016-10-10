@@ -67,6 +67,7 @@ FV.baseMapParams = function() {
 		labels: true,
 		topMarineLabels: true,
 		majorAreasAsLines: true,
+		majorAreasCodes: true,
 		loadingPanelOptions : FV.loadingPanelOptions,
 		layerSwitcherOptions: { displayLegend: true }
 	};
