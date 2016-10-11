@@ -2,7 +2,7 @@
  * FIRMS Map viewer Javascript
  * Authors: M. Balestra, E. Blondel
  * 
- * [unicode glyph: ]
+ * unicode glyph: 
  */
 
 var performAutoZoom = true;
@@ -19,6 +19,7 @@ var FV = new Object();
 
 FV.myMap = false;
 FV.currentFeatureID = false;
+FV.isViewerEmbedded = false;
 
 FV.init = function() {
 	FV.setViewerPage();
@@ -65,6 +66,8 @@ FV.baseMapParams = function() {
 		skipScale: true,
 		labels: true,
 		topMarineLabels: true,
+		majorAreasAsLines: true,
+		majorAreasCodes: true,
 		loadingPanelOptions : FV.loadingPanelOptions,
 		layerSwitcherOptions: { displayLegend: true }
 	};
@@ -94,7 +97,9 @@ FV.baseMapParams = function() {
 			contentHandler : function(feature, request) {
 				var content = document.createElement("div");
 				content.appendChild(request.responseXML.documentElement);
-				return content.innerHTML;
+				var h = content.innerHTML;
+				if ( ! FV.isViewerEmbedded ) h = h.replace(/ target="_top"/g,' target="firms"');
+				return h;
 			},
 			onopen: function( feature ){
 				FV.currentFeatureID = feature.get('FIGIS_ID');
@@ -502,6 +507,7 @@ FV.setViewerPage = function() {
 		FV.currentLayer('resource');
 		layer = 'resource';
 	}
+	if ( location.search.indexOf("embed=y") != -1 ) FV.isViewerEmbedded = true;
 	if ( finalize.length > 0 ) {
 		finalize = finalize.join(';');
 		FV.onDrawEnd = function() { setTimeout( finalize, 10) };
@@ -688,10 +694,14 @@ FV.fts.delivery = function( xmlHttp ) {
 	var c = '';
 	if ( tot == 0 ) {
 		c =  'No matching results.';
-	} else if ( tot == 1 ) {
-		c = 'One result found.';
 	} else {
-		c = '' + tot + ' matching results.';
+		if ( tot == 1 ) {
+			c = 'One result found';
+		} else {
+			c = '' + tot + ' matching results';
+		}
+		c += ' - [<a target="firmssearchresults" href="'+FigisMap.currentSiteURI+'/figis/moniker/firmssearch/';
+		c += doc.documentElement.getAttribute('dataset')+'/'+doc.documentElement.getAttribute('txt')+'">Export</a>]';
 	}
 	FV.fts.deliveryComment( c );
 	if ( hasResults ) {

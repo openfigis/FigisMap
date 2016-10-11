@@ -2,7 +2,7 @@
 *	FigisMap API
 *	Description: Generalized map call facility for the FIGIS application and factsheet maps
 *	Authors: M. Balestra, E. Blondel, A. Gentile, A. Fabiani, T. Di Pisa.
-*	UFT-8 glyph: ?
+*	UFT-8 glyph: 
 */
 
 
@@ -46,8 +46,9 @@ FigisMap.fifao = {
 	ics : 'fifao:ICCAT_SMU',
 	lme : 'fifao:LME',
 	maj : 'fifao:FAO_MAJOR',
+	ma2 : 'fifao:FAO_MAJOR', //TODO check if it still used
+	man : 'fifao:FAO_MAJOR_Labels',
 	mal : 'fifao:FAO_MAJOR_Lines',
-	ma2 : 'fifao:FAO_MAJOR',
 	nma : 'fifao:limit_200nm',
 	cmp : 'fifao:ISO3_COUNTRY',
 	obl : 'fifao:OB_LR',
@@ -137,7 +138,7 @@ FigisMap.localPathForGeoserver = "/figis/geoserver";
 FigisMap.httpBaseRoot = FigisMap.isRemoteDeveloper ? '' : FigisMap.geoServerBase + ('/figis/geoserver/factsheets/');
 
 //assets
-FigisMap.assetsRoot = "assets/";
+FigisMap.assetsRoot = FigisMap.httpBaseRoot + "assets/";
 
 FigisMap.rnd.vars = {
 	geoserverURL		: FigisMap.geoServerBase + FigisMap.localPathForGeoserver,
@@ -1036,6 +1037,7 @@ FigisMap.parser.layersHack = function( p ) {
 	if ( p.distribution && p.intersecting && ( ! p.skipStyles ) ) {
 		for ( var i = 0; i < p.distribution.length; i++ ) {
 			var l = p.distribution[i];
+			console.log(l);
 			var isInIntersecting = false;
 			for ( var j = 0; j < p.intersecting.length; j++ ) if ( p.intersecting[j].layer == l.layer ) { isInIntersecting = true; break; }
 			if ( isInIntersecting ) l.style = FigisMap.defaults.layerStyles[ l.type ];
@@ -1045,6 +1047,7 @@ FigisMap.parser.layersHack = function( p ) {
 	if ( p.distribution && ( ! p.skipStyles ) ) {
 		for ( var i = 0; i < p.distribution.length; i++ ) {
 			var l = p.distribution[i];
+			console.log(l);
 			if ( FigisMap.isFaoArea( l.layer ) ) l.style = FigisMap.defaults.layerStyles.distribution;
 		}
 	}
@@ -1750,7 +1753,6 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 	var layerTypes = new Object();
 	for ( var i = 0; i < layers.length; i++ ) layerTypes[ layers[i].layer ] = true;
 	
-	
 	var overlayGroup = FigisMap.ol.getDefaultOverlayGroup(pars);
 	
 	//add default auto layers if pars.basicLayers = true
@@ -1758,11 +1760,11 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 	if ( pars.basicsLayers ) {
 
 		var hideBasicLayers = (pars.options.hideBasicLayers)? pars.options.hideBasicLayers : false;
-		var useMajorAreasAsLines = (pars.options.majorAreasAsLines)? pars.options.majorAreasAsLines : false;
-	
+		var useMajorAreasAsLines = (pars.options.majorAreasAsLines)? pars.options.majorAreasAsLines : false;	
+		var l;
 		//WMS 200 nautical miles arcs
 		if ( ! layerTypes[ FigisMap.fifao.nma ] && ! pars.options.skipNauticalMiles ) {
-			layers.unshift({ //TODO check why Unshift
+			l = {
 				layer	: FigisMap.fifao.nma,
 				label	: '200 nautical miles arcs',
 				overlayGroup: overlayGroup,
@@ -1773,13 +1775,14 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 				skipLegend	: false,
 				hideInSwitcher	: false,
 				showLegendGraphic: true
-			});
+			};
+			layers.unshift( l );
 		}
 		//WMS FAO Areas
 		if ( pars.projection != 3031 ) if ( ! pars.options.skipFishingAreas ) if ( ! ( layerTypes[ FigisMap.fifao.ma2 ] || layerTypes[ FigisMap.fifao.maj ] || layerTypes[ FigisMap.fifao.mal ] ) ) {
-			layers.unshift( { //TODO check why Unshift
+			l = {
 				layer	: useMajorAreasAsLines? FigisMap.fifao.mal : FigisMap.fifao.maj,
-				label	: 'FAO fishing areas',
+				label	: 'FAO Fishing Areas',
 				overlayGroup: overlayGroup,
 				filter	:'*',
 				type	:'auto',
@@ -1787,14 +1790,14 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 				hidden: hideBasicLayers,
 				hideInSwitcher	: false,
 				showLegendGraphic: true
-			} );
+			};
+			layers.unshift( l );
 		}
 	}
-
 	//continent land mask
 	//-------------------
 	if ( pars.landMask && ! layerTypes[ FigisMap.fifao.cnt ] && ! layerTypes[ FigisMap.fifao.CNT ] ) {
-		layers.push( {
+		l = {
 			layer		: FigisMap.fifao[ pars.options.colors ? 'CNT' : 'cnt' ], //FigisMap.fifao.cnt,
 			overlayGroup: overlayGroup,
 			cached		: true,
@@ -1805,17 +1808,17 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 			isMask	: true,
 			hideInSwitcher	: true,
 			showLegendGraphic:false
-		} );
+		};
+		layers.push( l );
 	}
-
 	//marine labels
 	//-------------
-	if ( pars.basicsLayers ) {	
+	if ( pars.basicsLayers ) {
 		// marine areas
-		layers.push( {
+		l = {
 			layer		: FigisMap.fifao.lab,
-			label	: 'Oceans and sea names',
-			overlayGroup: overlayGroup,
+			label		: 'Oceans and sea names',
+			overlayGroup	: overlayGroup,
 			cached		: true,
 			filter		: '*',
 			type		: 'auto',
@@ -1823,7 +1826,26 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 			skipLegend	: true,
 			hideInSwitcher	: false,
 			showLegendGraphic: false
-		} );
+		};
+		layers.push( l );
+		//FAO Areas Labels/Names
+		if (! pars.options.majorAreasCodes) pars.options.majorAreasCodes = false;
+		if ( pars.projection != 3031 ) if ( ! pars.options.skipFishingAreas ) if ( ! ( layerTypes[ FigisMap.fifao.man ] ) ) {
+			l = {
+				layer		: FigisMap.fifao.man,
+				label		: 'FAO Fishing Areas codes',
+				overlayGroup	: overlayGroup,
+				filter		:'*',
+				type		:'auto',
+				skipLegend	: false,
+				hideInSwitcher	: false,
+				showLegendGraphic: false,
+				cached		: false
+			};
+			if ( pars.mapSize.toString().indexOf('S') > -1 ) l.style = 'Main_FAO_style_labels_factsheet';
+			l.hidden = hideBasicLayers || !pars.options.majorAreasCodes;
+			layers.push( l );
+		}
 	}
 
 	
@@ -2140,6 +2162,7 @@ FigisMap.getStyleRuleDescription = function(STYLE, pars) {
 				baseMarineLabels	: (boolean) display marine labels layer on top of basic auto layers (in map and layerswitcher)
 				baseMask 		: (boolean) display continent mask just above baselayers (before any other overlay)
 				majorAreasAsLines	: (boolean) use a Lines version of FAO MAJOR areas layer instead of polygons (to be used for viewers only)
+				majorAreasCodes		: (boolean) display Major area codes as auto layer
 				hideBasicLayers 	: (boolean) hide the basic auto layers FAO areas and EEZ
 				skipLayerSwitcher	: (boolean) omit layer switcher if true
 				skipLoadingPanel	: (boolean) omit Loading panel (spinning wheel) if true
@@ -2353,7 +2376,19 @@ FigisMap.renderer = function(options) {
 		myMap.addControl( new ol.control.Attribution({collapsible : false, className : 'ol-attribution-baselayer'}) );
 		
 		//optional controls
-		if (! pars.options.skipLayerSwitcher ) myMap.addControl( new ol.control.LayerSwitcher( pars.options.layerSwitcherOptions ? pars.options.layerSwitcherOptions : null ) );
+		if (! pars.options.skipLayerSwitcher ) {
+			if(pars.options.layerSwitcherOptions) {
+				//by default, except if option is explicitly given, we set disableRenderOnPostcompose = true
+				//(bug with current OL3 version 3.11.1 in use with FigisMap). FYI this option is set to false in ol3-layerswitcher (expected behavior)
+				if(!pars.options.layerSwitcherOptions.disableRenderOnPostcompose) {
+					pars.options.layerSwitcherOptions.disableRenderOnPostcompose = true;
+				}
+			}else{
+				if(!pars.options) pars.options = new Object();
+				if(!pars.options.layerSwitcherOptions) pars.options.layerSwitcherOptions = {disableRenderOnPostcompose: true};
+			}
+			myMap.addControl( new ol.control.LayerSwitcher( pars.options.layerSwitcherOptions ? pars.options.layerSwitcherOptions : null ) );
+		}
 		if (! pars.options.skipWatermark ) FigisMap.rnd.watermarkControl( myMap, p );
 		if (! pars.options.skipMouse ) FigisMap.rnd.mouseControl( myMap, p );
 		if ( ! pars.options.skipScale ) if (projection != 3031) {

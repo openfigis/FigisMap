@@ -76,7 +76,7 @@ function loadme(elinkDiv, urlLink, htmlLink){
 		legendType	: location.href.indexOf('species_e.html')>0 ? 'DP' : 'TP',
 		context		: 'speciesViewer',
 		global		: true,
-		options		: {colors: false, labels: true },
+		options		: {colors: false, labels: true, majorAreasAsLines: true, hideBasicLayers: true},
 		distribution	: []
 	};
 	
@@ -136,7 +136,7 @@ function addSpecies(extent, center, zoom, elinkDiv, urlLink, htmlLink){
 		context		: 'speciesViewer',
 		mapSize		: 'L',
 		global		: ! performAutoZoom,
-		options		: {colors: false, labels: true , topMarineLabels: true},
+		options		: {colors: false, labels: true , topMarineLabels: true, majorAreasAsLines: true, hideBasicLayers: true},
 		distribution	: new Array(),
 		base : [
 			{ layer: FigisMap.fifao.cnt, cached: true, remote:false, label : "Continents"}

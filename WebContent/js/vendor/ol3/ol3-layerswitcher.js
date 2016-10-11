@@ -17,6 +17,7 @@ ol.control.LayerSwitcher = function(opt_options) {
 	this.groupInfoHandler_ = options.groupInfoHandler ? options.groupInfoHandler : false;
 	this.isExternalized = (options.target)? true : false;
 	this.id = (options.target)? options.target : undefined;
+	this.disableRenderOnPostcompose = (options.disableRenderOnPostcompose)? options.disableRenderOnPostcompose : false;
 	
 	//array for map listeners
     	this.mapListeners = [];
@@ -142,15 +143,24 @@ ol.control.LayerSwitcher.prototype.setMap = function(map) {
 			this.mapListeners.push(map.once("postrender", function(){
 				this.renderPanel();
 			}, this));
+			//TODO test on all FIGIS applications
+			/*this.mapListeners.push(map.on('postcompose', function(e) {
+				this.renderPanel();
+			}, this));*/
 			this.mapListeners.push(map.getView().on('propertychange', function(e) {
 				this.renderPanel();
 			}, this));
-		
 		}else{
 			this.mapListeners.push(map.on('pointerdown', function() {
 				this.hidePanel();
 			}, this));
 			this.renderPanel();
+		}
+		
+		if(!this.disableRenderOnPostcompose) {
+			this.mapListeners.push(map.on('postcompose', function(e) {
+				this.renderPanel();
+			}, this))
 		}
     }
 };
