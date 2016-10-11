@@ -2,7 +2,7 @@
  * FIRMS Map viewer Javascript
  * Authors: M. Balestra, E. Blondel
  * 
- * unicode glyph: 
+ * [unicode glyph: ]
  */
 
 var performAutoZoom = true;
@@ -67,7 +67,6 @@ FV.baseMapParams = function() {
 		labels: true,
 		topMarineLabels: true,
 		majorAreasAsLines: true,
-		majorAreasCodes: true,
 		loadingPanelOptions : FV.loadingPanelOptions,
 		layerSwitcherOptions: { displayLegend: true }
 	};
