@@ -67,7 +67,6 @@ FV.baseMapParams = function() {
 		labels: true,
 		topMarineLabels: true,
 		majorAreasAsLines: true,
-		majorAreasCodes: true,
 		loadingPanelOptions : FV.loadingPanelOptions,
 		layerSwitcherOptions: { displayLegend: true }
 	};
@@ -172,7 +171,6 @@ FV.baseMapParams.prototype.setCenter = function( c ) {
 		}
 	}
 	this.center = FV.lastCenter ? FV.lastCenter : null;
-	console.log(this.center);
 	return true;
 };
 
@@ -405,7 +403,6 @@ FV.getCQLFilterByCategory = function(parent) {
 	if( FV.categories[parent].length > 0 ){
 		var filterCategories = "('" + FV.categories[parent].join("','") + "')";
 		cqlFilter = "CATEGORY IN " + filterCategories;
-		console.log(cqlFilter);
 	}
 	return cqlFilter;
 }
@@ -564,7 +561,8 @@ FV.setViewerResource = function(id) {
 	FV.myMap.beforeRender(pan);*/
 	
 	//setCenter
-	FV.myMap.getView().setCenter(feature.getGeometry().getCoordinates());
+	//@eblondel deactivate setCenter with popup dynamicPosition (to discuss further)
+	/* FV.myMap.getView().setCenter(feature.getGeometry().getCoordinates()); */
 	//open popup
 	FigisMap.rnd.emulatePopupForFeature(FV.myMap, FV.currentLayer(), feature);
 };

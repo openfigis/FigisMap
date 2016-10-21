@@ -7,15 +7,25 @@
  *                              **`panMapIfOutOfView`** `Boolean` - Should the
  *                              map be panned so that the popup is entirely
  *                              within view.
+ *                              **`dynamicPosition`** `Boolean` - Should the
+ *                              map be panned so that the popup is entirely
+ *                              within view. Default is false
+ *
  */
 ol.Overlay.Popup = function(opt_options) {
 	
 	var options = opt_options || {};
 	
+	this.id = options.id? options.id : undefined;
+
 	this.panMapIfOutOfView = options.panMapIfOutOfView;
 	if (this.panMapIfOutOfView === undefined) {
 		this.panMapIfOutOfView = true;
 	}
+
+	this.dynamicPosition = options.dynamicPosition? options.dynamicPosition : false;
+
+	this.isTooltip = (options.isTooltip)? options.isTooltip : false;
 	
 	this.ani = options.ani;
 	if (this.ani === undefined) {
@@ -26,11 +36,12 @@ ol.Overlay.Popup = function(opt_options) {
 	if (this.ani_opts === undefined) {
 		this.ani_opts = {'duration': 250};
 	}
-	
+
+
 	this.container = document.createElement('div');
-	this.container.className = (options.isTooltip) ? 'ol-tooltip' : 'ol-popup';
+	this.container.className = (this.isTooltip) ? 'ol-tooltip' : 'ol-popup';
 	
-	if( !options.isTooltip ) {
+	if( !this.isTooltip ) {
 		this.closer = document.createElement('a');
 		this.closer.className = 'ol-popup-closer';
 		this.closer.href = '#';
@@ -44,10 +55,13 @@ ol.Overlay.Popup = function(opt_options) {
 			}, false
 		);
 	}
-	
-	this.content = document.createElement('div');
-	this.content.className = ( options.isTooltip )? 'ol-tooltip-content' : 'ol-popup-content';
+
+	this.content = document.createElement('div');	
+	this.content.className = ( this.isTooltip )? 'ol-tooltip-content' : 'ol-popup-content';
 	this.container.appendChild(this.content);
+
+	//events
+	this.mapEventListeners = new Array();
 	
 	// Apply workaround to enable scrolling of content div on touch devices
 	ol.Overlay.Popup.enableTouchScroll_(this.content);
@@ -69,14 +83,28 @@ ol.inherits(ol.Overlay.Popup, ol.Overlay);
  * @param {String} {HTMLDivElement} html String or element of HTML to display within the popup.
  */
 ol.Overlay.Popup.prototype.show = function(coord, html) {
-	this.setPosition(coord);
+	
+	this.setPosition(coord);	
 	if(html instanceof HTMLDivElement){
 		this.content.innerHTML = "";
 		this.content.appendChild(html);
 	}else{
 		this.content.innerHTML = html;
 	}
+
 	this.container.style.display = 'block';
+	if(this.dynamicPosition) {
+		this.setDynamicPosition_(coord);
+		
+		if(this.mapEventListeners.length == 0) {
+			//map event in case of dynamic position (to switch dynamically position between top-bottom)
+			var this_ = this;
+			this.mapEventListeners.push(this.getMap().getView().on("propertychange", function(evt){
+				var evtCoord = this_.getPosition();
+				this_.setDynamicPosition_(evtCoord);
+			}));
+		}
+	}
 	if (this.panMapIfOutOfView) {
 		this.panIntoView_(coord);
 	}
@@ -85,9 +113,62 @@ ol.Overlay.Popup.prototype.show = function(coord, html) {
 };
 
 
+/**
+ * Hide the popup.
+ */
+ol.Overlay.Popup.prototype.hide = function() {
+	this.container.style.display = 'none';
+	return this;
+};
+
+
+/**
+ * Indicates if the popup is in open state
+ */
 ol.Overlay.Popup.prototype.isOpened = function(){
 	return this.container.style.display == 'block';
+};
+
+/**
+ * Indicates if the popup is a tooltip
+ */
+ol.Overlay.Popup.prototype.isTooltip = function(){
+	return this.isTooltip;
+};
+
+
+/**
+ * @private
+ */
+ol.Overlay.Popup.prototype.setDynamicPosition_ = function(coord){
+
+	this.getElement().className = (this.isTooltip)? "ol-tooltip" : "ol-popup";	
+	var popClassName = (this.isTooltip)? "ol-tooltip-content" : "ol-popup-content";
+	var computedStyle = getComputedStyle(this.getElement().getElementsByClassName(popClassName)[0]);
+	var popSizeMaxHeight = parseInt(computedStyle.maxHeight, 10);
+
+	if(popSizeMaxHeight) {
+
+		var popOffset = this.getOffset();
+		var popPx = this.getMap().getPixelFromCoordinate(coord);
+		var diffTop = popPx[1] - popOffset[1];
+		var mapTop = parseInt(getComputedStyle(this.getMap().getTargetElement()).height, 10);
+		var fromTop =  mapTop - popSizeMaxHeight;
+
+		console.log("diff top = "+diffTop);
+		console.log("from top = "+fromTop);
+
+		if(diffTop < fromTop){
+			this.getElement().className += " bottom";	
+		}else{
+			this.getElement().className += " top";
+		}
+	}else{
+		console.warn("ol3-popup plugin: ol-popup-content maxHeight is required for enabling dynamic popup position");
+	}
+	
 }
+
 
 /**
  * @private
@@ -172,12 +253,4 @@ ol.Overlay.Popup.enableTouchScroll_ = function(elm) {
 			}, false
 		);
 	}
-};
-
-/**
- * Hide the popup.
- */
-ol.Overlay.Popup.prototype.hide = function() {
-	this.container.style.display = 'none';
-	return this;
 };

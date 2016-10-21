@@ -2,17 +2,31 @@
  * Native popup
  *
  */
-.ol-popup {
+.ol-popup, .ol-popup.top {
     display: none;
     position: absolute;
     background-color: white;
     padding: 15px 25px 15px 15px;
     border: 1px solid #cccccc;
-    bottom: 12px;
     left: -50px;
+    bottom: 12px;
 }
 
-.ol-popup:after, .ol-popup:before {
+.ol-popup.bottom {
+    display: none;
+    position: absolute;
+    background-color: white;
+    padding: 15px 25px 15px 15px;
+    border: 1px solid #cccccc;
+    left: -50px;
+    bottom: 0px;
+    top: 12px;
+}
+
+.ol-popup:after,
+.ol-popup:before,
+.ol-popup.top:after,
+.ol-popup.top:before {
     top: 100%;
     border: solid transparent;
     content: " ";
@@ -22,15 +36,46 @@
     pointer-events: none;
 }
 
-.ol-popup:after {
+.ol-popup.bottom:after,
+.ol-popup.bottom:before {
+    top: auto;
+    bottom: 100%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+
+}
+
+.ol-popup:after,
+.ol-popup.top:after {
     border-top-color: white;
     border-width: 10px;
     left: 48px;
     margin-left: -10px;
 }
 
-.ol-popup:before {
+.ol-popup.bottom:after {
+    border-top-color: transparent;
+    border-bottom-color: white;
+    border-width: 10px;
+    left: 48px;
+    margin-left: -10px;
+}
+
+.ol-popup:before,
+.ol-popup.top:before {
     border-top-color: #cccccc;
+    border-width: 11px;
+    left: 48px;
+    margin-left: -11px;
+}
+
+.ol-popup.bottom:before {
+    border-top-color: transparent;
+    border-bottom-color: #cccccc;
     border-width: 11px;
     left: 48px;
     margin-left: -11px;
@@ -38,6 +83,7 @@
 
 .ol-popup-content {
     min-width: 170px;
+    max-height: 200px;
     overflow-x: auto;
 }
 
