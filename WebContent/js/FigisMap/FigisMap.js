@@ -2,7 +2,7 @@
 *	FigisMap API
 *	Description: Generalized map call facility for the FIGIS application and factsheet maps
 *	Authors: M. Balestra, E. Blondel, A. Gentile, A. Fabiani, T. Di Pisa.
-*	UFT-8 glyph: ?
+*	UFT-8 glyph: 
 */
 
 
@@ -134,7 +134,6 @@ FigisMap.geoServerAbsBase = FigisMap.isDeveloper ? (FigisMap.isRemoteDeveloper ?
 FigisMap.geoServerBase = FigisMap.isRemoteDeveloper ? 'http://www.fao.org' : '';
 FigisMap.localPathForGeoserver = "/figis/geoserver";
 
-//TODO OL3 - for VME path is "/fishery/vme-db/"
 FigisMap.httpBaseRoot = FigisMap.isRemoteDeveloper ? '' : FigisMap.geoServerBase + ('/figis/geoserver/factsheets/');
 
 //assets
@@ -1037,7 +1036,6 @@ FigisMap.parser.layersHack = function( p ) {
 	if ( p.distribution && p.intersecting && ( ! p.skipStyles ) ) {
 		for ( var i = 0; i < p.distribution.length; i++ ) {
 			var l = p.distribution[i];
-			console.log(l);
 			var isInIntersecting = false;
 			for ( var j = 0; j < p.intersecting.length; j++ ) if ( p.intersecting[j].layer == l.layer ) { isInIntersecting = true; break; }
 			if ( isInIntersecting ) l.style = FigisMap.defaults.layerStyles[ l.type ];
@@ -1047,7 +1045,6 @@ FigisMap.parser.layersHack = function( p ) {
 	if ( p.distribution && ( ! p.skipStyles ) ) {
 		for ( var i = 0; i < p.distribution.length; i++ ) {
 			var l = p.distribution[i];
-			console.log(l);
 			if ( FigisMap.isFaoArea( l.layer ) ) l.style = FigisMap.defaults.layerStyles.distribution;
 		}
 	}
@@ -1753,7 +1750,6 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 	var layerTypes = new Object();
 	for ( var i = 0; i < layers.length; i++ ) layerTypes[ layers[i].layer ] = true;
 	
-	
 	var overlayGroup = FigisMap.ol.getDefaultOverlayGroup(pars);
 	
 	//add default auto layers if pars.basicLayers = true
@@ -1762,10 +1758,10 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 
 		var hideBasicLayers = (pars.options.hideBasicLayers)? pars.options.hideBasicLayers : false;
 		var useMajorAreasAsLines = (pars.options.majorAreasAsLines)? pars.options.majorAreasAsLines : false;	
-
+		var l;
 		//WMS 200 nautical miles arcs
 		if ( ! layerTypes[ FigisMap.fifao.nma ] && ! pars.options.skipNauticalMiles ) {
-			layers.unshift({ //TODO check why Unshift
+			l = {
 				layer	: FigisMap.fifao.nma,
 				label	: '200 nautical miles arcs',
 				overlayGroup: overlayGroup,
@@ -1776,13 +1772,14 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 				skipLegend	: false,
 				hideInSwitcher	: false,
 				showLegendGraphic: true
-			});
+			};
+			layers.unshift( l );
 		}
 		//WMS FAO Areas
 		if ( pars.projection != 3031 ) if ( ! pars.options.skipFishingAreas ) if ( ! ( layerTypes[ FigisMap.fifao.ma2 ] || layerTypes[ FigisMap.fifao.maj ] || layerTypes[ FigisMap.fifao.mal ] ) ) {
-			layers.unshift( { //TODO check why Unshift
+			l = {
 				layer	: useMajorAreasAsLines? FigisMap.fifao.mal : FigisMap.fifao.maj,
-				label	: 'FAO fishing areas',
+				label	: 'FAO Fishing Areas',
 				overlayGroup: overlayGroup,
 				filter	:'*',
 				type	:'auto',
@@ -1790,15 +1787,14 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 				hidden: hideBasicLayers,
 				hideInSwitcher	: false,
 				showLegendGraphic: true
-			} );
+			};
+			layers.unshift( l );
 		}
-
 	}
-
 	//continent land mask
 	//-------------------
 	if ( pars.landMask && ! layerTypes[ FigisMap.fifao.cnt ] && ! layerTypes[ FigisMap.fifao.CNT ] ) {
-		layers.push( {
+		l = {
 			layer		: FigisMap.fifao[ pars.options.colors ? 'CNT' : 'cnt' ], //FigisMap.fifao.cnt,
 			overlayGroup: overlayGroup,
 			cached		: true,
@@ -1809,17 +1805,17 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 			isMask	: true,
 			hideInSwitcher	: true,
 			showLegendGraphic:false
-		} );
+		};
+		layers.push( l );
 	}
-
 	//marine labels
 	//-------------
-	if ( pars.basicsLayers ) {	
+	if ( pars.basicsLayers ) {
 		// marine areas
-		layers.push( {
+		l = {
 			layer		: FigisMap.fifao.lab,
-			label	: 'Oceans and sea names',
-			overlayGroup: overlayGroup,
+			label		: 'Oceans and sea names',
+			overlayGroup	: overlayGroup,
 			cached		: true,
 			filter		: '*',
 			type		: 'auto',
@@ -1827,26 +1823,26 @@ FigisMap.rnd.addAutoLayers = function( layers, pars ) {
 			skipLegend	: true,
 			hideInSwitcher	: false,
 			showLegendGraphic: false
-		} );
-
-		
+		};
+		layers.push( l );
 		//FAO Areas Labels/Names
-		if (!pars.options.majorAreasCodes) pars.options.majorAreasCodes = false;
+		if (! pars.options.majorAreasCodes) pars.options.majorAreasCodes = false;
 		if ( pars.projection != 3031 ) if ( ! pars.options.skipFishingAreas ) if ( ! ( layerTypes[ FigisMap.fifao.man ] ) ) {
-			layers.push( {
-				layer	: FigisMap.fifao.man,
-				label	: 'FAO fishing area codes',
-				overlayGroup: overlayGroup,
-				filter	:'*',
-				type	:'auto',
+			l = {
+				layer		: FigisMap.fifao.man,
+				label		: 'FAO Fishing Areas codes',
+				overlayGroup	: overlayGroup,
+				filter		:'*',
+				type		:'auto',
 				skipLegend	: false,
-				hidden: hideBasicLayers || !pars.options.majorAreasCodes,
 				hideInSwitcher	: false,
 				showLegendGraphic: false,
-				cached: false
-			} );
+				cached		: false
+			};
+			if ( pars.mapSize.toString().indexOf('S') > -1 ) l.style = 'Main_FAO_style_labels_factsheet';
+			l.hidden = hideBasicLayers || !pars.options.majorAreasCodes;
+			layers.push( l );
 		}
-
 	}
 
 	

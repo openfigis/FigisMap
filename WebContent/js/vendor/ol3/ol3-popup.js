@@ -67,7 +67,6 @@ ol.Overlay.Popup = function(opt_options) {
 	ol.Overlay.Popup.enableTouchScroll_(this.content);
 	
 	ol.Overlay.call(this, {
-		id: (options.hasOwnProperty('id')) ? options.id : false, //@eblondel added to identify popup overlays
 		element: this.container,
 		stopEvent: true,
 		insertFirst: (options.hasOwnProperty('insertFirst')) ? options.insertFirst : true
@@ -154,9 +153,6 @@ ol.Overlay.Popup.prototype.setDynamicPosition_ = function(coord){
 		var diffTop = popPx[1] - popOffset[1];
 		var mapTop = parseInt(getComputedStyle(this.getMap().getTargetElement()).height, 10);
 		var fromTop =  mapTop - popSizeMaxHeight;
-
-		console.log("diff top = "+diffTop);
-		console.log("from top = "+fromTop);
 
 		if(diffTop < fromTop){
 			this.getElement().className += " bottom";	

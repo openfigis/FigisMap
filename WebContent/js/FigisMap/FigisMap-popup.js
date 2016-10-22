@@ -35,7 +35,7 @@ FigisMap.rnd.configurePopup = function(map, config) {
 	if( !config.contentHandler ) alert("Missing popup config 'contentHandler'");
 
 	//configure popup
-	var popup = new ol.Overlay.Popup({id: config.id});
+	var popup = new ol.Overlay.Popup({id: config.id, dynamicPosition: true});
 	popup.config = config;
 	map.addOverlay(popup);
 	
@@ -86,8 +86,7 @@ FigisMap.rnd.getFeatureEventHandler = function(evt, map, popup){
 	if( popup.config.beforeevent) popup.config.beforeevent();
 
 	var feature = map.forEachFeatureAtPixel(evt.pixel,
-		function(feature, layer) {
-						
+		function(feature, layer) {			
 			if (layer) if(layer.id != popup.config.id) return;
 
 			var features = feature.get('features');
@@ -297,7 +296,7 @@ FigisMap.rnd.emulatePopupForFeature = function(map, id, feature){
  */
 FigisMap.rnd.emulatePopupForCoordinates = function(map, id, coords){
 	var popup = FigisMap.rnd.getPopupOverlay(map, id);
-	var event = {coordinate: coords, map: map, pixel: [100,10], wasVirtual: true};
+	var event = {coordinate: coords, map: map, pixel: map.getPixelFromCoordinate(coords), wasVirtual: true};
 	FigisMap.rnd.getFeatureInfoEventHandler(event, map, popup);
 }
 
@@ -329,6 +328,8 @@ FigisMap.rnd.configureTooltipPopup = function(map, config) {
 		map.on('pointermove', function(evt) {
 	  	  var feature = map.forEachFeatureAtPixel(evt.pixel,
 		    function(feature, layer) {
+			if (!layer) return;
+
 			var features = feature.get('features');
 			if( !!features ) {
 				var size = features.length;
