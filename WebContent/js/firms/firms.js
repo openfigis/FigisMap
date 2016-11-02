@@ -219,7 +219,9 @@ FV.baseMapParams.prototype.setLayer = function( l ) {
 
 		this.vectorLayer = {
 			id: l,
-			source: FigisMap.rnd.configureVectorSource(sourceUrl, FV.getCQLFilterByCategory( l )),
+			source: FigisMap.rnd.configureVectorSource(sourceUrl, FV.getCQLFilterByCategory( l ), null, false, function(){
+				FV.myMap.zoomToExtent(FV.lastPars.vectorLayer.source.getExtent())
+			}),
 			title: l == 'resource' ? "Marine resources" : "Fisheries",
 			icon: FigisMap.assetsRoot + 'firms/img/' + l + '.png',
 			iconHandler: function(feature) {
@@ -294,7 +296,7 @@ FV.getCenter = function() {
 *       mapProjection -> The map projection (optional).
 *       layer -> the FIRMS layer to use as cluster layer
 **/
-FV.addViewer = function(extent, center, zoom, projection, layer){
+FV.addViewer = function(extent, center, zoom, projection, layer ){
 
 	//parameters
 	var pars = new FV.baseMapParams();
@@ -305,7 +307,7 @@ FV.addViewer = function(extent, center, zoom, projection, layer){
 	pars.setZoom( zoom );
 	if ( ! layer ) layer = FV.currentLayer();
 	pars.setLayer( layer );
-	
+
 	FV.draw( pars );
 };
 FV.draw = function( pars ) {
@@ -399,11 +401,20 @@ FV.switchLayer = function( l ) {
 
 
 FV.getCQLFilterByCategory = function(parent) {
-	var cqlFilter = null;
+	var cqlFilter = "";
 	if( FV.categories[parent].length > 0 ){
 		var filterCategories = "('" + FV.categories[parent].join("','") + "')";
 		cqlFilter = "CATEGORY IN " + filterCategories;
 	}
+
+	if(FV.kvpFilters) if (FV.kvpFilters.length > 0) {
+		for(var i=0;i<FV.kvpFilters.length;i++){
+			var kvp = FV.kvpFilters[i];
+			if (cqlFilter != "") cqlFilter += " AND ";
+			cqlFilter += kvp["property"] + " IN ('" + kvp["value"].join("','") + "')";
+		}
+	}
+	console.log(cqlFilter);
 	return cqlFilter;
 }
 FV.getFilterCheckboxes = function(l) {
@@ -419,12 +430,13 @@ FV.isFilterActive = function( chks ) {
 	return ( ( qtc > 0 ) && ( qtc < tot ) );
 };
 FV.filterReload = function( l, cats ) {
+
 	var chks = FV.getFilterCheckboxes( l );
 	for ( var i = 0; i < chks.length; i++ ) chks[i].checked = false;
 	for ( var i = 0; i < cats.length; i++ ) chks[cats[i]].checked = true;
-	FV.filterByCategory( l );
+	FV.setCategories( l );
 };
-FV.filterByCategory = function(l) {
+FV.setCategories = function( l ) {
 	var parent = typeof l == 'undefined' ? FV.currentLayer() : l;
 	var chks = FV.getFilterCheckboxes( parent );
 	var tmp = [];
@@ -437,6 +449,14 @@ FV.filterByCategory = function(l) {
 	} else if ( tmp.length < chks.length ) {
 		FV.categories[parent] = tmp;
 	}
+};
+FV.setKvpFilters = function( kvps ) {
+	FV.kvpFilters = kvps;
+}
+
+FV.filterByCategory = function(l) {	
+	FV.setCategories( l );
+	var parent = typeof l == 'undefined' ? FV.currentLayer() : l;
 	FV.lastPars.updateLayerSource( parent, FV.getCQLFilterByCategory(parent));
 };
 // FV.filterLayerByCategory = function( id, parent, category ) {
@@ -458,11 +478,12 @@ FV.filterByCategory = function(l) {
 // 	FV.filterLayerByCategory(id, "fishery", category);
 // }
 
+
 /**
 * FV.setViewerPage function. Load the base FIRMS Map applying the user request parameters, if any
 */
 FV.setViewerPage = function() {
-	var layer, extent, center, zoom, prj, featureid, cat;
+	var layer, extent, center, zoom, prj, featureid, cats, agency;
 	var finalize = [];
 	if ( location.search.indexOf("layer=") != -1 ){
 		// Parsing the request to get the parameters
@@ -476,7 +497,8 @@ FV.setViewerPage = function() {
 				case "zoom"	: zoom = parseInt(param[1]); break;
 				case "prj"	: prj = param[1]; break;
 				case "feat"	: featureid = param[1]; break;
-				case "cat"	: cat = param[1]; break;
+				case "cat"	: cats = param[1].split(",").map(function(item){return parseInt(item,10)}); break;
+				case "agency"	: agency = param[1].split(","); break;
 			}
 		}
 		if ( layer && layer != "" ) FV.currentLayer( layer );
@@ -497,8 +519,15 @@ FV.setViewerPage = function() {
 		if ( zoom != null ) zoom = parseInt( zoom );
 		if ( prj == '' ) prj = null;
 		if ( prj != null ) FV.currentProjection( prj );
+		
+		//filters
+		if ( layer && cats ) FV.filterReload( layer, cats);
+		if ( agency == '') agency = null;
+		if ( agency != null) FV.setKvpFilters( [{property: "AGENCY", value: agency}] );	
+
+		//on finalize
 		if ( featureid ) finalize.push('FV.setViewerResource('+featureid+')');
-		if ( layer && cat ) finalize.push('FV.filterReload("'+layer+'",['+cat+'])');
+		//if ( agency != null) finalize.push('FV.myMap.zoomToExtent('+FV.lastPars.vectorLayer.source.getExtent()+')');		
 	} else {
 		zoom = 1;
 		FV.currentLayer('resource');
@@ -510,7 +539,7 @@ FV.setViewerPage = function() {
 		FV.onDrawEnd = function() { setTimeout( finalize, 10) };
 	}
 	//Load the Viewer using the request parameters
-	FV.addViewer( extent, center, zoom, prj, layer);
+	FV.addViewer( extent, center, zoom, prj, layer );
 };
 
 /**

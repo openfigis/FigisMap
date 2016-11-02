@@ -5,21 +5,81 @@
  */
 
 /**
+ * FigisMap.rnd.getAsyncVectorData
+ * Function to perform AJAX request on Vector JSON source
+ * @param url
+ */
+FigisMap.rnd.getAsyncVectorData = function(url) {
+
+    var xhr = new XMLHttpRequest(),
+        when = {},
+        onload = function() {
+          if (xhr.status === 200) {
+            when.ready.call(undefined, JSON.parse(xhr.response));
+          }
+        },
+        onerror = function() {
+          console.info('Cannot XHR ' + JSON.stringify(url));
+        };
+    xhr.open('GET', url, true);
+    xhr.setRequestHeader('Accept','application/json');
+    xhr.onload = onload;
+    xhr.onerror = onerror;
+    xhr.send(null);
+
+    return {
+      when: function(obj) { when.ready = obj.ready; }
+    };
+}
+
+
+/**
  * FigisMap.rnd.configureVectorSource
  * An experimental function to configure a vector source
  * @param sourceUrl
  * @param cqlfilter
  * @param format (optional)
+ * @param async (EXPERIMENTAL). Default is false. Asynchronous is under testing. Not operational for now)
+ * @param oncustomend function 
  * @return an object of class {ol.source.Vector}
  */
-FigisMap.rnd.configureVectorSource = function(sourceUrl, cqlfilter, format) {
+FigisMap.rnd.configureVectorSource = function(sourceUrl, cqlfilter, format, async, oncustomend) {
+
+	if( !async ) async = false;
+
 	var vectorFormat = format? format : new ol.format.GeoJSON();
 	var sourceUrl = sourceUrl + ((!!cqlfilter)? ('&cql_filter='+cqlfilter) : '');
 	if(!format) sourceUrl = sourceUrl + '&outputFormat=json';
-	return new ol.source.Vector({
-		format : vectorFormat,
-		url : sourceUrl
-	});
+	
+	var source;
+
+	if( async ) {
+		//try to use Async request instead (not working with cluster!)
+		source = new ol.source.Vector({projection: 'EPSG:4326'});
+		FigisMap.rnd.getAsyncVectorData(sourceUrl).when({
+      			ready: function(response) {
+        			var format = new ol.format.GeoJSON();
+        			var features = format.readFeatures(response);
+				source.addFeatures(features);
+
+				if(oncustomend) oncustomend();
+      			}
+    		});
+		return source;
+	} else {
+		source = new ol.source.Vector({
+			format: vectorFormat,
+			url: sourceUrl
+		});
+		var listenerKey = source.on('change', function(e) {
+			if (source.getState() == 'ready') {
+				if(oncustomend) oncustomend();
+				ol.Observable.unByKey(listenerKey);
+			}
+		});
+		return source;
+	}
+	return source;
 }
 
 /**
@@ -68,20 +128,22 @@ FigisMap.rnd.addVectorLayer = function(map, overlays, layer) {
 				var sources = [sourceFeatures, clusterFeatures];
 				for(var i=0;i<sources.length;i++){
 					var source = sources[i];
-					var features = source.getFeatures();
-					for(var j=0;j<features.length;j++){
-						var icon = layer.iconHandler(features[j]);
-						var isCached = false;
-						for(var k=0;k<cachedIcons.length;k++){
-							if(cachedIcons[k].src.endsWith(icon)){
-								isCached = true;
-								break;
+					if( source ) {
+						var features = source.getFeatures();
+						for(var j=0;j<features.length;j++){
+							var icon = layer.iconHandler(features[j]);
+							var isCached = false;
+							for(var k=0;k<cachedIcons.length;k++){
+								if(cachedIcons[k].src.endsWith(icon)){
+									isCached = true;
+									break;
+								}
 							}
-						}
-						if(!isCached){
-							var iconImage = new Image();
-							iconImage.src = icon;
-							cachedIcons.push(iconImage);
+							if(!isCached){
+								var iconImage = new Image();
+								iconImage.src = icon;
+								cachedIcons.push(iconImage);
+							}
 						}
 					}
 
