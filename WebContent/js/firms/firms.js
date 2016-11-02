@@ -485,7 +485,7 @@ FV.filterByCategory = function(l) {
 FV.setViewerPage = function() {
 	var layer, extent, center, zoom, prj, featureid, cats, agency;
 	var finalize = [];
-	if ( location.search.indexOf("layer=") != -1 ){
+	if ( location.search.indexOf("?") != -1 ){
 		// Parsing the request to get the parameters
 		var params = location.search.replace(/^\?/,'').replace(/&amp;/g,'&').split("&");
 		for (var j=0; j < params.length; j++) {
@@ -501,7 +501,12 @@ FV.setViewerPage = function() {
 				case "agency"	: agency = param[1].split(","); break;
 			}
 		}
-		if ( layer && layer != "" ) FV.currentLayer( layer );
+		if ( layer && layer != "" ) {
+			FV.currentLayer( layer );
+		} else {
+			FV.currentLayer('resource');
+			layer = 'resource';
+		}
 		if ( extent == "" ) extent = null;
 		if ( extent != null ) {
 			extent = extent.split(",");
@@ -556,6 +561,7 @@ FV.setViewerEmbedLink = function(){
 		+ "&center=" + FV.myMap.getView().getCenter().join(',')
 		+ "&zoom=" + FV.myMap.getView().getZoom()
 		+ "&prj=" + FV.currentProjection();
+	if ( FV.kvpFilters ) if (FV.kvpFilters.length > 0) url += "&agency=" + FV.kvpFilters[0].value.join(',');
 	if ( FV.currentFeatureID ) url += '&feat=' + FV.currentFeatureID;
 	if ( FV.isFilterActive() ) {
 		var chks = FV.getFilterCheckboxes( l );
