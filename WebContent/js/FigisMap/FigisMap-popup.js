@@ -328,7 +328,6 @@ FigisMap.rnd.configureTooltipPopup = function(map, config) {
 		map.on('pointermove', function(evt) {
 	  	  var feature = map.forEachFeatureAtPixel(evt.pixel,
 		    function(feature, layer) {
-			if (!layer) return;
 
 			var features = feature.get('features');
 			if( !!features ) {
