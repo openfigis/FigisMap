@@ -39,7 +39,7 @@ function addRFB(extent, center, zoom, projection, elinkDiv, urlLink, htmlLink, l
 		context		: 'rfbViewer',
 		legend		: 'legend',
 		projection	: projection,
-		options		: { colors: false, labels: true, topMarineLabels: true, majorAreasAsLines: true, majorAreasCodes: true},
+		options		: { colors: false, labels: true, topMarineLabels: true, majorAreasAsLines: true},
 		countriesLegend	: 'MemberCountries',
 		base : [
 			{ layer: FigisMap.fifao.cnt, cached: true, remote:false, label : "Continents"}
