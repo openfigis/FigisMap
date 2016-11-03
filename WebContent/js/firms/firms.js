@@ -220,7 +220,27 @@ FV.baseMapParams.prototype.setLayer = function( l ) {
 		this.vectorLayer = {
 			id: l,
 			source: FigisMap.rnd.configureVectorSource(sourceUrl, FV.getCQLFilterByCategory( l ), null, false, function(){
-				FV.myMap.zoomToExtent(FV.lastPars.vectorLayer.source.getExtent())
+
+				if(FV.kvpFilters.length > 0){
+					
+					//criteria to decide either to use zoomToExtent based on the vector Source extent or the FigisMap.rfbLayerSettings
+					var layerZoomingRule = FV.kvpFilters[0].value  == "DG MARE" || FV.kvpFilters[0].value == "BNP" || FV.kvpFilters[0].value == "WECAFC";
+					//var layerZoomingRule = FV.lastPars.vectorLayer.source.getFeatures().length < 25;
+
+					if(FV.kvpFilters[0].value.length > 1 || layerZoomingRule) {
+						FV.myMap.zoomToExtent(FV.lastPars.vectorLayer.source.getExtent());
+					}else{
+						var acronym = FV.kvpFilters[0].value;
+						if( FigisMap.rfbLayerSettings[acronym] ) {				
+							var bounds = FigisMap.rfb.evalOL( FigisMap.rfbLayerSettings[acronym].zoomExtent );
+							var proj0 = "EPSG:"+FigisMap.rfbLayerSettings[acronym].srs;
+							var proj1 = FV.myMap.getView().getProjection().getCode();
+							var newBounds = (proj0 === proj1)? bounds : FigisMap.ol.reFit(FV.myMap, FigisMap.ol.reBound(proj0, proj1, bounds));
+							FV.myMap.zoomToExtent( newBounds );
+						}
+					}
+				}
+				
 			}),
 			title: l == 'resource' ? "Marine resources" : "Fisheries",
 			icon: FigisMap.assetsRoot + 'firms/img/' + l + '.png',
