@@ -221,7 +221,7 @@ FV.baseMapParams.prototype.setLayer = function( l ) {
 			id: l,
 			source: FigisMap.rnd.configureVectorSource(sourceUrl, FV.getCQLFilterByCategory( l ), null, false, function(){
 
-				if(FV.kvpFilters.length > 0){
+				if(FV.kvpFilters) if(FV.kvpFilters.length > 0){
 					
 					//criteria to decide either to use zoomToExtent based on the vector Source extent or the FigisMap.rfbLayerSettings
 					var layerZoomingRule = FV.kvpFilters[0].value  == "DG MARE" || FV.kvpFilters[0].value == "BNP" || FV.kvpFilters[0].value == "WECAFC";
