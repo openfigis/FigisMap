@@ -72,14 +72,17 @@ FV.baseMapParams = function() {
 	};
 	
 	//baselayers
-	this.base = [{
+	var baselayers = FigisMap.defaults.baseLayers.slice();
+	baselayers.reverse();
+	this.base = baselayers;
+	/*this.base = [{
 		cached: true,
 		filter: "",
 		label: "Oceans basemap",
 		layer: FigisMap.fifao.obl,
 		title: "Oceans basemap",
 		type: "base"
-	}];
+	}];*/
 	
 // 	this.associated = [ FigisMap.fifao.rfb ];
 	this.vectorLayer = {};

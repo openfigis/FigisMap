@@ -120,7 +120,8 @@ FigisMap.defaults = {
 	mapSize		: 'S',
 	layerFilter	: '',
 	layerStyle	: '*',
-	layerStyles	: { distribution : 'all_fao_areas_style', intersecting : '*', associated : '*' }
+	layerStyles	: { distribution : 'all_fao_areas_style', intersecting : '*', associated : '*' },
+	enableRasterProjection : false
 };
 
 /**
@@ -2288,13 +2289,15 @@ FigisMap.renderer = function(options) {
 		//baselayer
 		var baselayerList = new Array();
 		
-		if(projection == 4326 || projection == 900913){
+		//@eblondel 09/11/2016 testing raster reprojection by OL3
+		if( (FigisMap.defaults.enableRasterProjection && ol.ENABLE_RASTER_REPROJECTION) || projection == 4326 || projection == 900913){
 			for(var i=0;i<p.base.length;i++){
 				baselayerList.push(FigisMap.ol.configureBaseLayer(p.base[i], boundsOrigin));
 			}
 		}else{
 			baselayerList.push(FigisMap.ol.configureBaseLayer(p.defaultBase, boundsOrigin));
 		}
+
 		//baselayer group
 		var baselayers = new ol.layer.Group({
 			'title': FigisMap.ol.baselayersLabel + ((baselayerList.length > 1)? "s" : ""),
