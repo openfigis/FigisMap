@@ -224,7 +224,7 @@ FV.baseMapParams.prototype.setLayer = function( l ) {
 				if(FV.kvpFilters) if(FV.kvpFilters.length > 0){
 					
 					//criteria to decide either to use zoomToExtent based on the vector Source extent or the FigisMap.rfbLayerSettings
-					var layerZoomingRule = FV.kvpFilters[0].value  == "DG MARE" || FV.kvpFilters[0].value == "BNP" || FV.kvpFilters[0].value == "WECAFC";
+					var layerZoomingRule = FV.kvpFilters[0].value  == "DG MARE" || FV.kvpFilters[0].value == "BNP";
 					//var layerZoomingRule = FV.lastPars.vectorLayer.source.getFeatures().length < 25;
 
 					if(FV.kvpFilters[0].value.length > 1 || layerZoomingRule) {
