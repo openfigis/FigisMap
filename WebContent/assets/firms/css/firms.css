@@ -54,8 +54,8 @@ div.sidePanel:hover, .ol-unselectable.ol-control.layer-switcher.shown { box-shad
 .sidePanel blockquote { background-color: rgba(255,255,255,.8); border-radius: 0 0 10px 10px; margin: 0; opacity: 0; overflow-y: hidden; padding: 0 10px; }
 .sidePanel blockquote { height: 0px; }
 .sidePanel:hover blockquote, .sidePanel *:hover blockquote, .sidePanel blockquote:hover { opacity: 1; padding: 5px 10px 0 10px; }
-#projectionPanel { left: 60px; position: absolute; top: 0; width: 160px; }
-#linkPanel { position: absolute; right: 300px; top: 0; width: 220px; }
+#projectionPanel { left: 60px; position: absolute; top: 0; width: 160px; cursor: default;}
+#linkPanel { position: absolute; right: 300px; top: 0; width: 220px; cursor: default;}
 body.embed #linkPanel { display: none; }
 .sidePanel:hover blockquote, .sidePanel *:hover blockquote, .sidePanel blockquote:hover { height: 100%; }
 .sidePanel h4 { background-color: rgba(55,96,146,.6); border-radius: 0 0 10px 10px; color: rgba(255,255,255,.6); font-size: 100%; margin: 0; padding: 5px 10px; text-align: center; }
@@ -72,7 +72,7 @@ body.embed #linkPanel { display: none; }
 .ol-unselectable.ol-control.layer-switcher.layer-switcher ul { margin: 0; padding: 0; }
 
 @media print { #resourceSwitcher { display: none; } }
-#resourceSwitcher { top: 10em; left: .5em; position: absolute; width: 200px; z-index: 100; font-size: 12px; }
+#resourceSwitcher { top: 140px; left: .5em; position: absolute; width: 200px; z-index: 100; font-size: 12px; }
 #resourceSwitcher * { transition: all .5s; }
 #resourceSwitcher div { border-radius: 10px; font-size: 100%; margin: 0 0 .5em 0; padding: 5px 10px; text-align: left;  opacity: .4; }
 .category-filters{ display:none; padding-left:5px;color:white;}
@@ -95,19 +95,19 @@ body.embed #linkPanel { display: none; }
 
 /* fts, Full Text Search */
 @media print { #ftsContainer { display: none; } }
-#ftsContainer { position: absolute; transition: all .5s; z-index: 100; border-radius: 10px; }
+#ftsContainer { position: absolute; transition: all .5s; z-index: 100; border-radius: 10px; border: 0; }
 #ftsContainer img.iconSearch { position: absolute; transition: all .5s; }
 #ftsContainer #ftsText { margin: 10px 20px; font-size: 18px; background-color: rgba(255,255,255,.5); transition: width .5s;}
 #ftsContainer.open #ftsBox { transition: all .5s; }
-#ftsContainer.open { background-color: rgba(128,128,80,.8); height: 130px; left: 200px; top: 100px; width: 600px; }
+#ftsContainer.open { background-color: rgba(128,128,80,.8); height: 130px; left: 240px; top: 30px; width: 550px; }
 #ftsContainer.open img.iconSearch { height: 120px; right: 5px; top: 5px; width: 120px; }
 #ftsContainer.open #ftsBox { opacity: 1; }
 #ftsContainer.open #ftsCloser { color: #fff; cursor: pointer; position: absolute; right: 5px; text-shadow: 2px 2px 2px rgba(0,0,0,.8); top: 0; z-index: 102; }
 #ftsContainer.open #ftsTitle { font-weight: bold; color: #fff; text-shadow: 2px 2px 2px rgba(0,0,0,.8); font-size: 18px; padding: 5px 20px; }
 #ftsContainer.open #ftsText { width: 400px; }
-#ftsContainer.closed { background-color: rgba(255,255,180,.6); cursor: pointer; height: 60px; left: 6px; opacity: .6; top: 390px; width: 60px; }
+#ftsContainer.closed { background-color: rgba(255,153,0,.8); cursor: pointer; opacity: .6; height: 80px; left: 100px; top: 40px; width: 80px; }
 #ftsContainer.closed:hover { opacity: 1; }
-#ftsContainer.closed img.iconSearch { height: 50px; right: 5px; top: 5px; width: 50px; }
+#ftsContainer.closed img.iconSearch { height: 60px; left: 10px; top: 10px; width: 60px; }
 #ftsContainer.closed #ftsBox { opacity: 0; }
 #ftsContainer.closed #ftsBox * { display: none; }
 #ftsContainer.closed #ftsText { width: 20px; }
@@ -128,8 +128,18 @@ body.embed #linkPanel { display: none; }
 
 /* FIRMS viewer popup */
 .ol-popup { padding: 0 !important; border: none !important; background-color:transparent !important; }
+/* 
 .ol-popup-content { width: auto !important; height: auto !important; min-width: none !important;max-height: 400px !important; }
+ */
+.ol-popup-content { width: auto !important; height: auto !important; min-width: 220px !important; max-height: 430px !important; }
 .ol-popup-closer { font-size:100% !important; }
+
+/* only here to hide style set in moniker, .ol-popup:after rule to be removed from moniker css */
+.ol-popup:after { border-top-width: 0px !important;} 
+.ol-popup.top:after { border-top-width: 10px !important;}
+/* popup css to be set in moniker. The rule .ol-popup.top:after should be different according to resource/fishery type. Here below is the one for resource */
+.ol-popup.top:after { border-top-color: #039 !important; }
+.ol-popup.bottom:after { border-bottom-color: #ff9034 !important; }
 
 .ol-loading-panel {
         /*background-image : url(../img/swiming_fish.gif) !important;*/
@@ -140,5 +150,7 @@ span.ol-loading-panel.ol-unselectable {
 	margin-left: -220px;
 	margin-bottom: -70px;
 }
-.ol-attribution-baselayer.ol-uncollapsible { bottom: 3em; left: 10px; top: auto; }
-.ol-attribution-baselayer ul { color: rgba(255,255,128,.7); font-size: 18px; font-weight: bold; text-shadow: 2px 2px 2px rgba(0,0,0,.6); }
+.ol-attribution-baselayer.ol-uncollapsible { bottom: 3em; left: .5em; right: auto; top: auto; height: 2em; background-color : rgba(0,0,0,.3); padding: .2em 1em; border-radius: 8px; line-height: 1.8em; border: 2px solid rgba(255,255,255,.5); }
+.ol-attribution-baselayer ul { color: rgba(255,255,128,.7); font-size: 2em; font-weight: bold; text-shadow: 2px 2px 2px rgba(0,0,0,.6); }
+.ol-attribution-baselayer.ol-uncollapsible ul li .buttons { font-size: 1em !important; }
+.ol-attribution-baselayer.ol-uncollapsible .buttons a:link { color: #fff; }
