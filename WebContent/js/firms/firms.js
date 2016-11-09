@@ -224,11 +224,13 @@ FV.baseMapParams.prototype.setLayer = function( l ) {
 				if(FV.kvpFilters) if(FV.kvpFilters.length > 0){
 					
 					//criteria to decide either to use zoomToExtent based on the vector Source extent or the FigisMap.rfbLayerSettings
-					var layerZoomingRule = FV.kvpFilters[0].value  == "DG MARE" || FV.kvpFilters[0].value == "BNP";
+					var layerZoomingRule = true;
+					//var layerZoomingRule = FV.kvpFilters[0].value  == "DG MARE" || FV.kvpFilters[0].value == "BNP";
 					//var layerZoomingRule = FV.lastPars.vectorLayer.source.getFeatures().length < 25;
 
 					if(FV.kvpFilters[0].value.length > 1 || layerZoomingRule) {
 						FV.myMap.zoomToExtent(FV.lastPars.vectorLayer.source.getExtent());
+						if(FV.myMap.getView().getZoom() >= 3) FV.myMap.getView().setZoom(FV.myMap.getView().getZoom()-1);
 					}else{
 						var acronym = FV.kvpFilters[0].value;
 						if( FigisMap.rfbLayerSettings[acronym] ) {				
