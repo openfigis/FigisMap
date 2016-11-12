@@ -16,7 +16,8 @@ ol.Overlay.Popup = function(opt_options) {
 	
 	var options = opt_options || {};
 	
-	this.id = options.id? options.id : undefined;
+	//TODO @eblondel support in ol3-popup plugin to add
+	this.id_ = options.id? options.id : undefined;
 
 	this.panMapIfOutOfView = options.panMapIfOutOfView;
 	if (this.panMapIfOutOfView === undefined) {
@@ -67,6 +68,7 @@ ol.Overlay.Popup = function(opt_options) {
 	ol.Overlay.Popup.enableTouchScroll_(this.content);
 	
 	ol.Overlay.call(this, {
+		id: this.id_, //TODO @eblondel support in ol3-popup plugin to add
 		element: this.container,
 		stopEvent: true,
 		insertFirst: (options.hasOwnProperty('insertFirst')) ? options.insertFirst : true
@@ -153,7 +155,7 @@ ol.Overlay.Popup.prototype.setDynamicPosition_ = function(coord){
 		var diffTop = popPx[1] - popOffset[1];
 		var mapTop = parseInt(getComputedStyle(this.getMap().getTargetElement()).height, 10);
 		var fromTop =  mapTop - popSizeMaxHeight;
-
+		
 		if(diffTop < fromTop){
 			this.getElement().className += " bottom";	
 		}else{

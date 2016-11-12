@@ -166,6 +166,10 @@ FigisMap.useProxy = false;
 if ( ( FigisMap.currentSiteURI.indexOf(':8282') > 1 ) || ( FigisMap.currentSiteURI.indexOf(':8383') > 1 ) || FigisMap.isRemoteDeveloper) FigisMap.useProxy = true;
 if ( FigisMap.useProxy ) FigisMap.rnd.vars.wfs = ( FigisMap.isRemoteDeveloper ? '' : FigisMap.currentSiteURI + '/figis/proxy/' ) +'/cgi-bin/proxy.cgi?url=' + escape( FigisMap.rnd.vars.absWfs );
 
+FigisMap.factory = {};
+
+FigisMap.factory.getDefault = function( d ) { return JSON.parse(JSON.stringify(FigisMap.defaults[d])) };
+
 /**
  * --------------------------------------------------------------------------------------
  * FigisMap loader functions
@@ -714,7 +718,7 @@ FigisMap.ol.optimizeCenter = function( myMap, bounds, projsToExclude, force){
 	var mapProj = myMap.getView().getProjection();
 	var proj = parseInt( mapProj.getCode().replace(/^EPSG:/,'') );
 	var projBounds = mapProj.getExtent();
-	
+
 	if(projsToExclude.indexOf(proj) == -1){
 		var nc = false;
 		switch(proj) {
@@ -761,6 +765,7 @@ FigisMap.ol.optimizeCenter = function( myMap, bounds, projsToExclude, force){
 				break;
 
 		}
+
 		if ( nc ) myMap.getView().setCenter( nc );
 	}
 }
@@ -787,7 +792,7 @@ FigisMap.ol.configureBaseLayer = function(obj, boundsOrigin){
 						},
 						wrapX: true,
 						serverType : obj.cached ? undefined : 'geoserver',
-						attributions: obj.attribution ? [ 
+						attributions: (obj.attribution) ? [ 
 							new ol.Attribution({
 								html : obj.attribution
 							})] : []
@@ -1209,20 +1214,21 @@ FigisMap.parser.parse = function( p ) {
 	//baselayers management
 	//TODO test compatibility with other viewers
 	if ( ! p.base ) {
-		p.base = (p.baseLayerC)? [p.baseLayerC] : FigisMap.defaults.baseLayers;
+		//p.base = (p.baseLayerC)? [p.baseLayerC] : FigisMap.defaults.baseLayers;
+		p.base = (p.baseLayerC)? [p.baseLayerC] : FigisMap.factory.getDefault('baseLayers');
 	}
 	
 	p.defaultBase = FigisMap.defaults.defaultBaseLayer;
 	if ( p.base ) {
 		for(var i=0;i<p.base.length;i++){
 			p.base[i] = FigisMap.parser.layer( p.base[i], { 'type' : 'base'} );
-			if (p.attribution) p.base[i].attribution = p.attribution;
+			p.base[i].attribution = p.attribution ? p.attribution : false;
 			if ( ! p.base[i].title ) p.base[i].title = FigisMap.label( p.base[i].label ? p.base[i].label : p.base[i].layer, p );
 		}
 	}
-	if ( p.defaultBase ) {		
+	if ( p.defaultBase ) {
 			p.defaultBase = FigisMap.parser.layer( p.defaultBase, { 'type' : 'base'} );
-			if ( ! p.defaultBase.title ) p.defaultBase.title = FigisMap.label( p.defaultBase.label ? p.defaultBase.label : p.defaultBase.layer, p );		
+			if ( ! p.defaultBase.title ) p.defaultBase.title = FigisMap.label( p.defaultBase.label ? p.defaultBase.label : p.defaultBase.layer, p );
 	}
 	
 	p.distribution = FigisMap.parser.layers( p.distribution, { 'type' : 'distribution'} );
@@ -1878,16 +1884,16 @@ FigisMap.rnd.addGraticule = function(map) {
 
 	var lonFormatter = function(lon) {
 		var formattedLon = Math.abs(Math.round(lon * 100) / 100);
-  		formattedLon += "°00'";
-  		formattedLon += (lon < 0) ? 'W' : ((lon > 0) ? 'E' : '');
-  	return formattedLon;
+		formattedLon += "°00'";
+		formattedLon += (lon < 0) ? 'W' : ((lon > 0) ? 'E' : '');
+		return formattedLon;
 	};
 
 	var latFormatter = function(lat) {
-  		var formattedLat = Math.abs(Math.round(lat * 100) / 100);
-  		formattedLat += "°00'";
-  		formattedLat += (lat < 0) ? 'S' : ((lat > 0) ? 'N' : '');
-  		return formattedLat;
+		var formattedLat = Math.abs(Math.round(lat * 100) / 100);
+		formattedLat += "°00'";
+		formattedLat += (lat < 0) ? 'S' : ((lat > 0) ? 'N' : '');
+		return formattedLat;
 	};
 
 	var graticule = new ol.Graticule({
@@ -1896,23 +1902,19 @@ FigisMap.rnd.addGraticule = function(map) {
 			width: 1,
 			opacity: 0.5
 		}),
-  		lonLabelStyle: new ol.style.Text({
-    			font: '10px Verdana',
-    			fill: new ol.style.Fill({
-      				color: 'rgba(0,0,0,1)'
-    			})
-  		}),
-  		latLabelStyle: new ol.style.Text({
-    			font: '10px Verdana',
+		lonLabelStyle: new ol.style.Text({
+			font: '10px Verdana',
+			fill: new ol.style.Fill({ color: 'rgba(0,0,0,1)' })
+		}),
+		latLabelStyle: new ol.style.Text({
+			font: '10px Verdana',
 			offsetX: -2,
-    			textBaseline: 'bottom',
-    			fill: new ol.style.Fill({
-      				color: 'rgba(0,0,0,1)'
-    			})
-  		}),
-  		showLabels: true,
-  		lonLabelFormatter: lonFormatter,
-  		latLabelFormatter: latFormatter,
+			textBaseline: 'bottom',
+			fill: new ol.style.Fill({ color: 'rgba(0,0,0,1)' })
+		}),
+		showLabels: true,
+		lonLabelFormatter: lonFormatter,
+		latLabelFormatter: latFormatter,
 	});
 	graticule.setMap(map);
 };
@@ -2222,7 +2224,6 @@ FigisMap.draw = function( pars ) {
 	if ( pars.debug ) pars.options.debug = pars.debug;
 	var rnd = new FigisMap.renderer( pars.options );
 	var theMap = rnd.render( pars );
-	
 	FigisMap.lastMap = ( theMap && theMap.getTarget() ) ? theMap : false;
 	FigisMap.renderedMaps[ pars.target.id ] = FigisMap.lastMap;
 
@@ -2268,7 +2269,7 @@ FigisMap.renderer = function(options) {
 		switch ( projection ) {
 			case	3031 : myBounds = [-25000000, -25000000, 25000000, 25000000]; break;
 			case	900913 : myBounds = [-20037508.34, -20037508.34, 20037508.34, 20037508.34]; break;
-			case 	54009	: myBounds = [-18040095.6961652, -9020047.847897789, 18040095.6961652, 9020047.847897789]; break;
+			case 	54009	: myBounds = [-18e6, -9e6, 18e6, 9e6]; break;
 			default     : projection = 4326; myBounds =  [-180, -90, 180, 90];
 		}
 		boundsOrigin = [myBounds[0], myBounds[1]];
@@ -2288,7 +2289,6 @@ FigisMap.renderer = function(options) {
 		//------------------
 		//baselayer
 		var baselayerList = new Array();
-		
 		//@eblondel 09/11/2016 testing raster reprojection by OL3
 		if( (FigisMap.defaults.enableRasterProjection && ol.ENABLE_RASTER_REPROJECTION) || projection == 4326 || projection == 900913){
 			for(var i=0;i<p.base.length;i++){

@@ -68,11 +68,28 @@ FigisMap.rnd.configurePopup = function(map, config) {
 
 /**
  * Get (first) popup overlay from current map
- * @param {ol.Map} the current map
- * @param {String}{Integer} the popup id
+ * @param map {ol.Map} the current map
+ * @param id {String|Integer} the popup id
  */
 FigisMap.rnd.getPopupOverlay = function(map, id) {
-	return map.getOverlayById(id);
+	//for string id map.getOverlayById is not appropriate after fix of ol.Overlay.Popup plugin
+	var out = null;
+	var overlays = map.getOverlays().getArray().filter(function(ovl){if(ovl.getId() === id) return ovl});
+	if( overlays.length > 0 ) out = overlays[0];
+	return out;
+}
+
+/**
+ * Set new id for Popup overlay
+ * @param {ol.Map} the current map
+ * @param srcId {String|Integer} the id of the current popup overlay
+ * @param trgId {String|Integer} the new id to be set for the popup overlay identified by srcId
+ */
+FigisMap.rnd.setPopupOverlayId = function(map, srcId, trgId) {
+	var overlays = map.getOverlays().getArray().filter(function(ovl){if(ovl.getId() === srcId) return ovl});
+	if( overlays.length > 0 ) {
+		overlays[0].id_ = trgId;
+	}
 }
 
 /**
@@ -87,7 +104,7 @@ FigisMap.rnd.getFeatureEventHandler = function(evt, map, popup){
 
 	var feature = map.forEachFeatureAtPixel(evt.pixel,
 		function(feature, layer) {			
-			if (layer) if(layer.id != popup.config.id) return;
+			if (layer) if(layer.id != popup.getId()) return;
 
 			var features = feature.get('features');
 			if( !!features ) {
