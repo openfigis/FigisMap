@@ -52,6 +52,7 @@ FV.loadingPanelOptions = {
 
 FV.baseMapParams = function() {
 	this.target = 'map';
+	this.attribution = false;
 	this.context = 'FAO-FIRMSViewer';
 	this.mapSize = 'L';
 	this.projection = FV.currentProjection();
@@ -98,16 +99,17 @@ FV.baseMapParams = function() {
 			},
 			contentHandler : function(feature, request) {
 				var content = document.createElement("div");
+				//content.appendChild(FV.popupAdjust(request.responseXML.documentElement));
+				//return content.innerHTML;
 				content.appendChild(request.responseXML.documentElement);
-				var h = content.innerHTML;
-				if ( ! FV.isViewerEmbedded ) h = h.replace(/ target="_top"/g,' target="firms"');
-				return h;
+				return FV.popupAdjust(content.innerHTML);
 			},
 			onopen: function( feature ){
 				FV.currentFeatureID = feature.get('FIGIS_ID');
 			},
 			onclose: function( feature ){
 				FV.currentFeatureID = false;
+				FigisMap.ol.clearSelectCluster(FV.myMap);
 			}
 		},
 		//tooltip popup
@@ -121,6 +123,118 @@ FV.baseMapParams = function() {
 
 	return this;
 };
+FV.popupAdjust = function(d) {
+	document.getElementById('relsArea').className='disabled';
+	var h = '<div class="bIcon"><div><table cellpadding="0" cellspacing="0" border="0"><tr>' +
+		'<td id="tdIconMap"><img border="0" src="'+FigisMap.assetsRoot+ 'firms/img/icon-map.png" alt="" /></td>' +
+		'<td id="tdIconRels"><img border="0" src="'+FigisMap.assetsRoot+ 'firms/img/icon-rels.png" title="" alt="" /></td>' +
+		'<td id="tdIconFS"><img border="0" src="'+FigisMap.assetsRoot+ 'firms/img/icon-fs.png" title="" alt="" /></td>' +
+		'</tr></table></div></div>';
+	setTimeout( 'FV.popupAdjustPost()', 10 );
+	return d.replace(/(<div id="FVParametersBox" )/,h+"$1");;
+};
+FV.popupAdjustPost = function() {
+	var target = FV.isViewerEmbedded ? '_top' : 'firms';
+	var d = document.getElementById('FVParametersBox');
+	var links = d.querySelectorAll('a[href]');
+	for ( var i = 0; i < links.length; i++ ) {
+		links[i].setAttribute('target',target);
+	}
+	var td = document.getElementById('tdIconMap');
+	var sd = document.getElementById('FVParametersMap');
+	if ( sd ) sd = sd.querySelector('a[href]');
+	if ( sd ) {
+		td.innerHTML = '<a href="' + sd.getAttribute('href') + '" title="'+sd.innerHTML+'">' + td.innerHTML + '</a>';
+	} else {
+		td.className = 'disabled';
+	}
+	td = document.getElementById('tdIconRels');
+	sd = document.getElementById('FVParametersRelateds');
+	if ( sd ) sd = sd.getElementsByTagName('span').length;
+	if ( sd > 0 ) {
+		td.innerHTML = '<a href="javascript:FV.showRelateds()" title="See related items (' +sd+')">'+td.innerHTML+'</a>'+sd;
+	} else {
+		td.className = 'disabled';
+	}
+	td = document.getElementById('tdIconFS');
+	sd = document.getElementById('FVParametersURL');
+	if ( sd ) sd = sd.querySelector('a[href]');
+	if ( sd ) {
+		td.innerHTML = '<a href="'+sd.getAttribute('href')+'" target="'+target+'" title="'+sd.innerHTML+'">'+td.innerHTML+'</a>';
+	} else {
+		td.getElementsByTagName('img')[0].setAttribute('title','No associated Fact Sheet');
+		td.className = 'disabled';
+	}
+};
+
+
+/*
+FV.popupAdjust = function(docEl) {
+	document.getElementById('relsArea').className='disabled';
+	var target = FV.isViewerEmbedded ? '_top' : 'firms';
+	var d = docEl.ownerDocument;
+	var links = d.getElementsByTagName('a');
+	for ( var i = 0; i < links.length; i++ ) {
+		links[i].setAttribute('target',target);
+	}
+	var h = '<div><table cellpadding="0" cellspacing="0" border="0"><tr>';
+	var maplink = d.getElementById('FVParameters-map');
+	if ( maplink ) maplink = maplink.getElementsByTagName('a')[0];
+	if ( maplink ) {
+		h += '<td class="bIconMap"><a href="' + maplink.getAttribute('href')+'" title="' +maplink.innerHTML+'">';
+		h += '<img border="0" src="'+FigisMap.assetsRoot+ 'firms/img/icon-map.png" alt="" /></a></td>'
+	} else {
+		h += '<td class="bIconMap disabled">';
+		h += '<img border="0" src="'+FigisMap.assetsRoot+ 'firms/img/icon-map.png" alt="" /></td>'
+	}
+	var rels = d.getElementById('FVParameters-relateds');
+	if ( rels) rels = rels.getElementsByTagName('span').length;
+	if ( rels > 0 ) {
+		h += '<td class="bIconRels"><a href="javascript:FV.showRelateds()" title="See related items (' +rels+')">';
+		h += '<img border="0" src="'+FigisMap.assetsRoot+ 'firms/img/icon-rels.png" alt="" /></a>' +rels+'</td>'
+	} else {
+		h += '<td class="bIconRels disabled">';
+		h += '<img border="0" src="'+FigisMap.assetsRoot+ 'firms/img/icon-rels.png" title="No related items" alt="" /></td>'
+	}
+	var fslink = d.getElementById('FVParameters-URL');
+	if ( fslink ) fslink = fslink.getElementsByTagName('a')[0];
+	if ( fslink > 0 ) {
+		h += '<td class="bIconFS"><a href="' + fslink.getAttribute('href')+'" title="' +fslink.innerHTML+'" target="'+target+'">';
+		h += '<img border="0" src="'+FigisMap.assetsRoot+ 'firms/img/icon-fs.png" alt="" /></a></td></tr></table></div>';
+	} else {
+		h += '<td class="bIconFS disabled">';
+		h += '<img border="0" src="'+FigisMap.assetsRoot+ 'firms/img/icon-fs.png" title="No associated Fact Sheet" alt="" /></td>'
+	}
+	var nd = d.createElement('div');
+	nd.setAttribute('class','bIcon');
+	//nd.innerHTML=h;
+	d.getElementById('FVParameters').parentNode.appendChild(nd);
+	return docEl;
+};
+*/
+FV.showRelateds = function() {
+	var ra = document.getElementById('relsArea');
+	if ( ra.className == '' ) {
+		ra.className='disabled';
+		return void(0);
+	}
+	var rels = document.getElementById('FVParametersRelateds').getElementsByTagName('span');
+	var h = '';
+	var a;
+	for ( var i = 0; i < rels.length; i++ ) {
+		var r = rels[i];
+		eval( 'a='+ r.getAttribute('title') );
+		h += '<a href="javascript:FV.relsGoto('+r.getAttribute('title')+')">'+r.innerHTML+'</a>';
+	}
+	document.getElementById('relsAreaContent').innerHTML = h;
+	ra.className='';
+};
+FV.relsGoto = function(r) {
+	//location.href = location.pathname + '?layer=' + r.domain +'&feat=' + r.fid;
+	FV.switchLayer(r.domain);
+	FV.currentFeatureID = r.fid;
+};
+
 FV.baseMapParams.prototype.setProjection = function( p ) { if( p ) this.projection = p; };
 
 
@@ -224,27 +338,54 @@ FV.baseMapParams.prototype.setLayer = function( l ) {
 			id: l,
 			source: FigisMap.rnd.configureVectorSource(sourceUrl, FV.getCQLFilterByCategory( l ), null, false, function(){
 
+				//in case with have a featureID
+				if( FV.currentFeatureID ) {
+					FV.setViewerResource( FV.currentFeatureID );
+				}
+
+				//zoom on filtered dataset
 				if(FV.kvpFilters) if(FV.kvpFilters.length > 0){
 					
-					//criteria to decide either to use zoomToExtent based on the vector Source extent or the FigisMap.rfbLayerSettings
-					var layerZoomingRule = true;
-					//var layerZoomingRule = FV.kvpFilters[0].value  == "DG MARE" || FV.kvpFilters[0].value == "BNP";
-					//var layerZoomingRule = FV.lastPars.vectorLayer.source.getFeatures().length < 25;
+					//try to inherit RFB settings
+					
+					var acronym = FV.kvpFilters[0].value;
+					var rfbSetting = FigisMap.rfbLayerSettings[acronym];
 
-					if(FV.kvpFilters[0].value.length > 1 || layerZoomingRule) {
-						FV.myMap.zoomToExtent(FV.lastPars.vectorLayer.source.getExtent());
+					if(FV.lastPars.vectorLayer.source.getFeatures().length > 1) {
+						var dataExtent = FV.lastPars.vectorLayer.source.getExtent();
+						FV.myMap.zoomToExtent(dataExtent);
+						
+						//@eblondel ongoing tests for Pacific
+						//optimize view
+						var rfbCenter;
+						if( rfbSetting.centerCoords ) {
+							if(FV.kvpFilters.length == 1){
+								//in case of single agency
+								rfbCenter = FigisMap.ol.reCenter( rfbSetting.srs, FV.myMap.getView().getProjection().getCode(), FigisMap.rfb.evalOL( rfbSetting.centerCoords ) );
+							} else{
+								//TODO something in case of multiple agency values?	
+							}	
+						}
+						if( rfbCenter ) {
+							if( rfbCenter[1] >= dataExtent[1] && rfbCenter[1] <= dataExtent[3] ) {
+								FV.myMap.getView().setCenter( rfbCenter );
+							}
+						}
+						
+						//optimize zoom
 						if(FV.myMap.getView().getZoom() >= 3) FV.myMap.getView().setZoom(FV.myMap.getView().getZoom()-1);
 					}else{
-						var acronym = FV.kvpFilters[0].value;
-						if( FigisMap.rfbLayerSettings[acronym] ) {				
-							var bounds = FigisMap.rfb.evalOL( FigisMap.rfbLayerSettings[acronym].zoomExtent );
-							var proj0 = "EPSG:"+FigisMap.rfbLayerSettings[acronym].srs;
+						//not used at now (rely on combined above approach)
+						if( rfbSetting ) {				
+							var bounds = FigisMap.rfb.evalOL( rfbSetting.zoomExtent );
+							var proj0 = "EPSG:"+rfbSetting.srs;
 							var proj1 = FV.myMap.getView().getProjection().getCode();
 							var newBounds = (proj0 === proj1)? bounds : FigisMap.ol.reFit(FV.myMap, FigisMap.ol.reBound(proj0, proj1, bounds));
 							FV.myMap.zoomToExtent( newBounds );
 						}
 					}
 				}
+
 				
 			}),
 			title: l == 'resource' ? "Marine resources" : "Fisheries",
@@ -321,7 +462,7 @@ FV.getCenter = function() {
 *       mapProjection -> The map projection (optional).
 *       layer -> the FIRMS layer to use as cluster layer
 **/
-FV.addViewer = function(extent, center, zoom, projection, layer ){
+FV.addViewer = function(extent, center, zoom, projection, layer){
 
 	//parameters
 	var pars = new FV.baseMapParams();
@@ -332,18 +473,23 @@ FV.addViewer = function(extent, center, zoom, projection, layer ){
 	pars.setZoom( zoom );
 	if ( ! layer ) layer = FV.currentLayer();
 	pars.setLayer( layer );
-
+	FV.currentFeatureMap = false;
+	
 	FV.draw( pars );
 };
 FV.draw = function( pars ) {
 	closeSearch();
+	if ( typeof pars == 'undefined' ) {
+		pars = new FV.baseMapParams();
+		pars.setLayer( FV.currentLayer() );
+	}
 	if ( ! pars.distribution ) if ( ! pars.associated  ) if ( ! pars.intersecting ) if (! pars.extent) pars.global = true;
 	FV.myMap = FigisMap.draw( pars );
 	FV.lastPars = pars;
 	FV.lastExtent = null;
 	FV.lastCenter = null;
 	FV.lastZoom = null;
-	FV.currentFeatureID = false;
+	//FV.currentFeatureID = false;
 };
 FV.onDrawEnd = false;
 /**
@@ -422,8 +568,27 @@ FV.setLayerStatus = function( l, mode ) {
 	}
 };
 FV.switchLayer = function( l ) {
+
+	//with map redrawing strategy
+	//FV.currentLayer( l );
+	//FV.setViewer();
+	
+	closeSearch();
+	document.getElementById('relsArea').className = 'disabled';
+	
+	//@eblondel under test without redrawing strategy
+	var src = FV.lastPars.vectorLayer;
+	//close popup if there is one opened
+	var p = FigisMap.rnd.getPopupOverlay( FV.myMap, src.id );
+	if ( p.isOpened() ) {
+		p.hide();
+		FigisMap.ol.clearSelectCluster(FV.myMap);
+	}
 	FV.currentLayer( l );
-	FV.setViewer();
+	FV.lastPars.setLayer( FV.currentLayer() );
+	var trg = FV.lastPars.vectorLayer;
+	FigisMap.rnd.updateVectorLayer(FV.myMap, src, trg);
+	FigisMap.rnd.setPopupOverlayId(FV.myMap, src.id, trg.id);
 };
 
 
@@ -481,7 +646,7 @@ FV.setKvpFilters = function( kvps ) {
 	FV.kvpFilters = kvps;
 }
 
-FV.filterByCategory = function(l) {	
+FV.filterByCategory = function(l) {
 	FV.setCategories( l );
 	var parent = typeof l == 'undefined' ? FV.currentLayer() : l;
 	FV.lastPars.updateLayerSource( parent, FV.getCQLFilterByCategory(parent));
@@ -505,6 +670,49 @@ FV.filterByCategory = function(l) {
 // 	FV.filterLayerByCategory(id, "fishery", category);
 // }
 
+
+/*
+* FV.arrangeMap funziont redraws the map, decideng whether it shoudl be changed or re-drawn.
+*/
+/*
+FV.arrangeMap = function(p) {
+	var finalize = [];
+	var keepMap = false;
+	var newPars = FV.lastPars();
+	if ( newPars == null) {
+		newPars = new FV.baseMapParams();
+		keepMap = false;
+	}
+	if ( p.layer ) {
+		newPars.setLayer( p.layer );
+	} else {
+		p.layer = FV.currentLayer();
+	}
+	newPars.setExtent( p.extent ? p.extent : FV.getExtent() );
+	newPars.setCenter( p.center ? p.center : FV.getCenter() );
+	newPars.setZoom( p.zoom ? p.zoom : FV.lastZoom );
+	newPars.setProjection( p.projection ? p.projection : FV.currentProjection() );
+	if ( typeof p.attribution != 'undefined' ) newPars.attribution = p.attribution;
+	if ( keepMap ) if ( FV.currentFeatureMap != p.feature ) keepMap = false;
+	if ( keepMap ) if ( FV.currentProjection() != p.projection ) keepMap = false;
+	if ( typeof p.feature != null ) {
+		FV.currentFeatureID = p.peature;
+		if ( p.feature ) finalize.push('FV.setViewerResource('+p.feature+')');
+	}
+	// Draw the map
+	if ( finalize.length > 0 ) {
+		finalize = finalize.join(';');
+		FV.onDrawEnd = function() { setTimeout( finalize, 10) };
+	} else {
+		FV.onDrawEnd = false;
+	}
+	if ( keepMap ) {
+		// ?
+	} else {
+		FV.addViewer( newPars.getExtent(), newPars.getCenter(), newPars.zoom, newPars.projection, p.layer )
+	}
+};
+*/
 
 /**
 * FV.setViewerPage function. Load the base FIRMS Map applying the user request parameters, if any
@@ -555,11 +763,15 @@ FV.setViewerPage = function() {
 		//filters
 		if ( layer && cats ) FV.filterReload( layer, cats);
 		if ( agency == '') agency = null;
-		if ( agency != null) FV.setKvpFilters( [{property: "AGENCY", value: agency}] );	
-
+		if ( agency != null) {
+			FV.setKvpFilters( [{property: "AGENCY", value: agency}] );
+			document.getElementById('ftsContainer').style.display='none';
+		}
 		//on finalize
-		if ( featureid ) finalize.push('FV.setViewerResource('+featureid+')');
-		//if ( agency != null) finalize.push('FV.myMap.zoomToExtent('+FV.lastPars.vectorLayer.source.getExtent()+')');		
+		if ( featureid ) {
+			finalize.push('FV.setViewerResource('+featureid+')');
+		}
+
 	} else {
 		zoom = 1;
 		FV.currentLayer('resource');
@@ -626,22 +838,38 @@ FV.setViewerResource = function(id) {
 	//@eblondel deactivate setCenter with popup dynamicPosition (to discuss further)
 	/* FV.myMap.getView().setCenter(feature.getGeometry().getCoordinates()); */
 	//open popup
-	FigisMap.rnd.emulatePopupForFeature(FV.myMap, FV.currentLayer(), feature);
+	if( feature ) {
+		
+		//check agencies and remove filter in case
+		if(FV.kvpFilters) if(FV.kvpFilters.length > 0) {
+			if(FV.kvpFilters[0].value.indexOf(feature.get('AGENCY')) == -1) {
+				console.warn("Feature for FIGIS_ID = '"+id+"' does not match current agency filter, adding agency '"+feature.get('AGENCY')+"' to current filter");
+			}
+		}
+		//emulate popup for feature
+		FigisMap.rnd.emulatePopupForFeature(FV.myMap, FV.currentLayer(), feature);
+	} else {
+		console.warn("No feature found for FIGIS_ID = '"+id+"'! Factsheet data should be checked...");
+	}
+	FV.currentFeatureMap = id;
 };
 FV.zoomViewerResource = function(id) {
 	var feature = FigisMap.ol.getVectorLayerFeatureById(FV.myMap, 'FIGIS_ID', id);
 	FV.myMap.getView().setCenter(feature.getGeometry().getCoordinates());
 };
 FV.triggerViewerResource = function(id){
-	var p = FigisMap.lastMap.getOverlayById( FV.currentLayer() );
+	var p = FigisMap.rnd.getPopupOverlay( FV.myMap, FV.currentLayer() );
 	if ( p.isOpened() ) {
 		p.hide();
-		FigisMap.lastMap.getInteractions().getArray().filter(function(i){return i instanceof ol.interaction.SelectCluster})[0].clear();
+		FigisMap.ol.clearSelectCluster(FV.myMap);
 	} else {
 		FV.setViewerResource(id);
 	}
 };
 FV.fsAutoMap = function( fid, ftitle, fpars ) {
+	document.getElementById('relsArea').className='disabled';
+	if ( typeof ftitle == 'undefined' ) ftitle = document.getElementById('fsAutoMapTitle').innerHTML;
+	if ( typeof fpars == 'undefined' ) fpars = document.getElementById('FVParametersMapParams').innerHTML.replace(/^ *\(/,'').replace(/\) *;? *$/,'');
 	if ( typeof fpars == 'string' ) eval( ' fpars = ' + fpars );
 	FV.lastExtent = false;
 	FV.lastCenter = false;
@@ -676,11 +904,12 @@ FV.fsAutoMap = function( fid, ftitle, fpars ) {
 			pars.associated.push( fpars.associated[i] );
 		}
 	}
-	if ( ftitle ) pars.attribution = '<span class="buttons"><a href="javascript:FV.addViewer()" title="Close the resource">✖</a> <a href="javascript:FV.triggerViewerResource('+fid+')" title="Information popup">❖</a></span> <span class="rtitle">'+ftitle+'</span>';
+	if ( ftitle ) pars.attribution = '<span class="buttons"><a href="javascript:FV.addViewer();" title="Close the resource">✖</a> <a href="javascript:FV.triggerViewerResource('+fid+')" title="Information popup">❖</a></span> <span class="rtitle">'+ftitle+'</span>';
 	//FV.onDrawEnd = function() { setTimeout('FV.setViewerResource('+fid+')',10) };
 	FV.onDrawEnd = function() { setTimeout('FV.fsAutoMapPostCheck('+fid+')',10) };
 	FV.draw( pars );
 	setTimeout('FV.currentFeatureID = '+fid,10);
+	setTimeout('FV.currentFeatureMap = '+fid,10);
 };
 FV.fsAutoMapPostCheck = function(fid) {
 	var e = FV.getExtent();
@@ -725,7 +954,6 @@ FV.fts.execute = function() {
 	} else {
 		if ( FV.fts.progress ) FV.fts.progress.style.visibility = 'visible';
 		var xmlHttp = FigisMap.getXMLHttpRequest();
-		//var url = FigisMap.currentSiteURI + "/figis/firmsviewersearch/" + FV.currentLayer() + '/'+ escape(text);
 		var url = FigisMap.currentSiteURI + "/figis/moniker/firmssearch/" + FV.currentLayer() + '/'+ escape(text);
 		if ( xmlHttp ) {
 			xmlHttp.onreadystatechange = function() {
