@@ -124,7 +124,7 @@ FV.baseMapParams = function() {
 	return this;
 };
 FV.popupAdjust = function(d) {
-	document.getElementById('relsArea').className='disabled';
+	FV.hideRelateds();
 	var h = '<div class="bIcon"><div><table cellpadding="0" cellspacing="0" border="0"><tr>' +
 		'<td id="tdIconMap"><img border="0" src="'+FigisMap.assetsRoot+ 'firms/img/icon-map.png" alt="" /></td>' +
 		'<td id="tdIconRels"><img border="0" src="'+FigisMap.assetsRoot+ 'firms/img/icon-rels.png" title="" alt="" /></td>' +
@@ -170,7 +170,7 @@ FV.popupAdjustPost = function() {
 
 /*
 FV.popupAdjust = function(docEl) {
-	document.getElementById('relsArea').className='disabled';
+	FV.hideRelateds();
 	var target = FV.isViewerEmbedded ? '_top' : 'firms';
 	var d = docEl.ownerDocument;
 	var links = d.getElementsByTagName('a');
@@ -228,6 +228,9 @@ FV.showRelateds = function() {
 	}
 	document.getElementById('relsAreaContent').innerHTML = h;
 	ra.className='';
+};
+FV.hideRelateds = function() {
+	document.getElementById('relsArea').className='disabled';
 };
 FV.relsGoto = function(r) {
 	//location.href = location.pathname + '?layer=' + r.domain +'&feat=' + r.fid;
@@ -574,7 +577,7 @@ FV.switchLayer = function( l ) {
 	//FV.setViewer();
 	
 	closeSearch();
-	document.getElementById('relsArea').className = 'disabled';
+	FV.hideRelateds();
 	
 	//@eblondel under test without redrawing strategy
 	var src = FV.lastPars.vectorLayer;
@@ -867,7 +870,7 @@ FV.triggerViewerResource = function(id){
 	}
 };
 FV.fsAutoMap = function( fid, ftitle, fpars ) {
-	document.getElementById('relsArea').className='disabled';
+	FV.hideRelateds();
 	if ( typeof ftitle == 'undefined' ) ftitle = document.getElementById('fsAutoMapTitle').innerHTML;
 	if ( typeof fpars == 'undefined' ) fpars = document.getElementById('FVParametersMapParams').innerHTML.replace(/^ *\(/,'').replace(/\) *;? *$/,'');
 	if ( typeof fpars == 'string' ) eval( ' fpars = ' + fpars );
