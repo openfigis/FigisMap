@@ -69,13 +69,11 @@
 		function closeSearch() {
 			var s = document.getElementById('ftsContainer');
 			if ( s.className == 'open' ) {
-				with (  document.getElementById('ftsText') ) {
-// 					value = '';
-					blur();
-				}
 				FV.fts.filter(true);
-				setTimeout("document.getElementById('ftsContainer').className='closed'",10);
-				setTimeout("document.getElementById('ftsContainer').setAttribute('class','closed')",10);
+				document.getElementById('ftsText').blur();
+				document.getElementById('map').focus();
+				setTimeout("document.getElementById('ftsContainer').className='closed'",1);
+				setTimeout("document.getElementById('ftsContainer').setAttribute('class','closed')",2);
 			}
 		}
 		//-->
@@ -160,6 +158,11 @@
 							</li>
 						</ul>
 					</div>
+				</div>
+				<div id="relsArea" class="disabled">
+					<div id="relsAreaCloser" onclick="this.parentNode.className='disabled'">✖</div>
+					<div id="relsAreaTitle">Related items</div>
+					<div id="relsAreaContent"></div>
 				</div>
 				<div id="ftsContainer" class="closed" onclick="openSearch();">
 					<img src="assets/firms/img/search.png" class="iconSearch" alt="" />
