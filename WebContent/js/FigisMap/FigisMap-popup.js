@@ -35,7 +35,7 @@ FigisMap.rnd.configurePopup = function(map, config) {
 	if( !config.contentHandler ) alert("Missing popup config 'contentHandler'");
 
 	//configure popup
-	var popup = new ol.Overlay.Popup({id: config.id});
+	var popup = new ol.Overlay.Popup({id: config.id, dynamicPosition: true});
 	popup.config = config;
 	map.addOverlay(popup);
 	
@@ -68,11 +68,28 @@ FigisMap.rnd.configurePopup = function(map, config) {
 
 /**
  * Get (first) popup overlay from current map
- * @param {ol.Map} the current map
- * @param {String}{Integer} the popup id
+ * @param map {ol.Map} the current map
+ * @param id {String|Integer} the popup id
  */
 FigisMap.rnd.getPopupOverlay = function(map, id) {
-	return map.getOverlayById(id);
+	//for string id map.getOverlayById is not appropriate after fix of ol.Overlay.Popup plugin
+	var out = null;
+	var overlays = map.getOverlays().getArray().filter(function(ovl){if(ovl.getId() === id) return ovl});
+	if( overlays.length > 0 ) out = overlays[0];
+	return out;
+}
+
+/**
+ * Set new id for Popup overlay
+ * @param {ol.Map} the current map
+ * @param srcId {String|Integer} the id of the current popup overlay
+ * @param trgId {String|Integer} the new id to be set for the popup overlay identified by srcId
+ */
+FigisMap.rnd.setPopupOverlayId = function(map, srcId, trgId) {
+	var overlays = map.getOverlays().getArray().filter(function(ovl){if(ovl.getId() === srcId) return ovl});
+	if( overlays.length > 0 ) {
+		overlays[0].id_ = trgId;
+	}
 }
 
 /**
@@ -86,9 +103,8 @@ FigisMap.rnd.getFeatureEventHandler = function(evt, map, popup){
 	if( popup.config.beforeevent) popup.config.beforeevent();
 
 	var feature = map.forEachFeatureAtPixel(evt.pixel,
-		function(feature, layer) {
-						
-			if (layer) if(layer.id != popup.config.id) return;
+		function(feature, layer) {			
+			if (layer) if(layer.id != popup.getId()) return;
 
 			var features = feature.get('features');
 			if( !!features ) {
@@ -297,7 +313,7 @@ FigisMap.rnd.emulatePopupForFeature = function(map, id, feature){
  */
 FigisMap.rnd.emulatePopupForCoordinates = function(map, id, coords){
 	var popup = FigisMap.rnd.getPopupOverlay(map, id);
-	var event = {coordinate: coords, map: map, pixel: [100,10], wasVirtual: true};
+	var event = {coordinate: coords, map: map, pixel: map.getPixelFromCoordinate(coords), wasVirtual: true};
 	FigisMap.rnd.getFeatureInfoEventHandler(event, map, popup);
 }
 
@@ -329,6 +345,7 @@ FigisMap.rnd.configureTooltipPopup = function(map, config) {
 		map.on('pointermove', function(evt) {
 	  	  var feature = map.forEachFeatureAtPixel(evt.pixel,
 		    function(feature, layer) {
+
 			var features = feature.get('features');
 			if( !!features ) {
 				var size = features.length;

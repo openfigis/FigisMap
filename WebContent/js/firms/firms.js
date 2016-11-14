@@ -72,14 +72,17 @@ FV.baseMapParams = function() {
 	};
 	
 	//baselayers
-	this.base = [{
+	var baselayers = FigisMap.defaults.baseLayers.slice();
+	baselayers.reverse();
+	this.base = baselayers;
+	/*this.base = [{
 		cached: true,
 		filter: "",
 		label: "Oceans basemap",
 		layer: FigisMap.fifao.obl,
 		title: "Oceans basemap",
 		type: "base"
-	}];
+	}];*/
 	
 // 	this.associated = [ FigisMap.fifao.rfb ];
 	this.vectorLayer = {};
@@ -171,7 +174,6 @@ FV.baseMapParams.prototype.setCenter = function( c ) {
 		}
 	}
 	this.center = FV.lastCenter ? FV.lastCenter : null;
-	console.log(this.center);
 	return true;
 };
 
@@ -220,7 +222,31 @@ FV.baseMapParams.prototype.setLayer = function( l ) {
 
 		this.vectorLayer = {
 			id: l,
-			source: FigisMap.rnd.configureVectorSource(sourceUrl, FV.getCQLFilterByCategory( l )),
+			source: FigisMap.rnd.configureVectorSource(sourceUrl, FV.getCQLFilterByCategory( l ), null, false, function(){
+
+				if(FV.kvpFilters) if(FV.kvpFilters.length > 0){
+					
+					//criteria to decide either to use zoomToExtent based on the vector Source extent or the FigisMap.rfbLayerSettings
+					var layerZoomingRule = true;
+					//var layerZoomingRule = FV.kvpFilters[0].value  == "DG MARE" || FV.kvpFilters[0].value == "BNP";
+					//var layerZoomingRule = FV.lastPars.vectorLayer.source.getFeatures().length < 25;
+
+					if(FV.kvpFilters[0].value.length > 1 || layerZoomingRule) {
+						FV.myMap.zoomToExtent(FV.lastPars.vectorLayer.source.getExtent());
+						if(FV.myMap.getView().getZoom() >= 3) FV.myMap.getView().setZoom(FV.myMap.getView().getZoom()-1);
+					}else{
+						var acronym = FV.kvpFilters[0].value;
+						if( FigisMap.rfbLayerSettings[acronym] ) {				
+							var bounds = FigisMap.rfb.evalOL( FigisMap.rfbLayerSettings[acronym].zoomExtent );
+							var proj0 = "EPSG:"+FigisMap.rfbLayerSettings[acronym].srs;
+							var proj1 = FV.myMap.getView().getProjection().getCode();
+							var newBounds = (proj0 === proj1)? bounds : FigisMap.ol.reFit(FV.myMap, FigisMap.ol.reBound(proj0, proj1, bounds));
+							FV.myMap.zoomToExtent( newBounds );
+						}
+					}
+				}
+				
+			}),
 			title: l == 'resource' ? "Marine resources" : "Fisheries",
 			icon: FigisMap.assetsRoot + 'firms/img/' + l + '.png',
 			iconHandler: function(feature) {
@@ -295,7 +321,7 @@ FV.getCenter = function() {
 *       mapProjection -> The map projection (optional).
 *       layer -> the FIRMS layer to use as cluster layer
 **/
-FV.addViewer = function(extent, center, zoom, projection, layer){
+FV.addViewer = function(extent, center, zoom, projection, layer ){
 
 	//parameters
 	var pars = new FV.baseMapParams();
@@ -306,7 +332,7 @@ FV.addViewer = function(extent, center, zoom, projection, layer){
 	pars.setZoom( zoom );
 	if ( ! layer ) layer = FV.currentLayer();
 	pars.setLayer( layer );
-	
+
 	FV.draw( pars );
 };
 FV.draw = function( pars ) {
@@ -338,6 +364,8 @@ FV.currentProjection = function( p ) {
 	if ( document.getElementById('SelectSRS4326').checked ) cp = '4326';
 	if ( ! cp ) if ( document.getElementById('SelectSRS3349').checked ) cp = '3349';
 	if ( ! cp ) if ( document.getElementById('SelectSRS54009').checked ) cp = '54009';
+	if ( ! cp ) if ( document.getElementById('SelectSRS3031').checked ) cp = '3031';
+
 	if ( ! cp ) {
 		document.getElementById('SelectSRS4326').checked = true;
 		cp = '4326';
@@ -349,7 +377,7 @@ FV.currentProjection = function( p ) {
 		document.getElementById('SelectSRS4326').checked = ( p == '4326');
 		document.getElementById('SelectSRS3349').checked = ( p == '3349');
 		document.getElementById('SelectSRS54009').checked = ( p == '54009');
-		
+		document.getElementById('SelectSRS3031').checked = ( p == '3031');
 	}
 	FV.lastProjection = parseInt( p );
 	return FV.lastProjection;
@@ -400,12 +428,20 @@ FV.switchLayer = function( l ) {
 
 
 FV.getCQLFilterByCategory = function(parent) {
-	var cqlFilter = null;
+	var cqlFilter = "";
 	if( FV.categories[parent].length > 0 ){
 		var filterCategories = "('" + FV.categories[parent].join("','") + "')";
 		cqlFilter = "CATEGORY IN " + filterCategories;
-		console.log(cqlFilter);
 	}
+
+	if(FV.kvpFilters) if (FV.kvpFilters.length > 0) {
+		for(var i=0;i<FV.kvpFilters.length;i++){
+			var kvp = FV.kvpFilters[i];
+			if (cqlFilter != "") cqlFilter += " AND ";
+			cqlFilter += kvp["property"] + " IN ('" + kvp["value"].join("','") + "')";
+		}
+	}
+	console.log(cqlFilter);
 	return cqlFilter;
 }
 FV.getFilterCheckboxes = function(l) {
@@ -421,12 +457,13 @@ FV.isFilterActive = function( chks ) {
 	return ( ( qtc > 0 ) && ( qtc < tot ) );
 };
 FV.filterReload = function( l, cats ) {
+
 	var chks = FV.getFilterCheckboxes( l );
 	for ( var i = 0; i < chks.length; i++ ) chks[i].checked = false;
 	for ( var i = 0; i < cats.length; i++ ) chks[cats[i]].checked = true;
-	FV.filterByCategory( l );
+	FV.setCategories( l );
 };
-FV.filterByCategory = function(l) {
+FV.setCategories = function( l ) {
 	var parent = typeof l == 'undefined' ? FV.currentLayer() : l;
 	var chks = FV.getFilterCheckboxes( parent );
 	var tmp = [];
@@ -439,6 +476,14 @@ FV.filterByCategory = function(l) {
 	} else if ( tmp.length < chks.length ) {
 		FV.categories[parent] = tmp;
 	}
+};
+FV.setKvpFilters = function( kvps ) {
+	FV.kvpFilters = kvps;
+}
+
+FV.filterByCategory = function(l) {	
+	FV.setCategories( l );
+	var parent = typeof l == 'undefined' ? FV.currentLayer() : l;
 	FV.lastPars.updateLayerSource( parent, FV.getCQLFilterByCategory(parent));
 };
 // FV.filterLayerByCategory = function( id, parent, category ) {
@@ -460,13 +505,14 @@ FV.filterByCategory = function(l) {
 // 	FV.filterLayerByCategory(id, "fishery", category);
 // }
 
+
 /**
 * FV.setViewerPage function. Load the base FIRMS Map applying the user request parameters, if any
 */
 FV.setViewerPage = function() {
-	var layer, extent, center, zoom, prj, featureid, cat;
+	var layer, extent, center, zoom, prj, featureid, cats, agency;
 	var finalize = [];
-	if ( location.search.indexOf("layer=") != -1 ){
+	if ( location.search.indexOf("?") != -1 ){
 		// Parsing the request to get the parameters
 		var params = location.search.replace(/^\?/,'').replace(/&amp;/g,'&').split("&");
 		for (var j=0; j < params.length; j++) {
@@ -478,10 +524,16 @@ FV.setViewerPage = function() {
 				case "zoom"	: zoom = parseInt(param[1]); break;
 				case "prj"	: prj = param[1]; break;
 				case "feat"	: featureid = param[1]; break;
-				case "cat"	: cat = param[1]; break;
+				case "cat"	: cats = param[1].split(",").map(function(item){return parseInt(item,10)}); break;
+				case "agency"	: agency = param[1].split(","); break;
 			}
 		}
-		if ( layer && layer != "" ) FV.currentLayer( layer );
+		if ( layer && layer != "" ) {
+			FV.currentLayer( layer );
+		} else {
+			FV.currentLayer('resource');
+			layer = 'resource';
+		}
 		if ( extent == "" ) extent = null;
 		if ( extent != null ) {
 			extent = extent.split(",");
@@ -499,8 +551,15 @@ FV.setViewerPage = function() {
 		if ( zoom != null ) zoom = parseInt( zoom );
 		if ( prj == '' ) prj = null;
 		if ( prj != null ) FV.currentProjection( prj );
+		
+		//filters
+		if ( layer && cats ) FV.filterReload( layer, cats);
+		if ( agency == '') agency = null;
+		if ( agency != null) FV.setKvpFilters( [{property: "AGENCY", value: agency}] );	
+
+		//on finalize
 		if ( featureid ) finalize.push('FV.setViewerResource('+featureid+')');
-		if ( layer && cat ) finalize.push('FV.filterReload("'+layer+'",['+cat+'])');
+		//if ( agency != null) finalize.push('FV.myMap.zoomToExtent('+FV.lastPars.vectorLayer.source.getExtent()+')');		
 	} else {
 		zoom = 1;
 		FV.currentLayer('resource');
@@ -512,7 +571,7 @@ FV.setViewerPage = function() {
 		FV.onDrawEnd = function() { setTimeout( finalize, 10) };
 	}
 	//Load the Viewer using the request parameters
-	FV.addViewer( extent, center, zoom, prj, layer);
+	FV.addViewer( extent, center, zoom, prj, layer );
 };
 
 /**
@@ -529,6 +588,7 @@ FV.setViewerEmbedLink = function(){
 		+ "&center=" + FV.myMap.getView().getCenter().join(',')
 		+ "&zoom=" + FV.myMap.getView().getZoom()
 		+ "&prj=" + FV.currentProjection();
+	if ( FV.kvpFilters ) if (FV.kvpFilters.length > 0) url += "&agency=" + FV.kvpFilters[0].value.join(',');
 	if ( FV.currentFeatureID ) url += '&feat=' + FV.currentFeatureID;
 	if ( FV.isFilterActive() ) {
 		var chks = FV.getFilterCheckboxes( l );
@@ -563,7 +623,8 @@ FV.setViewerResource = function(id) {
 	FV.myMap.beforeRender(pan);*/
 	
 	//setCenter
-	FV.myMap.getView().setCenter(feature.getGeometry().getCoordinates());
+	//@eblondel deactivate setCenter with popup dynamicPosition (to discuss further)
+	/* FV.myMap.getView().setCenter(feature.getGeometry().getCoordinates()); */
 	//open popup
 	FigisMap.rnd.emulatePopupForFeature(FV.myMap, FV.currentLayer(), feature);
 };

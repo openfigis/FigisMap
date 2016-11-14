@@ -143,10 +143,6 @@ ol.control.LayerSwitcher.prototype.setMap = function(map) {
 			this.mapListeners.push(map.once("postrender", function(){
 				this.renderPanel();
 			}, this));
-			//TODO test on all FIGIS applications
-			/*this.mapListeners.push(map.on('postcompose', function(e) {
-				this.renderPanel();
-			}, this));*/
 			this.mapListeners.push(map.getView().on('propertychange', function(e) {
 				this.renderPanel();
 			}, this));
@@ -270,8 +266,8 @@ ol.control.LayerSwitcher.prototype.renderLayer_ = function(lyr, idx) {
         input.id = lyrId;
         input.checked = lyr.get('visible');
         input.onchange = function(e) {
-            this_.setVisible_(lyr, e.target.checked);
-			if(this_.togglingLegendGraphic_) this_.toggleLegendGraphic_(lyr, idx);
+		this_.setVisible_(lyr, e.target.checked);
+		if(this_.togglingLegendGraphic_) this_.toggleLegendGraphic_(lyr, idx);
         };
         li.appendChild(input);
 

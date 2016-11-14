@@ -54,8 +54,8 @@ div.sidePanel:hover, .ol-unselectable.ol-control.layer-switcher.shown { box-shad
 .sidePanel blockquote { background-color: rgba(255,255,255,.8); border-radius: 0 0 10px 10px; margin: 0; opacity: 0; overflow-y: hidden; padding: 0 10px; }
 .sidePanel blockquote { height: 0px; }
 .sidePanel:hover blockquote, .sidePanel *:hover blockquote, .sidePanel blockquote:hover { opacity: 1; padding: 5px 10px 0 10px; }
-#projectionPanel { left: 60px; position: absolute; top: 0; width: 160px; }
-#linkPanel { position: absolute; right: 300px; top: 0; width: 220px; }
+#projectionPanel { left: 60px; position: absolute; top: 0; width: 160px; cursor: default;}
+#linkPanel { position: absolute; right: 300px; top: 0; width: 220px; cursor: default;}
 body.embed #linkPanel { display: none; }
 .sidePanel:hover blockquote, .sidePanel *:hover blockquote, .sidePanel blockquote:hover { height: 100%; }
 .sidePanel h4 { background-color: rgba(55,96,146,.6); border-radius: 0 0 10px 10px; color: rgba(255,255,255,.6); font-size: 100%; margin: 0; padding: 5px 10px; text-align: center; }
@@ -133,6 +133,13 @@ body.embed #linkPanel { display: none; }
  */
 .ol-popup-content { width: auto !important; height: auto !important; min-width: 220px !important; max-height: 430px !important; }
 .ol-popup-closer { font-size:100% !important; }
+
+/* only here to hide style set in moniker, .ol-popup:after rule to be removed from moniker css */
+.ol-popup:after { border-top-width: 0px !important;} 
+.ol-popup.top:after { border-top-width: 10px !important;}
+/* popup css to be set in moniker. The rule .ol-popup.top:after should be different according to resource/fishery type. Here below is the one for resource */
+.ol-popup.top:after { border-top-color: #039 !important; }
+.ol-popup.bottom:after { border-bottom-color: #ff9034 !important; }
 
 .ol-loading-panel {
         /*background-image : url(../img/swiming_fish.gif) !important;*/
