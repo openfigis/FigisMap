@@ -457,11 +457,16 @@ FigisMap.rnd.updateVectorLayer = function(map, srcLayer, trgLayer) {
 		if( trgLayer ){
 			var olTargetLayer = FigisMap.rnd.configureVectorLayer( trgLayer );		
 			if( olTargetLayer ){
-				olLayer.id = olTargetLayer.id;
-				olLayer.title = olTargetLayer.title;
+				//map layer properties
+				olLayer.setProperties({id: trgLayer.id, title: trgLayer.title});
 				olLayer.setSource( olTargetLayer.getSource() );
 				olLayer.setStyle( olTargetLayer.getStyle() );
-				
+					
+				//adding extra properties for layerswitcher
+				olLayer.id = trgLayer.id;
+				olLayer.legendGraphic = trgLayer.icon;
+				olLayer.showLegendGraphic = trgLayer.showLegendGraphic ? trgLayer.showLegendGraphic : false;
+	
 				var srcInteraction = FigisMap.ol.getSelectCluster( map );
 				if( srcInteraction ) map.removeInteraction( srcInteraction );
 				var trgInteraction = FigisMap.rnd.configureSelectCluster( trgLayer )
