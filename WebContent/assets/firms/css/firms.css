@@ -133,6 +133,7 @@ body.embed #linkPanel { display: none; }
  */
 .ol-popup-content { width: auto !important; height: auto !important; min-width: 220px !important; max-height: 430px !important; }
 .ol-popup-closer { font-size:100% !important; }
+.FVPopopBody { max-height: 300px; overflow-y: auto; }
 
 /* only here to hide style set in moniker, .ol-popup:after rule to be removed from moniker css */
 .ol-popup:after { border-top-width: 0px !important;} 
@@ -163,8 +164,8 @@ span.ol-loading-panel.ol-unselectable {
 #tdIconMap { text-align: left; }
 #tdIconRels { text-align: center; }
 #tdIconFS { text-align: right; }
-.bIcon td.disabled img { opacity: .3; }
-.bIcon a img { opacity: .8; }
+.bIcon td.disabled img { opacity: .15; }
+.bIcon a img { opacity: .75; }
 .bIcon a:hover img { opacity: 1; }
 
 #relsArea {
