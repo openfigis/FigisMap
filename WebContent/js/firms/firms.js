@@ -124,115 +124,68 @@ FV.baseMapParams = function() {
 	return this;
 };
 FV.popupAdjust = function(d) {
-	document.getElementById('relsArea').className='disabled';
+	FV.hideRelateds();
 	var h = '<div class="bIcon"><div><table cellpadding="0" cellspacing="0" border="0"><tr>' +
 		'<td id="tdIconMap"><img border="0" src="'+FigisMap.assetsRoot+ 'firms/img/icon-map.png" alt="" /></td>' +
-		'<td id="tdIconRels"><img border="0" src="'+FigisMap.assetsRoot+ 'firms/img/icon-rels.png" title="" alt="" /></td>' +
-		'<td id="tdIconFS"><img border="0" src="'+FigisMap.assetsRoot+ 'firms/img/icon-fs.png" title="" alt="" /></td>' +
+		'<td id="tdIconRels"><img border="0" src="'+FigisMap.assetsRoot+ 'firms/img/icon-rels.png" alt="" /></td>' +
+		'<td id="tdIconFS"><img border="0" src="'+FigisMap.assetsRoot+ 'firms/img/icon-fs.png" alt="" /></td>' +
 		'</tr></table></div></div>';
 	setTimeout( 'FV.popupAdjustPost()', 10 );
-	return d.replace(/(<div id="FVParametersBox" )/,h+"$1");;
+	return d.replace(/(<[^<]+id="FVParametersBox")/,h+"$1");;
 };
 FV.popupAdjustPost = function() {
-	var target = FV.isViewerEmbedded ? '_top' : 'firms';
-	var d = document.getElementById('FVParametersBox');
-	var links = d.querySelectorAll('a[href]');
-	for ( var i = 0; i < links.length; i++ ) {
-		links[i].setAttribute('target',target);
-	}
-	var td = document.getElementById('tdIconMap');
-	var sd = document.getElementById('FVParametersMap');
-	if ( sd ) sd = sd.querySelector('a[href]');
+	var d, td, tb, sd, target = FV.isViewerEmbedded ? '_top' : 'firms';
+	sd = document.querySelectorAll('.FVPmain a[href]');
+	for ( d = 0; d < sd.length; d++ ) sd[d].setAttribute('target',target);
+	d = document.getElementById('FVParametersBox');
+	tb = document.querySelector( '.FVPmain .bIcon table' );
+	td = tb.querySelector('#tdIconMap');
+	sd = d.querySelector('#FVParametersMap a[href]');
 	if ( sd ) {
 		td.innerHTML = '<a href="' + sd.getAttribute('href') + '" title="'+sd.innerHTML+'">' + td.innerHTML + '</a>';
 	} else {
 		td.className = 'disabled';
+		td.querySelector('img').title = "No map is available";
 	}
-	td = document.getElementById('tdIconRels');
-	sd = document.getElementById('FVParametersRelateds');
-	if ( sd ) sd = sd.getElementsByTagName('span').length;
+	td = tb.querySelector('#tdIconRels');
+	sd = d.querySelectorAll('#FVParametersRelateds span').length;
 	if ( sd > 0 ) {
 		td.innerHTML = '<a href="javascript:FV.showRelateds()" title="See related items (' +sd+')">'+td.innerHTML+'</a>'+sd;
 	} else {
 		td.className = 'disabled';
+		td.querySelector('img').title = "No related items are available";
 	}
-	td = document.getElementById('tdIconFS');
-	sd = document.getElementById('FVParametersURL');
-	if ( sd ) sd = sd.querySelector('a[href]');
+	td = tb.querySelector('#tdIconFS');
+	sd = d.querySelector('#FVParametersURL a[href]');
 	if ( sd ) {
 		td.innerHTML = '<a href="'+sd.getAttribute('href')+'" target="'+target+'" title="'+sd.innerHTML+'">'+td.innerHTML+'</a>';
 	} else {
-		td.getElementsByTagName('img')[0].setAttribute('title','No associated Fact Sheet');
 		td.className = 'disabled';
+		td.querySelector('img').title ="Associated Fact Sheet isn’t available";
 	}
 };
-
-
-/*
-FV.popupAdjust = function(docEl) {
-	document.getElementById('relsArea').className='disabled';
-	var target = FV.isViewerEmbedded ? '_top' : 'firms';
-	var d = docEl.ownerDocument;
-	var links = d.getElementsByTagName('a');
-	for ( var i = 0; i < links.length; i++ ) {
-		links[i].setAttribute('target',target);
-	}
-	var h = '<div><table cellpadding="0" cellspacing="0" border="0"><tr>';
-	var maplink = d.getElementById('FVParameters-map');
-	if ( maplink ) maplink = maplink.getElementsByTagName('a')[0];
-	if ( maplink ) {
-		h += '<td class="bIconMap"><a href="' + maplink.getAttribute('href')+'" title="' +maplink.innerHTML+'">';
-		h += '<img border="0" src="'+FigisMap.assetsRoot+ 'firms/img/icon-map.png" alt="" /></a></td>'
-	} else {
-		h += '<td class="bIconMap disabled">';
-		h += '<img border="0" src="'+FigisMap.assetsRoot+ 'firms/img/icon-map.png" alt="" /></td>'
-	}
-	var rels = d.getElementById('FVParameters-relateds');
-	if ( rels) rels = rels.getElementsByTagName('span').length;
-	if ( rels > 0 ) {
-		h += '<td class="bIconRels"><a href="javascript:FV.showRelateds()" title="See related items (' +rels+')">';
-		h += '<img border="0" src="'+FigisMap.assetsRoot+ 'firms/img/icon-rels.png" alt="" /></a>' +rels+'</td>'
-	} else {
-		h += '<td class="bIconRels disabled">';
-		h += '<img border="0" src="'+FigisMap.assetsRoot+ 'firms/img/icon-rels.png" title="No related items" alt="" /></td>'
-	}
-	var fslink = d.getElementById('FVParameters-URL');
-	if ( fslink ) fslink = fslink.getElementsByTagName('a')[0];
-	if ( fslink > 0 ) {
-		h += '<td class="bIconFS"><a href="' + fslink.getAttribute('href')+'" title="' +fslink.innerHTML+'" target="'+target+'">';
-		h += '<img border="0" src="'+FigisMap.assetsRoot+ 'firms/img/icon-fs.png" alt="" /></a></td></tr></table></div>';
-	} else {
-		h += '<td class="bIconFS disabled">';
-		h += '<img border="0" src="'+FigisMap.assetsRoot+ 'firms/img/icon-fs.png" title="No associated Fact Sheet" alt="" /></td>'
-	}
-	var nd = d.createElement('div');
-	nd.setAttribute('class','bIcon');
-	//nd.innerHTML=h;
-	d.getElementById('FVParameters').parentNode.appendChild(nd);
-	return docEl;
-};
-*/
+FV.getRelatedsArea = function() { return document.getElementById('relsArea'); };
 FV.showRelateds = function() {
-	var ra = document.getElementById('relsArea');
-	if ( ra.className == '' ) {
-		ra.className='disabled';
+	if ( FV.relatedsAreShown() ) {
+		FV.hideRelateds();
 		return void(0);
 	}
-	var rels = document.getElementById('FVParametersRelateds').getElementsByTagName('span');
+	var ra = FV.getRelatedsArea();
+	var rels = document.querySelectorAll('#FVParametersRelateds span');
 	var h = '';
-	var a;
 	for ( var i = 0; i < rels.length; i++ ) {
 		var r = rels[i];
-		eval( 'a='+ r.getAttribute('title') );
 		h += '<a href="javascript:FV.relsGoto('+r.getAttribute('title')+')">'+r.innerHTML+'</a>';
 	}
-	document.getElementById('relsAreaContent').innerHTML = h;
+	ra.querySelector('#relsAreaContent').innerHTML = h;
 	ra.className='';
 };
+FV.relatedsAreShown = function() { return ! ( FV.getRelatedsArea().className=='disabled' ); };
+FV.hideRelateds = function() { FV.getRelatedsArea().className='disabled'; };
 FV.relsGoto = function(r) {
 	//location.href = location.pathname + '?layer=' + r.domain +'&feat=' + r.fid;
-	FV.switchLayer(r.domain);
 	FV.currentFeatureID = r.fid;
+	FV.switchLayer(r.domain);
 };
 
 FV.baseMapParams.prototype.setProjection = function( p ) { if( p ) this.projection = p; };
@@ -388,7 +341,7 @@ FV.baseMapParams.prototype.setLayer = function( l ) {
 
 				
 			}),
-			title: l == 'resource' ? "Marine resources" : "Fisheries",
+			title: l == 'resource' ? "Marine Resources" : "Marine Fisheries",
 			icon: FigisMap.assetsRoot + 'firms/img/' + l + '.png',
 			iconHandler: function(feature) {
 				var imgRef = l;
@@ -574,7 +527,7 @@ FV.switchLayer = function( l ) {
 	//FV.setViewer();
 	
 	closeSearch();
-	document.getElementById('relsArea').className = 'disabled';
+	FV.hideRelateds();
 	
 	//@eblondel under test without redrawing strategy
 	var src = FV.lastPars.vectorLayer;
@@ -867,7 +820,7 @@ FV.triggerViewerResource = function(id){
 	}
 };
 FV.fsAutoMap = function( fid, ftitle, fpars ) {
-	document.getElementById('relsArea').className='disabled';
+	FV.hideRelateds();
 	if ( typeof ftitle == 'undefined' ) ftitle = document.getElementById('fsAutoMapTitle').innerHTML;
 	if ( typeof fpars == 'undefined' ) fpars = document.getElementById('FVParametersMapParams').innerHTML.replace(/^ *\(/,'').replace(/\) *;? *$/,'');
 	if ( typeof fpars == 'string' ) eval( ' fpars = ' + fpars );
@@ -904,7 +857,7 @@ FV.fsAutoMap = function( fid, ftitle, fpars ) {
 			pars.associated.push( fpars.associated[i] );
 		}
 	}
-	if ( ftitle ) pars.attribution = '<span class="buttons"><a href="javascript:FV.addViewer();" title="Close the resource">✖</a> <a href="javascript:FV.triggerViewerResource('+fid+')" title="Information popup">❖</a></span> <span class="rtitle">'+ftitle+'</span>';
+	if ( ftitle ) pars.attribution = '<span class="buttons"><a href="javascript:FV.currentFeatureID=false;FV.addViewer();" title="Close the resource">✖</a> <a href="javascript:FV.triggerViewerResource('+fid+')" title="Information popup">❖</a></span> <span class="rtitle">'+ftitle+'</span>';
 	//FV.onDrawEnd = function() { setTimeout('FV.setViewerResource('+fid+')',10) };
 	FV.onDrawEnd = function() { setTimeout('FV.fsAutoMapPostCheck('+fid+')',10) };
 	FV.draw( pars );
