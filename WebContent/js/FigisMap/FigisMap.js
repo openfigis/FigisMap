@@ -554,6 +554,7 @@ FigisMap.ol.reCenter = function( proj0, proj1, center ) {
 		proj0 = 4326;
 		center = [0,0];
 	}
+
 	if ( proj0 == proj1 ) return center;
 	
 	if( proj1 == 3031 ) return [156250.0, 703256.0];
@@ -1066,6 +1067,7 @@ FigisMap.parser.div = function( d ) {
 	if ( typeof d == 'string' ) {
 		d = { 'div' : document.getElementById( d ), 'id' : String( d ) };
 	} else if ( typeof d == 'object' ) {
+		if ( !d.div ) return d;
 		if ( typeof d.div == 'string' ) {
 			d.id = String( d.div );
 			d.div = document.getElementById( d.id );
@@ -1212,7 +1214,7 @@ FigisMap.parser.parse = function( p ) {
 	if ( typeof p.options.baseMask == 'undefined' ) p.options.baseMask = false;
 	
 	//baselayers management
-	//TODO test compatibility with other viewers
+	//TODO test compatibility with VME viewer
 	if ( ! p.base ) {
 		//p.base = (p.baseLayerC)? [p.baseLayerC] : FigisMap.defaults.baseLayers;
 		p.base = (p.baseLayerC)? [p.baseLayerC] : FigisMap.factory.getDefault('baseLayers');
@@ -1228,6 +1230,7 @@ FigisMap.parser.parse = function( p ) {
 	}
 	if ( p.defaultBase ) {
 			p.defaultBase = FigisMap.parser.layer( p.defaultBase, { 'type' : 'base'} );
+			p.defaultBase.attribution = p.attribution ? p.attribution : false;
 			if ( ! p.defaultBase.title ) p.defaultBase.title = FigisMap.label( p.defaultBase.label ? p.defaultBase.label : p.defaultBase.layer, p );
 	}
 	
@@ -1253,8 +1256,9 @@ FigisMap.parser.parse = function( p ) {
 	
 	//p.projection = FigisMap.parser.projection( p );
 	
-	if ( ! p.dataProj ) p.dataProj = p.extent ? p.projection : 4326;
-	
+	//if ( ! p.dataProj ) p.dataProj = p.extent ? p.projection : 4326;
+	if ( ! p.dataProj ) p.dataProj = p.projection ? p.projection : 4326;	
+
 	p.legend = FigisMap.parser.div( p.legend );
 	
 	p.countriesLegend = FigisMap.parser.div( p.countriesLegend );
@@ -2456,7 +2460,7 @@ FigisMap.renderer = function(options) {
 			}
 			
 			if( p.zoom ) myMap.getView().setZoom(p.zoom);
-			
+
 			if ( p.center ) myMap.getView().setCenter( FigisMap.ol.reCenter( p.dataProj, projection, p.center) );
 			
 			FigisMap.debug('Render for Extent', p.extent, 'zoomLevel', p.zoom, 'Center', p.center );
