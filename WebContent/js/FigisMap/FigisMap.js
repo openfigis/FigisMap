@@ -554,6 +554,7 @@ FigisMap.ol.reCenter = function( proj0, proj1, center ) {
 		proj0 = 4326;
 		center = [0,0];
 	}
+
 	if ( proj0 == proj1 ) return center;
 	
 	if( proj1 == 3031 ) return [156250.0, 703256.0];
@@ -1255,8 +1256,9 @@ FigisMap.parser.parse = function( p ) {
 	
 	//p.projection = FigisMap.parser.projection( p );
 	
-	if ( ! p.dataProj ) p.dataProj = p.extent ? p.projection : 4326;
-	
+	//if ( ! p.dataProj ) p.dataProj = p.extent ? p.projection : 4326;
+	if ( ! p.dataProj ) p.dataProj = p.projection ? p.projection : 4326;	
+
 	p.legend = FigisMap.parser.div( p.legend );
 	
 	p.countriesLegend = FigisMap.parser.div( p.countriesLegend );
@@ -2458,7 +2460,7 @@ FigisMap.renderer = function(options) {
 			}
 			
 			if( p.zoom ) myMap.getView().setZoom(p.zoom);
-			
+
 			if ( p.center ) myMap.getView().setCenter( FigisMap.ol.reCenter( p.dataProj, projection, p.center) );
 			
 			FigisMap.debug('Render for Extent', p.extent, 'zoomLevel', p.zoom, 'Center', p.center );

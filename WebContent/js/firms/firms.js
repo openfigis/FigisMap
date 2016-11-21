@@ -9,7 +9,6 @@
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-animatedclusterlayer.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-selectclusterinteraction.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/FigisMap/FigisMap-vector.js'); //manage vector and cluster sources
-
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-popup.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/FigisMap/FigisMap-popup.js');
 
@@ -532,7 +531,9 @@ FV.internal.arrangeMap = function(p) {
 	if( p ) {
 		console.info("Parameters to arrange map: " + JSON.stringify(p));
 
-		newPars.projection = p.projection ? p.projection : FV.currentProjection() ;	
+		newPars.projection = p.projection ? p.projection : FV.currentProjection() ;
+		newPars.dataProj = newPars.projection;		
+
 		newPars.extent = p.extent ? p.extent : FV.getExtent() ;
 		newPars.center = p.center ? p.center : FV.getCenter() ;
 		newPars.zoom = p.zoom ? p.zoom : FV.getZoom();
@@ -662,6 +663,9 @@ FV.switchProjection = function( p ) {
 	var oe = FV.getExtent();
 	var ne = FigisMap.ol.reBound(op, np, oe);
 	
+	console.log(op);
+	console.log(np);
+
 	//params to adjust the map
 	var pars = {
 		projection: p,
@@ -1098,7 +1102,7 @@ FV.setViewerPage = function() {
 	}
 	//Load the Viewer using the request parameters
 	if( extent ) pars.extent = extent;
-	if( center ) pars.extent = center;
+	if( center ) pars.center = center;
 	if( zoom ) pars.zoom = zoom;
 	if( prj ) pars.projection = prj;
 	if( layer ) pars.layer = layer;
