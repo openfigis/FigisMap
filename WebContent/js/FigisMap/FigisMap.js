@@ -26,7 +26,7 @@ var FigisMap = {
 	scripts		: [],
 	scriptsReqs	: [],
 	scriptsLoaded	: true,
-	debugLevel	: 1 // 0|false|null: debug off, 1|true:console, 2: console + error alert
+	debugLevel	: ( (document.domain.indexOf('www.fao.org') != -1)? 0 : 1 ) // 0|false|null: debug off, 1|true:console, 2: console + error alert
 };
 
 /**
