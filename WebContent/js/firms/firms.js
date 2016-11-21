@@ -103,6 +103,15 @@ FV.baseMapParams = function() {
 			}
 		}
 
+		//featureMap
+		//@eblondel 21112016 workaround under testing to remove automap in case featMap not part of current filtered features
+		/*var featMap = FV.lastPars.getFeatureMap();
+		if( featMap ) {
+			if( FV.lastPars.vectorLayer.source.getFeatures().filter(function(sf) { return sf.get('FIGIS_ID') === featMap }).length == 0 ) {
+				FV.fsRemoveAutoMap();
+			}
+		}*/
+
 		//zoom on filtered dataset
 		var kvpFilters = FV.lastPars.getKvpFilters();
 		if( kvpFilters ) if(kvpFilters.length > 0){
@@ -476,10 +485,9 @@ FV.internal.draw = function( pars ) {
 		var newProps = Object.keys( pars );
 		for(var i=0;i<newProps.length;i++){
 			var propToUpdate = newProps[i];
-			if(pars[propToUpdate]) console.log(propToUpdate);
 			FV.lastPars[propToUpdate] = pars[propToUpdate];
 		}
-		console.log(FV.lastPars);
+
 		if ( ! pars.layer ) {
 			pars.layer = FV.currentLayer();
 		} else {
@@ -487,17 +495,18 @@ FV.internal.draw = function( pars ) {
 				FV.currentLayer( pars.layer );
 			}
 		}
-		if ( pars.layer && pars.categoryFilters){
-			FV.filterReload( pars.layer, pars.categoryFilters);
-		}
+
+
+		if ( pars.categoryFilters ) FV.filterReload( pars.layer, pars.categoryFilters[pars.layer]);
 		if ( pars.kvpFilters ) FV.lastPars.setKvpFilters( pars.kvpFilters );
+
 		FV.lastPars.setVectorLayer( pars.layer );
 
 	} else {
 		FV.lastPars.setVectorLayer( FV.currentLayer() );
 	}
 	if ( ! FV.lastPars.distribution ) if ( ! FV.lastPars.associated  ) if ( ! FV.lastPars.intersecting ) if (! FV.lastPars.extent) FV.lastPars.global = true;
-	console.log( FV.lastPars );
+
 	FV.myMap = FigisMap.draw( FV.lastPars );
 	FV.lastExtent = null;
 	FV.lastCenter = null;
@@ -538,7 +547,9 @@ FV.internal.arrangeMap = function(p) {
 		newPars.center = p.center ? p.center : FV.getCenter() ;
 		newPars.zoom = p.zoom ? p.zoom : FV.getZoom();
 		
-		if ( !p.layer ) {
+		if ( p.layer ) {
+			newPars.layer = FV.currentLayer(p.layer);			
+		} else {
 			newPars.layer = FV.currentLayer();
 		}
 
@@ -548,7 +559,7 @@ FV.internal.arrangeMap = function(p) {
 			
 		//feature / featureMap	
 		newPars.feature = (typeof p.feature != "undefined")? p.feature : FV.lastPars.getFeature() ;
-		newPars.featureMap = (typeof p.featureMap != "undefined")? p.featureMap : ( (typeof p.layer != "undefined" && p.layer != FV.currentLayer())? undefined : FV.lastPars.getFeatureMap() );
+		newPars.featureMap = (typeof p.featureMap != "undefined")? p.featureMap : (( typeof p.layer != "undefined" )? undefined : FV.lastPars.getFeatureMap());
 
 		//set new automaps / attribution
 		newPars.distribution = (p.featureMap != null && p.distribution)? p.distribution : ( newPars.featureMap? FV.lastPars.distribution : [] );
@@ -558,13 +569,9 @@ FV.internal.arrangeMap = function(p) {
 
 		//additional rules to decide if map should be redrawn instead
 		if ( keepMap && typeof p.layer != "undefined" && p.layer != FV.currentLayer() && typeof p.featureMap != "undefined" && typeof newPars.featureMap == "undefined") keepMap = false;
-		console.log("Keeping map? "+keepMap);
 		if ( keepMap && ( typeof p.featureMap != "undefined" || FV.lastPars.getFeatureMap() != null ) ) keepMap = false; //in case of loading feature map & having previously featureMap loaded, always redrawn the page
-		console.log("Keeping map? "+keepMap);
 		if ( keepMap && p.feature && p.featureMap ) if ( p.featureMap != p.feature ) keepMap = false;
-		console.log("Keeping map? "+keepMap);
 		//if ( keepMap && p.projection ) if ( FV.currentProjection() != p.projection ) keepMap = false;
-		console.log("Keeping map? "+keepMap);	
 
 		//map redraw finalizers
 		if ( !keepMap ) {
@@ -579,6 +586,12 @@ FV.internal.arrangeMap = function(p) {
 			finalize = false;
 		}
 	}
+
+	//in case no params we force keepMap  = true
+	//@eblondel 21112016 workaround under testing to remove automap in case featMap not part of current filtered features
+	/*if (Object.keys(p).length == 0){
+		keepMap = true; 
+	}*/
 
 	//before arranging the map
 	closeSearch();
@@ -643,13 +656,14 @@ FV.internal.applyFilters = function(l) {
  * @param l {String} the layer String identifier ("resource" or "fishery")
  */
 FV.switchLayer = function( l ) {
-	FV.internal.arrangeMap({layer: l, feature: null});
+	FV.internal.arrangeMap({layer: l, feature: null, featureMap: null});
 }
 
 /**
  * FV.applyFilter
  */
 FV.applyFilter = function() {
+	FV.setCategories( FV.currentLayer() );
 	FV.internal.arrangeMap();	
 }
 
@@ -662,15 +676,15 @@ FV.switchProjection = function( p ) {
 	var np = FV.currentProjection( p );
 	var oe = FV.getExtent();
 	var ne = FigisMap.ol.reBound(op, np, oe);
-	
-	console.log(op);
-	console.log(np);
 
 	//params to adjust the map
 	var pars = {
 		projection: p,
 		feature: FV.lastPars.getFeature(),
-		featureMap: FV.lastPars.getFeatureMap()
+		featureMap: FV.lastPars.getFeatureMap(),
+		categoryFilters: FV.lastPars.getCategoryFilters(),
+		kvpFilters: FV.lastPars.getKvpFilters()
+		
 	}
 	if(FigisMap.ol.isValidExtent(ne)) {
 		pars.extent = ne;
@@ -709,7 +723,7 @@ FV.setViewerResource = function(id) {
 	
 	//setCenter
 	//@eblondel deactivate setCenter with popup dynamicPosition (to discuss further)
-	/* FV.myMap.getView().setCenter(feature.getGeometry().getCoordinates()); */
+	//FV.myMap.getView().setCenter(feature.getGeometry().getCoordinates());
 	//open popup
 	if( feature ) {
 		
@@ -829,7 +843,7 @@ FV.getCQLFilter = function(parent) {
 			cqlFilter += kvp["property"] + " IN ('" + kvp["value"].join("','") + "')";
 		}
 	}
-	console.log(cqlFilter);
+	console.info("Applying CQL filter: " + cqlFilter);
 	return cqlFilter;
 }
 
@@ -949,9 +963,16 @@ FV.isFilterActive = function( chks ) {
 
 FV.filterReload = function( l, cats ) {
 
+	//update DOM
 	var chks = FV.getFilterCheckboxes( l );
-	for ( var i = 0; i < chks.length; i++ ) chks[i].checked = false;
-	for ( var i = 0; i < cats.length; i++ ) chks[cats[i]].checked = true;
+	for ( var i = 0; i < chks.length; i++ ) {
+		chks[i].checked = false;
+		if( cats ) if ( cats.indexOf(chks[i].value) != -1) {
+			chks[i].checked = true;
+		}
+	}
+	//for ( var i = 0; i < cats.length; i++ ) chks[cats[i]].checked = true;
+	
 	FV.setCategories( l );
 };
 
@@ -1050,7 +1071,7 @@ FV.setViewerPage = function() {
 				case "zoom"	: zoom = parseInt(param[1]); break;
 				case "prj"	: prj = param[1]; break;
 				case "feat"	: featureid = param[1]; break;
-				case "cat"	: cats = param[1].split(",").map(function(item){return parseInt(item,10)}); break;
+				case "cat"	: cats = decodeURIComponent(param[1]).split(","); break;
 				case "agency"	: agency = param[1].split(","); break;
 			}
 		}
@@ -1106,7 +1127,10 @@ FV.setViewerPage = function() {
 	if( zoom ) pars.zoom = zoom;
 	if( prj ) pars.projection = prj;
 	if( layer ) pars.layer = layer;
-	if( cats ) pars.categoryFilters = cats;
+	if( cats ){
+		pars.categoryFilters = new Object();
+		pars.categoryFilters[layer] = cats;
+	}
 	if( kvps ) pars.kvpFilters = kvps;
 	FV.internal.draw( pars );
 };
@@ -1132,7 +1156,7 @@ FV.setViewerEmbedLink = function(){
 	if ( FV.isFilterActive() ) {
 		var chks = FV.getFilterCheckboxes( l );
 		var acf = [];
-		for ( var i = 0; i < chks.length; i++ ) if ( chks[i].checked ) acf.push(i);
+		for ( var i = 0; i < chks.length; i++ ) if ( chks[i].checked ) acf.push( chks[i].value);
 		url += '&cat=' + acf.join(',');
 	}
 	var urle = url + '&embed=y';
