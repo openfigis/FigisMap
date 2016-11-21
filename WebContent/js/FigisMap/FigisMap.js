@@ -1066,6 +1066,7 @@ FigisMap.parser.div = function( d ) {
 	if ( typeof d == 'string' ) {
 		d = { 'div' : document.getElementById( d ), 'id' : String( d ) };
 	} else if ( typeof d == 'object' ) {
+		if ( !d.div ) return d;
 		if ( typeof d.div == 'string' ) {
 			d.id = String( d.div );
 			d.div = document.getElementById( d.id );
@@ -1212,7 +1213,7 @@ FigisMap.parser.parse = function( p ) {
 	if ( typeof p.options.baseMask == 'undefined' ) p.options.baseMask = false;
 	
 	//baselayers management
-	//TODO test compatibility with other viewers
+	//TODO test compatibility with VME viewer
 	if ( ! p.base ) {
 		//p.base = (p.baseLayerC)? [p.baseLayerC] : FigisMap.defaults.baseLayers;
 		p.base = (p.baseLayerC)? [p.baseLayerC] : FigisMap.factory.getDefault('baseLayers');
@@ -1228,6 +1229,7 @@ FigisMap.parser.parse = function( p ) {
 	}
 	if ( p.defaultBase ) {
 			p.defaultBase = FigisMap.parser.layer( p.defaultBase, { 'type' : 'base'} );
+			p.defaultBase.attribution = p.attribution ? p.attribution : false;
 			if ( ! p.defaultBase.title ) p.defaultBase.title = FigisMap.label( p.defaultBase.label ? p.defaultBase.label : p.defaultBase.layer, p );
 	}
 	
