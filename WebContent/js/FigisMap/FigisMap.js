@@ -68,7 +68,7 @@ FigisMap.fifao = {
 	guf : 'fifao:gebco_underseafeatures', //undersea features
 	gbi : 'vme:gebco_isobath2000', //isobath -2000m
 	vnt : 'vme:vents_InterRidge_2011_all', // Hidrotermal
-	ccr : 'vme:WCMC-001-ColdCorals2005', //ColdCorals
+	ccr : 'vme:WCMC-001-ColdCorals2005' //ColdCorals
 
 
 };
@@ -155,7 +155,7 @@ FigisMap.rnd.vars = {
 	ows			: FigisMap.geoServerBase + FigisMap.localPathForGeoserver + "/ows", //TODO OL3 to see where it is used for VME
 	Legend_Base_Request	: FigisMap.geoServerBase + FigisMap.localPathForGeoserver + "/wms" + "?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetLegendGraphic&FORMAT=image%2Fpng&WIDTH=30&HEIGHT=20",
 	wfs			: FigisMap.geoServerBase + FigisMap.localPathForGeoserver + '/wfs?request=GetFeature&version=1.0.0&typename=',
-	absWfs			: FigisMap.geoServerAbsBase + FigisMap.localPathForGeoserver + '/wfs?request=GetFeature&version=1.0.0&typename=',
+	absWfs			: FigisMap.geoServerAbsBase + FigisMap.localPathForGeoserver + '/wfs?request=GetFeature&version=1.0.0&typename='
 };
 
 //Path for FigisMapData
@@ -1918,7 +1918,7 @@ FigisMap.rnd.addGraticule = function(map) {
 		}),
 		showLabels: true,
 		lonLabelFormatter: lonFormatter,
-		latLabelFormatter: latFormatter,
+		latLabelFormatter: latFormatter
 	});
 	graticule.setMap(map);
 };
@@ -2305,16 +2305,16 @@ FigisMap.renderer = function(options) {
 		//baselayer group
 		var baselayers = new ol.layer.Group({
 			'title': FigisMap.ol.baselayersLabel + ((baselayerList.length > 1)? "s" : ""),
-			layers: baselayerList,
+			layers: baselayerList
 		});
 		
 		//manage overlays
 		//---------------
-		//overlays group(s)	
+		//overlays group(s)
 		var overlays = new Array();
 		var defaultOverlay = new ol.layer.Group({
 				'title': FigisMap.ol.overlaysLabel,
-				layers: [ ],
+				layers: []
 			});
 		if(pars.options){
 			if(pars.options.layerSwitcherOptions){
@@ -2323,7 +2323,7 @@ FigisMap.renderer = function(options) {
 						for(var i=0;i<pars.options.layerSwitcherOptions.overlayGroups.length;i++){
 							var overlay = new ol.layer.Group({
 								'title': pars.options.layerSwitcherOptions.overlayGroups[i].name,
-								layers: [ ],
+								layers: []
 							});
 							overlay.infoUrl = pars.options.layerSwitcherOptions.overlayGroups[i].infoUrl;
 							overlays.push( overlay );
