@@ -1,0 +1,111 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html lang="en">
+
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta name="description" content="Geo-referenced dynamic distribution map with possibility to zoom to selected areas of interest." />
+	<meta name="author-corporate" content="FAO of the UN" />
+	<meta name="copyright" content="http://www.fao.org/corp/copyright/en/" />
+	<meta name="keywords" content="Species, Distribution, Map, FAO" />
+	<title>Species Distribution Map</title>
+	
+	<link rel="stylesheet" href="css/species.css" type="text/css" />
+	<link rel="stylesheet" type="text/css" href="css/jquery.asmselect.css" />
+	
+	<!-- Uncomment for debugging -->
+	<!--<script type="text/javascript" src="Firebug/firebug.js"></script>-->
+	<!--script type="text/javascript" src="js/OpenLayers.js"></script-->
+	<!--script src='http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAd7_nU2oEDDiBfvxKBPcGOxROE7Zpe9KHyiCQEwFyrYekTKECmRRwjo9RhFPEvH0ku52SRRCwy9Gsiw'></script-->
+	<!--script type="text/javascript" src="js/rfb.js"></script--> 
+	<!--
+	<script type="text/javascript" src="js/jquery.js" charset="UTF-8"></script>
+	<script type="text/javascript" src="js/jquery.ui.js"></script>
+	<script type="text/javascript" src="js/jquery.asmselect.js"></script>
+	-->
+	<script type="text/javascript" src="js/FigisMap.js"></script>
+	<script type="text/javascript" src="js/species.js"></script>
+	<script type="text/javascript" src="js/ref_search.js"></script>
+	<style type="text/css">
+		/* <![CDATA[ */
+		#wrapper { border: 1px solid black; margin-top: .3em; width: 810px; }
+		.bottomLegend { text-align: center; clear: both; font-size :  12px; }
+		.bottomLegend .legendTitle { display: none; }
+		.bottomLegend .legend { padding: .3em 0; }
+		.bottomLegend .legend div { display: inline; padding-right: 10px; }
+		#bottom { margin: 0 auto; width: 810px; font-size :  12px; }
+		#bottom .copy { text-align: right; margin: .3em 0;}
+		#bottom .disc { text-align: left; font-size: 10px;}
+		/* ]]> */
+	</style>
+</head>
+
+<body>
+	<div id="wrapper">
+		<div id="topBar" style="display: none;">
+			<label id="lblSRS">Select Projection</label>
+			<select id="SelectSRS" onChange="addSpecies(null,null,'e-link', 'url-link', 'html-link')">
+				<option value='4326' default>WGS84 (4326)</option>
+				<option value='3349'>Mercator (3349)</option>
+				<option value='3031'>South Polar (3031)</option>
+			</select>
+			<form name="SearchForm" action="javascript:addSpecies(null,null,'e-link', 'url-link', 'html-link')" id="refSearchRealForm">
+				<input type="hidden" name="dslist[0]" value="resource" />
+				<input type="hidden" name="refxml" value="false" />
+				<input type="hidden" name="octrl" value="Status_and_trends:reload" />
+				<input type="hidden" name="logop" value="and" />
+				<input type="hidden" name="lixsl" value="webapps/figis/firms/xsl/state-trend-summary.xsl" />
+			</form>
+			<div class="fakeFormSection">
+				<div class="formSectionArea">
+					<div class="fakeFormButtons">
+						<a style="float: right;" class="button1" href="javascript:RS.submit()">Submit</a>
+						<a style="float: right;" class="button1" href="javascript:RS.init();loadme();">Reset</a>
+					</div>
+					<div class="formSectionTitle">Select species to view on the map</div>
+					<div class="fieldComment">Select one or more species, type to quick filter by species name.</div>
+					<div class="fieldStatus" id="searchBySpeciesStatus"> </div>
+					<div class="formSectionContentArea" id="speciesFilterContainerArea">
+						<div id="speciesFilterFieldArea"><span>Species quick filter: </span><input onchange="RS.spc.filter(true)" onclick="RS.spc.filter(true)" onkeyup="RS.spc.filter(false)" onmouseover="this.focus();this.select();" value="" title="Species quick filter" type="text" id="speciesFilterField"/></div>
+						<div id="filteredSpecies"></div>
+					</div>
+				</div>
+			</div>
+			<input value="" id="fakeFormMapValues" name="fao_major" type="hidden"/>
+		</div>
+		<div id="main">
+			<div id="map" class="map"></div>
+		</div>
+		<div class="bottomLegend">
+			<div class="legend legendTitle">Legend</div>
+			<div id="legend" class="legend"></div>
+		</div>
+	</div>
+	<div id="bottom">
+		<div class="disc">
+			<strong>Disclaimer:</strong> The designations employed and the presentation of material in the map(s) are for illustration only and do not imply the expression of any opinion whatsoever on the part of FAO concerning the legal or constitutional status of any country, territory or sea area, or concerning the delimitation of frontiers or boundaries.
+		</div>
+		<div class="copy">
+			<a alt="FAO (C)Copyright" title="FAO Copyright" target="_blank" href="http://www.fao.org/corp/copyright/en/">
+				© FAO, <span id="copyYear">2011</span> 
+			</a>
+		</div>
+	</div>
+	<script type="text/javascript" language="javascript">
+	// <![CDATA[
+		function updateCopyYear() {
+			var uy = new Date();
+			uy = parseInt(uy.getFullYear() ? uy.getFullYear() : uy.getYear());
+			var py = parseInt( document.getElementById('copyYear').innerHTML );
+			if ( isNaN(uy) || isNaN(py) ) return void(0);
+			if ( uy > py ) document.getElementById('copyYear').innerHTML = String( uy );
+			return void(0);
+		}
+		updateCopyYear();
+		RS.init();
+// 		setSpeciesPage('e-link', 'url-link', 'html-link');
+	// ]]>
+	</script>
+</body>
+</html>

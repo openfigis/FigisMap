@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html lang="en">
+
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta name="description" content="Regional Fishery Body Area Of Competence." />
+	<meta name="author-corporate" content="FAO of the UN" />
+	<meta name="copyright" content="http://www.fao.org/corp/copyright/en/" />
+	<meta name="keywords" content="RFB, Regional Fishery Body, Map, FAO" />
+	<title>Regional Fishery Body Map</title>
+
+	<link rel="stylesheet" href="css/rfb.css" type="text/css" />
+	<!-- Uncomment for debugging -->
+	<!--<script type="text/javascript" src="Firebug/firebug.js"></script>-->
+
+	<script type="text/javascript" src="js/jquery.js"></script>
+	<!--script src='http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAd7_nU2oEDDiBfvxKBPcGOxROE7Zpe9KHyiCQEwFyrYekTKECmRRwjo9RhFPEvH0ku52SRRCwy9Gsiw'></script-->
+
+	<script type="text/javascript" src="js/FigisMap.js"></script>
+	<script type="text/javascript" language="javascript" src="proj4js/lib/proj4js-combined.js"></script>
+	
+	<script type="text/javascript" src="js/rfb.js"></script>
+	
+	<script type="text/javascript" src="js/Watermark.js" defer="defer"></script>
+	<style type="text/css">
+		/* <![CDATA[ */
+		#wrapper { border: 1px solid black; margin-top: .3em; width: 810px; }
+		.bottomLegend { text-align: center; clear: both; font-size :  12px; }
+		.bottomLegend .legendTitle { display: none; }
+		.bottomLegend .legend { padding: .3em 0; }
+		.bottomLegend .legend div { display: inline; padding-right: 10px; }
+		#bottom { margin: 0 auto; width: 810px; font-size :  12px; }
+		#bottom .copy { text-align: right; margin: .3em 0;}
+		#bottom .disc { text-align: left; font-size: 10px;}
+		/* ]]> */
+	</style>
+</head>
+
+<body onload="setRFBPage('e-link','rfbs-link', 'rfbs-html')">
+	<div id="wrapper">
+		<div id="topBar" style="display:none;">
+			<label id="lblRFB">Select Regional Fishery Body</label>
+			<select id="SelectRFB" onchange="setRFB(null, null, null, 'e-link','rfbs-link', 'rfbs-html')">
+			</select>
+			<label id="lblSRS">Select Projection</label>
+
+			<select id="SelectSRS" onchange="setRFB(null, null, this.value, 'e-link','rfbs-link', 'rfbs-html')">
+				<option value='4326' default>WGS84 (4326)</option>
+				<option value='3349'>Mercator (3349)</option>
+				<option value='3031'>South Polar (3031)</option>
+			</select>
+			
+		</div>
+		<div id="main">
+			<div id="map" class="map"></div>
+		</div>
+		<div class="bottomLegend">
+			<div class="legend legendTitle">Legend</div>
+			<div id="legend" class="legend"></div>
+			<div class="legend legendTitle">List of Members</div>
+			<div id="MemberCountries" class="legend" style="display:none;"></div>
+		</div>
+	</div>
+	<div id="bottom">
+		<div class="disc">
+			<strong>Disclaimer:</strong> The designations employed and the presentation of material in the map(s) are for illustration only and do not imply the expression of any opinion whatsoever on the part of FAO concerning the legal or constitutional status of any country, territory or sea area, or concerning the delimitation of frontiers or boundaries.
+		</div>
+		<div class="copy">
+			<a alt="FAO (C)Copyright" title="FAO Copyright" target="_blank" href="http://www.fao.org/corp/copyright/en/">
+				© FAO, <span id="copyYear">2011</span>
+			</a>
+		</div>
+	</div>
+	<script type="text/javascript" language="javascript">
+	// <![CDATA[
+		function updateCopyYear() {
+			var uy = new Date();
+			uy = parseInt(uy.getFullYear() ? uy.getFullYear() : uy.getYear());
+			var py = parseInt( document.getElementById('copyYear').innerHTML );
+			if ( isNaN(uy) || isNaN(py) ) return void(0);
+			if ( uy > py ) document.getElementById('copyYear').innerHTML = String( uy );
+			return void(0);
+		}
+		updateCopyYear();
+	// ]]>
+	</script>
+	</body>
+</html>
