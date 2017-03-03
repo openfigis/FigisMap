@@ -14,7 +14,31 @@ ul, li { list-style-type: none; }
 #top1 { background-color : #fff;font-size: 25px; height: 60px; margin: 0; padding: 0; text-shadow: rgb(204, 204, 204) 2px 2px 2px; vertical-align: bottom; width: 100%; }
 #top2 { background-color: rgb(55,96,146); height: 40px; margin: 0; padding: 0; width: 100%; overflow: hidden; }
 #top2 span { color: rgba(255,255,255,.7); font-size: 25px; font-weight: bold; line-height: 38px; margin: 0 1em; text-shadow: 2px 2px 2px rgba(0,0,0,.6); }
+/* 
 #mapWrapper { position: absolute; display: block; top: 100px; left: 0; right: 0; height: 100%; background-color : #fff; box-shadow: 0px 3px 6px #000; }
+ */
+#header { background-color: #0d6cac; background-image: linear-gradient( to top, #069, #0d6cac, #0d6cac ); height: 75px; left: 0; position: absolute; right: 0; top: 0; }
+#header * { border: none; margin: 0; overflow: hidden; padding: 0; }
+#header div.elements, #header div.backgrounds { height: 75px; left: 0; position: absolute; right: 0; top: 0; }
+#header div.elements { min-width: 1600px; }
+#header div.elements div { display: inline-block; }
+#header div.elements div a { display: block; }
+#header .bgRight { background-image: url(../img/banner/bgright.png); height: 75px; position: absolute; right: 86px; top: 0; width: 776px; }
+#header .bgLeft { background-image: url(../img/banner/bgleft.png); height: 75px; left: 12%; position: absolute; top: 0; width: 512px; }
+#header .goFirmsHome { display: block; height: 75px; position: absolute; right: 0; top: 0; width: 86px; }
+#header .goFirmsHome span { background-image: url(../img/banner/home.png); display: block; height: 75px; width: 86px; }
+#header .goFaoHome { display: inline-block; margin-left: 10px; }
+#header .goFaoHome span { background-image: url(../img/banner/fao.png); background-position: 0 5px; background-repeat: no-repeat; display: block; height: 75px; width: 333px; }
+#header .divider { display: inline-block; margin: 0 5px; }
+#header .divider span { background-image: url(../img/banner/vbar.png); background-position: 0 15px; background-repeat: no-repeat; display: block; height: 75px; width: 6px; }
+#header .firmsLogo { display: inline-block; }
+#header .firmsLogo span { background-image: url(../img/banner/firms.png); background-position: 0 6px; background-repeat: no-repeat; display: block; height: 75px; width: 299px; }
+#header .firmsViewer { display: inline-block; }
+#header .firmsViewer span { background-image: url(../img/banner/viewer.png); background-position: 0 20px; background-repeat: no-repeat; display: block; height: 75px; width: 568px; }
+
+#mapWrapper { position: absolute; display: block; top: 76px; left: 0; right: 0; height: 100%; background-color : #fff; box-shadow: 0px 3px 6px #000; }
+#header a img { opacity: .9; }
+#header a:hover img { opacity: 1; }
 .embed #mapWrapper { top: 0; }
 #main { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
 #map { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
