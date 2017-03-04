@@ -82,15 +82,6 @@
 </head>
 
 <body onload="FigisMap.init( FV.init )">
-	<script type="text/javascript" language="javascript">
-	// <![CDATA[
-		if ( location.search.indexOf("embed=") != -1 ) {
-			document.body.className='embed';
-			document.body.setAttribute('class','embed');
-		}
-		setTimeout( adjustHeight, 10 );
-	// ]]>
-	</script>
 	<div id="wrapper">
 		<div id="header">
 			<div class="backgrounds">
@@ -98,13 +89,28 @@
 				<div class="bgLeft"></div>
 			</div>
 			<div class="elements">
-				<div class="goFaoHome"><a href="http://www.fao.org/" target="_top" title="FAO Home"><span></span></a></div>
+				<div class="goFaoHome">
+					<a href="http://www.fao.org/" target="_top" title="FAO - Food and Agriculture Organization of the United Nations">
+						<span></span> FAO - Food and Agriculture Organization of the United Nations
+					</a>
+				</div>
 				<div class="divider"><span></span></div>
-				<div class="firmsLogo"><span></span></div>
+				<div class="firmsLogo">
+					<a href="http://firms.fao.org/" target="_top" title="FIRMS - Fisheries and Resources Monitoring System">
+						<span></span> FIRMS - Fisheries and Resources Monitoring System
+					</a>
+				</div>
 				<div class="divider"><span></span></div>
-				<div class="firmsViewer"><span></span></div>
+				<div class="firmsViewer">
+					<h1>Stocks and Fisheries Map Viewer</h1>
+					<h2>Browse the status of stocks and fisheries inventoried by the FIRMS partners</h2>
+				</div>
 			</div>
-			<div class="goFirmsHome"><a href="http://firms.fao.org/" target="_top" title="FIRMS Home"><span></span></a></div>
+			<div class="goFirmsHome">
+				<a href="http://firms.fao.org/" target="_top" title="FIRMS - Fisheries and Resources Monitoring System">
+					<span></span> FIRMS - Fisheries and Resources Monitoring System
+				</a>
+			</div>
 		</div>
 		<!-- Map wrapper -->
 		<div id="mapWrapper">
@@ -229,21 +235,24 @@
 			</div>
 		</div>
 	</div>
-	<script type="text/javascript">
-	// <![CDATA[
-		function updateCopyYear() {
-			var uy = new Date();
-			uy = parseInt(uy.getFullYear() ? uy.getFullYear() : uy.getYear());
-			
-			// Update the year value for the FAO copyright
-			var py = parseInt( document.getElementById('copyYear').innerHTML );
-			if ( isNaN(uy) || isNaN(py) ) return void(0);
-			if ( uy > py ) document.getElementById('copyYear').innerHTML = String( uy );
-			
-			return void(0);
+	<script type="text/javascript" language="javascript">
+	/* <![CDATA[ */
+		if ( location.search.match(/embed=[^0fn&]/i) ) with ( document.getElementsByTagName('body')[0] ) {
+			className='embed';
+			setAttribute('class','embed');
 		}
-		updateCopyYear();
-	// ]]>
+		setTimeout( function() {
+				var uy = new Date();
+				uy = parseInt(uy.getFullYear() ? uy.getFullYear() : uy.getYear());
+				var py = parseInt( document.getElementById('copyYear').innerHTML );
+				if ( isNaN(uy) || isNaN(py) ) return void(0);
+				if ( uy > py ) document.getElementById('copyYear').innerHTML = String( uy );
+				return void(0);
+			},
+			1
+		);
+		setTimeout( adjustHeight, 10 );
+	/* ]]> */
 	</script>
 
 </body>
