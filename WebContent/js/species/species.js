@@ -244,7 +244,7 @@ function setSpeciesPage(elinkDiv, urlLink, htmlLink){
 		/* Parsing the request to get the parameters */
 		var params = location.search.replace(/^\?/,'').replace(/&amp;/g,'&').split("&");
 		
-		var layers, extent, zoom, prj;
+		var layers, extent, zoom, prj, center;
 		
 		for (var j=0; j < params.length; j++) {
 			var param = params[j].split("=");
