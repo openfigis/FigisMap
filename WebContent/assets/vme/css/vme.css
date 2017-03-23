@@ -1274,11 +1274,15 @@ a.lblReset {
     	-khtml-border-radius: 10px;
     	border-radius: 10px;
 	padding:12px 6px 12px 6px;
-	width: 398px !important; height: 282px !important;
+	width: 398px !important;
+	height: 282px !important;
 	z-index:6000;
 }
-.ol-popup-content { min-width: none !important; overflow:hidden;}
+.ol-popup-content { min-width: none !important; max-height: 398px !important; overflow:hidden;}
 .ol-popup-closer { font-size:100% !important; }
+
+.ol-popup.top:after { border-top-color: rgba(255, 255, 255, 0.8) !important; }
+.ol-popup.bottom:after { border-bottom-color: rgba(255, 255, 255, 0.8) !important; }
 
 /**
  * VME content Handler css
