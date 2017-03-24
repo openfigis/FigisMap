@@ -319,7 +319,8 @@ VMEPopup.genericFeatureTemplate = function(layer, feature, resource){
 					'<h3>'+p["LOCAL_NAME"]+'</h3>'+
 					'<em>Year: </em>'+p["YEAR"]+'<br/> '+
 					'<em>Management Body/Authority: </em><span class="own">'+p["OWNER"]+'</span><br/>'+
-					'<em>Geographical reference: </em><span class="geo_ref" >'+((p["GEOREF"])? p["GEOREF"]:"")+'</span> <br/>'+
+					'<!-- On 24/03/2017 disabled geographic reference (because empty) -->'+
+					'<!--<em>Geographical reference: </em><span class="geo_ref" >'+((p["GEOREF"])? p["GEOREF"]:"")+'</span> <br/>-->'+
                     			'<em>Surface: </em>'+VMEPopup.utils.surfaceUoMConverter(feature, "sqkm")+'</span><span> km&#178;</span> <br/> '+                         
 					'<br/>' +
 					'<div>'+
