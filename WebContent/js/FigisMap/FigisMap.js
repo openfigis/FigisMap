@@ -432,7 +432,8 @@ FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/4326.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/3031.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/900913.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/proj4js/defs/54009.js');
-FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3' + ((FigisMap.debugLevel > 0)? '-debug' : '') + '.js');
+// FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3' + ((FigisMap.debugLevel > 0)? '-debug' : '') + '.js');
+FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-debug.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-layerswitcher.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-zoomtomaxextent.js');
 FigisMap.loadScript(FigisMap.httpBaseRoot + 'js/vendor/ol3/ol3-loadingpanel.js');
@@ -2351,6 +2352,7 @@ FigisMap.renderer = function(options) {
 		myMap = new ol.Map({
 			target : p.target.id,
 			layers: [baselayers].concat(overlays),
+			pixelRatio: 1,
 			view : new ol.View({
 				projection : viewProj,
 				center : ol.extent.getCenter(boundsBox),
