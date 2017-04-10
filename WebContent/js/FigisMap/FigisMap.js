@@ -665,7 +665,6 @@ FigisMap.ol.reFit = function(myMap, bounds) {
 
 	var v = myMap.getView();
 	var maxExtent = v.getProjection().getExtent();
-
 	if ( maxExtent[0]>bounds[0] ) bounds[0] = maxExtent[0];
 	if ( maxExtent[1]>bounds[1] ) bounds[1] = maxExtent[1];
 	if ( maxExtent[2]<bounds[2] ) bounds[2] = maxExtent[2];
@@ -695,7 +694,6 @@ FigisMap.ol.zoomToExtent = function( myMap, bounds, validateExtent ) {
 	if (( ! bounds ) || (typeof bounds == 'undefined') || ! ( bounds.constructor === Array) ) {
 		bounds = maxExtent;
 	}
-
 	if (validateExtent) bounds = FigisMap.ol.reFit(myMap, bounds);
 	
 	v.fit( bounds, myMap.getSize() );
@@ -726,12 +724,11 @@ FigisMap.ol.optimizeCenter = function( myMap, bounds, projsToExclude, force){
 		switch(proj) {
 			case 3031:
 				// center to south pole in polar projection
-				//note: unchanged from FigisMap 1.0-OL3
 				nc = FigisMap.ol.reCenter( 4326, proj );
 				break;
 			case 900913:
 				// center to Pacific centre in Mercator - only if larger than 35k km (whole world)
-				//note: unchanged from FigisMap 1.0-OL3
+				//nc = FigisMap.ol.reCenter( 4326, proj );
 				var nbw = Math.abs( bounds[0] - bounds[2]);
 				if ( nbw > 35000000 || force) {
 					nc = FigisMap.ol.reCenter( 4326, proj );
@@ -739,13 +736,8 @@ FigisMap.ol.optimizeCenter = function( myMap, bounds, projsToExclude, force){
 				}
 				break;
 			case 3349: 
-				// center to Pacific centre in Mercator - only if larger than 35k km (whole world)
-				// note: unchanged from FigisMap 1.0-OL3
-				var nbw = Math.abs( bounds[0] - bounds[2]);
-				if ( nbw > 35000000 || force) {
-					nc = FigisMap.ol.reCenter( 4326, proj );
-					nc[1] = ( bounds[3] + bounds[1] )/2;			
-				}
+				//Mercator as geographic coordinates
+				nc = FigisMap.ol.reCenter( 4326, proj );
 				break;
 
 			case 4326:
@@ -765,7 +757,6 @@ FigisMap.ol.optimizeCenter = function( myMap, bounds, projsToExclude, force){
 				ncy = parseInt((bounds[1] + bounds[3])/2);
  				nc = [ ncx , ncy ];
 				break;
-
 		}
 
 		if ( nc ) myMap.getView().setCenter( nc );
@@ -2609,6 +2600,7 @@ FigisMap.renderer = function(options) {
 	}
 	
 	function autoZoomEnd() {
+		FigisMap.debug('AutoZoomEnd');
 		if ( myMap.getSize()[0] == 0 ) {
 			var te = myMap.getTargetElement();
 			myMap.setSize( [ parseInt(te.style.width.replace(/[^0-9]/g,'') ),parseInt(te.style.height.replace(/[^0-9]/g,'') )] );
@@ -2621,6 +2613,7 @@ FigisMap.renderer = function(options) {
 		} else {
 			//bounds = myMap.getMaxExtent(); TODO OL3
 		}
+
 		if ( bounds ) {
 			
 			var proj = parseInt( myMap.getView().getProjection().getCode().replace(/^EPSG:/,'') );
@@ -2636,9 +2629,9 @@ FigisMap.renderer = function(options) {
 					bounds[2] += 360;
 				}
 			}
-			
-			var nb = FigisMap.ol.reBound( p.dataProj, proj, bounds );
-
+			srcProj = (p.dataProj == 3349)? 4326 : p.dataProj;
+			nb = FigisMap.ol.reBound( srcProj, proj, bounds );
+	
 			// 02/02/2016 - @eblondel - reconfigure ZoomToMaxExtent control?
 			// in principle, not to be applied (zoomToMaxExtent is different from reset)
 			/*var controls = myMap.getControls().getArray();
@@ -2650,10 +2643,10 @@ FigisMap.renderer = function(options) {
 			}*/
 
 			//zoom to extent
-			myMap.zoomToExtent( nb, true );
+			myMap.zoomToExtent( nb, false);
 
 			//apply specific center rules
-			myMap.optimizeCenter(nb, [4326, 54009]);
+			myMap.optimizeCenter(nb, [4326,54009]);
 			
 			FigisMap.debug( 'FigisMap.renderer autoZoom values:', { bounds: bounds, boundsSize: ol.extent.getSize(bounds), nb: nb, nc : myMap.getView().getCenter(), mapSize: myMap.getSize() } );
 		}
