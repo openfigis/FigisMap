@@ -2629,7 +2629,7 @@ FigisMap.renderer = function(options) {
 					bounds[2] += 360;
 				}
 			}
-			srcProj = (p.dataProj == 3349)? 4326 : p.dataProj;
+			var srcProj = (p.dataProj == 3349)? 4326 : p.dataProj;
 			nb = FigisMap.ol.reBound( srcProj, proj, bounds );
 	
 			// 02/02/2016 - @eblondel - reconfigure ZoomToMaxExtent control?
