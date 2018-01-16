@@ -78,3 +78,15 @@
 .layer-switcher input {
     margin: 4px;
 }
+.layer-switcher-layer div img {
+   float: right;
+}
+
+.layer-switcher-layer div img {
+   float: right;
+}
+
+.layer-switcher-layer input {
+    vertical-align: text-bottom;
+}
+
