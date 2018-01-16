@@ -900,4 +900,28 @@
   <item a3c="UHR" FigisID="16952" en="Rugose hooked squid" lt="Onykia robsoni" family="Onychoteuthidae" order="CEPHALOPODA" link="0" mar="1" inl="0"/>
   <item a3c="UHB" FigisID="16953" en="Robust clubhook squid" lt="Onykia robusta" family="Onychoteuthidae" order="CEPHALOPODA" link="0" mar="1" inl="0"/>
   <item a3c="UWV" FigisID="20434" en="Whale squid" lt="Walvisteuthis virilis" family="Onychoteuthidae" order="CEPHALOPODA" link="0" mar="1" inl="0"/>
+  <item a3c="APC" FigisID="10508" en="Saldanha catshark" lt="Apristurus saldanha" family="Scyliorhinidae" order="CARCHARHINIFORMES" link="0" mar="1" inl="0"/>
+  <item a3c="APW" FigisID="10503" en="Largenose catshark" lt="Apristurus nasutus" family="Scyliorhinidae" order="CARCHARHINIFORMES" link="0" mar="1" inl="0"/>
+  <item a3c="BJS" FigisID="10824" en="Spiny skate" lt="Bathyraja spinosissima" family="Rajidae" order="RAJIFORMES" link="0" mar="1" inl="0"/>
+  <item a3c="BYE" FigisID="10813" en="Dark-belly skate" lt="Bathyraja meridionalis" family="Rajidae" order="RAJIFORMES" link="0" mar="1" inl="0"/>
+  <item a3c="BYG" FigisID="10806" en="" lt="Bathyraja griseocauda" family="Rajidae" order="RAJIFORMES" link="0" mar="1" inl="0"/>
+  <item a3c="BYZ" FigisID="10823" en="" lt="Bathyraja smithii" family="Rajidae" order="RAJIFORMES" link="0" mar="1" inl="0"/>
+  <item a3c="BZB" FigisID="19253" en="Broadnose skate" lt="Bathyraja brachyurops" family="Rajidae" order="RAJIFORMES" link="0" mar="1" inl="0"/>
+  <item a3c="BZM" FigisID="19254" en="Patagonian skate" lt="Bathyraja macloviana" family="Rajidae" order="RAJIFORMES" link="0" mar="1" inl="0"/>
+  <item a3c="CNN" FigisID="13731" en="Sicklefin chimaera" lt="Neoharriotta pinnata" family="Rhinochimaeridae" order="CHIMAERIFORMES" link="0" mar="1" inl="0"/>
+  <item a3c="CSN" FigisID="10487" en="Brown catshark" lt="Apristurus brunneus" family="Scyliorhinidae" order="CARCHARHINIFORMES" link="0" mar="1" inl="0"/>
+  <item a3c="CSZ" FigisID="10494" en="Longnose catshark" lt="Apristurus kampae" family="Scyliorhinidae" order="CARCHARHINIFORMES" link="0" mar="1" inl="0"/>
+  <item a3c="CYW" FigisID="11200" en="Roughskin dogfish" lt="Centroscymnus owstoni" family="Squalidae" order="SQUALIFORMES" link="0" mar="1" inl="0"/>
+  <item a3c="DDR" FigisID="20268" en="Cape chimaera" lt="Chimaera notafricana" family="Chimaeridae" order="CHIMAERIFORMES" link="0" mar="1" inl="0"/>
+  <item a3c="DPV" FigisID="19255" en="Yellownose skate" lt="Zearaja chilensis" family="Rajidae" order="RAJIFORMES" link="0" mar="1" inl="0"/>
+  <item a3c="ETE" FigisID="12138" en="" lt="Etmopterus compagnoi" family="Squalidae" order="SQUALIFORMES" link="0" mar="1" inl="0"/>
+  <item a3c="GAQ" FigisID="12276" en="African sawtail catshark" lt="Galeus polli" family="Scyliorhinidae" order="CARCHARHINIFORMES" link="0" mar="1" inl="0"/>
+  <item a3c="HHB" FigisID="12676" en="Sixgill stingray" lt="Hexatrygon bickelli" family="Hexatrygonidae" order="RAJIFORMES" link="0" mar="1" inl="0"/>
+  <item a3c="HOR" FigisID="12730" en="Izak catshark" lt="Holohalaelurus regani" family="Scyliorhinidae" order="CARCHARHINIFORMES" link="0" mar="1" inl="0"/>
+  <item a3c="HWR" FigisID="6740" en="African frilled shark" lt="Chlamydoselachus africana" family="Chlamydoselachidae" order="HEXANCHIFORMES" link="0" mar="1" inl="0"/>
+  <item a3c="KHE" FigisID="20328" en="" lt="Cucumaria japonica" family="Cucumariidae" order="HOLOTHUROIDEA" link="0" mar="1" inl="0"/>
+  <item a3c="RCP" FigisID="14962" en="Pacific spookfish" lt="Rhinochimaera pacifica" family="Rhinochimaeridae" order="CHIMAERIFORMES" link="0" mar="1" inl="0"/>
+  <item a3c="RNS" FigisID="13753" en="African pygmy skate" lt="Neoraja stehmanni" family="Rajidae" order="RAJIFORMES" link="0" mar="1" inl="0"/>
+  <item a3c="SYE" FigisID="15187" en="West African catshark" lt="Scyliorhinus cervigoni" family="Scyliorhinidae" order="CARCHARHINIFORMES" link="0" mar="1" inl="0"/>
+  <item a3c="YSM" FigisID="15199" en="Largespine velvet dogfish" lt="Scymnodon macracanthus" family="Squalidae" order="SQUALIFORMES" link="0" mar="1" inl="0"/>
 </root>
