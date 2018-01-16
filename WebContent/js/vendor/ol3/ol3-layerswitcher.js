@@ -9,9 +9,9 @@
 ol.control.LayerSwitcher = function(opt_options) {
 
 	//options
-    	var options = opt_options || {};
-    	var tipLabel = options.tipLabel ? options.tipLabel : 'Legend';
-    	this.displayLegend_ = options.displayLegend ? options.displayLegend : false;
+    var options = opt_options || {};
+    var tipLabel = options.tipLabel ? options.tipLabel : 'Legend';
+    this.displayLegend_ = options.displayLegend ? options.displayLegend : false;
 	this.togglingLegendGraphic_ = options.toggleLegendGraphic ? options.displayLegend : false;
 	this.collapsableGroups_ = options.collapsableGroups ? options.collapsableGroups : false;
 	this.groupInfoHandler_ = options.groupInfoHandler ? options.groupInfoHandler : false;
@@ -19,8 +19,11 @@ ol.control.LayerSwitcher = function(opt_options) {
 	this.id = (options.target)? options.target : undefined;
 	this.disableRenderOnPostcompose = (options.disableRenderOnPostcompose)? options.disableRenderOnPostcompose : false;
 	
+	//management of collapsable groups
+	this.layergroupClasses = new Object();
+	
 	//array for map listeners
-    	this.mapListeners = [];
+    this.mapListeners = [];
 
 	this.panel = document.createElement('div');
 	this.panel.className = 'panel';
@@ -92,6 +95,7 @@ ol.control.LayerSwitcher.prototype.hidePanel = function() {
 ol.control.LayerSwitcher.prototype.renderPanel = function() {
 
     this.ensureTopVisibleBaseLayerShown_();
+	this.setGroupVisibilityStatus_(); 
 
 	if(this.isExternalized){
 		var targetElement = document.getElementById(this.id);
@@ -176,6 +180,21 @@ ol.control.LayerSwitcher.prototype.ensureTopVisibleBaseLayerShown_ = function() 
 };
 
 /**
+ * Set the group visibility status (in order to keep collapsed / expanded layergroups
+ * in their previous states).
+ * @private
+ */
+ol.control.LayerSwitcher.prototype.setGroupVisibilityStatus_ = function(){
+	this.layergroupClasses = new Object();
+	var layerGroups = document.getElementsByClassName("layer-switcher-layergroup");
+	for(var i=0;i<layerGroups.length;i++){
+		var layerGroup = layerGroups[i];
+		this.layergroupClasses[layerGroup.id] = layerGroup.className;
+	}
+}
+
+
+/**
  * Toggle the visible state of a layer.
  * Takes care of hiding other layers in the same exclusive group if the layer
  * is toggle to visible.
@@ -206,18 +225,19 @@ ol.control.LayerSwitcher.prototype.renderLayer_ = function(lyr, idx) {
     var this_ = this;
 
     var li = document.createElement('li');
-
+	
     var lyrTitle = lyr.get('title');
     var lyrId = lyr.get('title').replace(' ', '-') + '_' + idx;
 
     var label = document.createElement('label');
 
     if (lyr.getLayers) {
-
-	var groupClassName = 'layer-switcher-layergroup shown';
-	var groupHiddenClassName = 'layer-switcher-layergroup';
+		var groupClassName = 'layer-switcher-layergroup shown';
+		var groupHiddenClassName = 'layer-switcher-layergroup';
 	
-        li.className = groupClassName;
+		li.id = "layergroup_" + lyrId;
+		var previousClass = this.layergroupClasses[li.id]
+        li.className = previousClass? previousClass : groupClassName;
         label.innerHTML = lyrTitle;
 		
 		if(this.collapsableGroups_ ){
@@ -231,20 +251,20 @@ ol.control.LayerSwitcher.prototype.renderLayer_ = function(lyr, idx) {
 		}
         li.appendChild(label);
 
-	//handler layergroup info
-	if(this.groupInfoHandler_ && lyr.infoUrl){
-		var img = document.createElement('img');
-		img.className = "layer-switcher-layerinfo";
-		img.title = "Source of Information";
-		img.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAKcSURBVDjLpZPLa9RXHMU/d0ysZEwmMQqZiTaP0agoaKGJUiwIxU0hUjtUQaIuXHSVbRVc+R8ICj5WvrCldJquhVqalIbOohuZxjDVxDSP0RgzyST9zdzvvffrQkh8tBs9yy9fPhw45xhV5X1U8+Yhc3U0LcEdVxdOVq20OA0ooQjhpnfhzuDZTx6++m9edfDFlZGMtXKxI6HJnrZGGtauAWAhcgwVnnB/enkGo/25859l3wIcvpzP2EhuHNpWF9/dWs/UnKW4EOGDkqhbQyqxjsKzMgM/P1ymhlO5C4ezK4DeS/c7RdzQoa3x1PaWenJjJZwT9rQ1gSp/js1jYoZdyfX8M1/mp7uFaTR8mrt29FEMQILr62jQ1I5kA8OF59jIItVA78dJertTiBNs1ZKfLNG+MUHX1oaURtIHEAOw3p/Y197MWHEJEUGCxwfHj8MTZIcnsGKxzrIURYzPLnJgbxvG2hMrKdjItjbV11CYKeG8R7ygIdB3sBMFhkem0RAAQ3Fuka7UZtRHrasOqhYNilOwrkrwnhCU/ON5/q04vHV48ThxOCuoAbxnBQB+am65QnO8FqMxNCjBe14mpHhxBBGCWBLxD3iyWMaYMLUKsO7WYH6Stk1xCAGccmR/Ozs/bKJuXS39R/YgIjgROloSDA39Deit1SZWotsjD8pfp5ONqZ6uTfyWn+T7X0f59t5fqDhUA4ry0fYtjJcWeZQvTBu4/VqRuk9/l9Fy5cbnX+6Od26s58HjWWaflwkusKGxjm1bmhkvLXHvh1+WMbWncgPfZN+qcvex6xnUXkzvSiYP7EvTvH4toDxdqDD4+ygT+cKMMbH+3MCZ7H9uAaDnqytpVX8cDScJlRY0YIwpAjcNcuePgXP/P6Z30QuoP4J7WbYhuQAAAABJRU5ErkJggg==";
-		li.appendChild(img);
+		//handler layergroup info
+		if(this.groupInfoHandler_ && lyr.infoUrl){
+			var img = document.createElement('img');
+			img.className = "layer-switcher-layerinfo";
+			img.title = "Source of Information";
+			img.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAKcSURBVDjLpZPLa9RXHMU/d0ysZEwmMQqZiTaP0agoaKGJUiwIxU0hUjtUQaIuXHSVbRVc+R8ICj5WvrCldJquhVqalIbOohuZxjDVxDSP0RgzyST9zdzvvffrQkh8tBs9yy9fPhw45xhV5X1U8+Yhc3U0LcEdVxdOVq20OA0ooQjhpnfhzuDZTx6++m9edfDFlZGMtXKxI6HJnrZGGtauAWAhcgwVnnB/enkGo/25859l3wIcvpzP2EhuHNpWF9/dWs/UnKW4EOGDkqhbQyqxjsKzMgM/P1ymhlO5C4ezK4DeS/c7RdzQoa3x1PaWenJjJZwT9rQ1gSp/js1jYoZdyfX8M1/mp7uFaTR8mrt29FEMQILr62jQ1I5kA8OF59jIItVA78dJertTiBNs1ZKfLNG+MUHX1oaURtIHEAOw3p/Y197MWHEJEUGCxwfHj8MTZIcnsGKxzrIURYzPLnJgbxvG2hMrKdjItjbV11CYKeG8R7ygIdB3sBMFhkem0RAAQ3Fuka7UZtRHrasOqhYNilOwrkrwnhCU/ON5/q04vHV48ThxOCuoAbxnBQB+am65QnO8FqMxNCjBe14mpHhxBBGCWBLxD3iyWMaYMLUKsO7WYH6Stk1xCAGccmR/Ozs/bKJuXS39R/YgIjgROloSDA39Deit1SZWotsjD8pfp5ONqZ6uTfyWn+T7X0f59t5fqDhUA4ry0fYtjJcWeZQvTBu4/VqRuk9/l9Fy5cbnX+6Od26s58HjWWaflwkusKGxjm1bmhkvLXHvh1+WMbWncgPfZN+qcvex6xnUXkzvSiYP7EvTvH4toDxdqDD4+ygT+cKMMbH+3MCZ7H9uAaDnqytpVX8cDScJlRY0YIwpAjcNcuePgXP/P6Z30QuoP4J7WbYhuQAAAABJRU5ErkJggg==";
+			li.appendChild(img);
 
-		var this_ = this;
-		img.onclick = function(e) {
-			this_.groupInfoHandler_(lyr);
-		};
+			var this_ = this;
+			img.onclick = function(e) {
+				this_.groupInfoHandler_(lyr);
+			};
 
-	}
+		}
 
         var ul = document.createElement('ul');
         li.appendChild(ul);
@@ -266,8 +286,8 @@ ol.control.LayerSwitcher.prototype.renderLayer_ = function(lyr, idx) {
         input.id = lyrId;
         input.checked = lyr.get('visible');
         input.onchange = function(e) {
-		this_.setVisible_(lyr, e.target.checked);
-		if(this_.togglingLegendGraphic_) this_.toggleLegendGraphic_(lyr, idx);
+            this_.setVisible_(lyr, e.target.checked);
+			if(this_.togglingLegendGraphic_) this_.toggleLegendGraphic_(lyr, idx);
         };
         li.appendChild(input);
 
