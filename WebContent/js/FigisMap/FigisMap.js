@@ -11,7 +11,8 @@
  * 
  */
 var FigisMap = {
-	version		: "1.1-OL3-SNAPSHOT",
+	version		: "1.2-OL3",
+	date		: "2018-11-03",
 	parser		: new Object(), // parsing methods collection
 	fs		: new Object(), // specific fact sheets methods collection
 	rfb		: new Object(), // specific RFB methods collection
