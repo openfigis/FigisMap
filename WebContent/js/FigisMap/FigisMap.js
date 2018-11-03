@@ -1014,7 +1014,11 @@ FigisMap.parser.layers = function( obj, setProperties ) {
 				var nl = new Object();
 				for ( var p in l ) nl[p] = l[p];
 				nl.filter = newfs.join(' OR ');
-				if ( ls[0] ) nl.skipLegend = true;
+				//20181103 eblondel need to understand why this
+				/*if ( ls[0] ){
+					nl.skipLegend = true;
+					console.log(nl);
+				}*/
 				ls.push( nl );
 			}
 		} else {
@@ -1151,12 +1155,12 @@ FigisMap.parser.countries = function( p ) {
 		//UN lines layer
 		var lineLayer = { layer: FigisMap.fifao.unl };
 		lineLayer.title = FigisMap.label('Boundaries', p);
+		lineLayer.skipTitle = true;
 		var filters = new Array();
 		filters.push( "ISO3_CNT1 IN('"+cnt.join("','")+"')" );
 		filters.push( "ISO3_CNT2 IN('"+cnt.join("','")+"')" );
 		lineLayer.filter = filters.join(' OR ');
 		lineLayer.type = layerType;
-		lineLayer.skipTitle = true;
 		p[ layerType ].push( lineLayer );
 		
 		p[ layerType ] = FigisMap.parser.layers( p[ layerType ], { type : layerType } );
@@ -2031,7 +2035,6 @@ FigisMap.rnd.mainLegend = function( layers, pars ) {
 	//add basic legend for vector layer (if existing)
 	//warning: for now not supported when useSections = true
 	if( pars.vectorLayer ) LegendHTML += FigisMap.rnd.addVectorLayerLegend(pars.vectorLayer);
-	
 	for (var i = 0; i < llayers.length; i++) {
 		var l = llayers[ i ];
 		if ( useSections && l.division ) {
