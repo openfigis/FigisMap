@@ -1137,7 +1137,7 @@ FigisMap.parser.countries = function( p ) {
 	if ( cnt && cnt.length > 0 ) {
 		//country polygon layer
 		var newLayer = { layer: FigisMap.fifao.cbs };
-		//if ( isRFB ) newLayer.title = FigisMap.label('Members', p);
+		if ( isRFB ) newLayer.title = FigisMap.label('Members', p);
 		var filters = new Array();
 		for (var i=0; i < cnt.length; i++) filters.push( "ISO_"+ cnt[i].length + "='" + cnt[i] + "'" );
 		newLayer.filter = filters.join(' OR ');
