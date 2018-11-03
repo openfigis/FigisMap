@@ -36,6 +36,7 @@ var FigisMap = {
  */
 FigisMap.fifao = {
 	cbs : 'fifao:country_bounds',
+	unl : 'fifao:UN_intbnd',
 	cnt : 'fifao:UN_CONTINENT2',
 	CNT : 'fifao:gebco1_cont',
 	SEA : 'fifao:gebco1',
@@ -1134,8 +1135,9 @@ FigisMap.parser.countries = function( p ) {
 	if ( ! cnt || ! cnt[0] ) cnt = false;
 	if ( ! cnt && isRFB ) cnt = FigisMap.rfb.getCountries( p.rfb, p );
 	if ( cnt && cnt.length > 0 ) {
+		//country polygon layer
 		var newLayer = { layer: FigisMap.fifao.cbs };
-		if ( isRFB ) newLayer.title = FigisMap.label('Members', p);
+		//if ( isRFB ) newLayer.title = FigisMap.label('Members', p);
 		var filters = new Array();
 		for (var i=0; i < cnt.length; i++) filters.push( "ISO_"+ cnt[i].length + "='" + cnt[i] + "'" );
 		newLayer.filter = filters.join(' OR ');
@@ -1145,6 +1147,18 @@ FigisMap.parser.countries = function( p ) {
 		p[ layerType ] = FigisMap.parser.layers( p[ layerType ] );
 		if ( ! p[ layerType ] ) p[ layerType ] = new Array();
 		p[ layerType ].push( newLayer );
+		
+		//UN lines layer
+		var lineLayer = { layer: FigisMap.fifao.unl };
+		lineLayer.title = FigisMap.label('Boundaries', p);
+		var filters = new Array();
+		filters.push( "ISO3_CNT1 IN('"+cnt.join("','")+"')" );
+		filters.push( "ISO3_CNT2 IN('"+cnt.join("','")+"')" );
+		lineLayer.filter = filters.join(' OR ');
+		lineLayer.type = layerType;
+		lineLayer.skipTitle = true;
+		p[ layerType ].push( lineLayer );
+		
 		p[ layerType ] = FigisMap.parser.layers( p[ layerType ], { type : layerType } );
 	}
 	return cnt;
@@ -1328,6 +1342,7 @@ FigisMap.fs.setAutoZoom = function( p, dtype ) {
 	if ( ! prio ) if ( dtype[ FigisMap.fifao.rfb ] ) prio = dtype[ FigisMap.fifao.rfb ][0];
 	if ( ! prio ) if ( dtype[ FigisMap.fifao.eez ] ) prio = dtype[ FigisMap.fifao.eez ][0];
 	if ( ! prio ) if ( dtype[ FigisMap.fifao.cbs ] ) prio = dtype[ FigisMap.fifao.cbs ][0];
+	if ( ! prio ) if ( dtype[ FigisMap.fifao.unl ] ) prio = dtype[ FigisMap.fifao.unl ][0];
 	if ( ! prio ) if ( dtype[ FigisMap.fifao.maj ] ) prio = dtype[ FigisMap.fifao.maj ][0];
 
 	if ( ! prio ) prio = 0;
@@ -1407,6 +1422,8 @@ FigisMap.fs.dsort = function( p, dtype ) {
 			} else if ( l.layer == FigisMap.fifao.rfb && dtype[ FigisMap.fifao.div ] ) {
 				lowers.push( l );
 			} else if ( l.layer == FigisMap.fifao.cbs ) {
+				highers.push( l );
+			}  else if ( l.layer == FigisMap.fifao.unl ) {
 				highers.push( l );
 			} else if ( l.layer == FigisMap.fifao.cmp ) {
 				highers.push( l );
@@ -1934,6 +1951,8 @@ FigisMap.rnd.sort4map = function( layers, p ) {
 			normalLayers.push( l );
 		}
 		if ( l.layer == FigisMap.fifao.cbs ) {
+			countryLayers.push( l );
+		} else if ( l.layer == FigisMap.fifao.unl ) {
 			countryLayers.push( l );
 		} else if ( l.layer ==  FigisMap.fifao.lab ) {
 			if(p.options.baseMarineLabels){
