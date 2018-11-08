@@ -11,9 +11,10 @@
  * 
  */
 var FigisMap = {
-	version		: "1.2-OL3",
-	date		: "2018-11-03",
-	parser		: new Object(), // parsing methods collection
+	version		: "1.1.1",
+	openlayers	: "3.11.1",
+	date		: "2018-11-08",
+	parser	: new Object(), // parsing methods collection
 	fs		: new Object(), // specific fact sheets methods collection
 	rfb		: new Object(), // specific RFB methods collection
 	rnd		: new Object(), // FigisMap.renderer specific collection of methods and variabes
@@ -37,7 +38,7 @@ var FigisMap = {
  */
 FigisMap.fifao = {
 	cbs : 'fifao:country_bounds',
-	unl : 'fifao:UN_intbnd',
+	unl	: 'fifao:UN_intbnd',
 	cnt : 'fifao:UN_CONTINENT2',
 	CNT : 'fifao:gebco1_cont',
 	SEA : 'fifao:gebco1',
@@ -1015,11 +1016,10 @@ FigisMap.parser.layers = function( obj, setProperties ) {
 				var nl = new Object();
 				for ( var p in l ) nl[p] = l[p];
 				nl.filter = newfs.join(' OR ');
-				//20181103 eblondel need to understand why this
-				/*if ( ls[0] ){
-					nl.skipLegend = true;
-					console.log(nl);
-				}*/
+
+				//20181108 @eblondel deactivate this, need to better understand this rule
+				//if ( ls[0] ) nl.skipLegend = true;
+				
 				ls.push( nl );
 			}
 		} else {
@@ -2036,6 +2036,7 @@ FigisMap.rnd.mainLegend = function( layers, pars ) {
 	//add basic legend for vector layer (if existing)
 	//warning: for now not supported when useSections = true
 	if( pars.vectorLayer ) LegendHTML += FigisMap.rnd.addVectorLayerLegend(pars.vectorLayer);
+	
 	for (var i = 0; i < llayers.length; i++) {
 		var l = llayers[ i ];
 		if ( useSections && l.division ) {
